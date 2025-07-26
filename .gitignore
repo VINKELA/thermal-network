@@ -1,0 +1,13 @@
+node_modules/
+.angular/
+.vscode/
+e2e/
+dist/
+.idea/
+coverage/
+src/assets/
+
+
+.angular/cache/15.2.10/angular-webpack/456bb85ac3630aa48b7e162d92b45d831d785fde/0.pack
+.browserslistrc
+src/app/@theme/directives/.gitkeep

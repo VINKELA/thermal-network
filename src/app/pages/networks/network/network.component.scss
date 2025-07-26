@@ -1,0 +1,170 @@
+// network-visualization.component.scss
+.network-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 16px;
+  
+  h2 {
+    margin: 0;
+    color: #333;
+  }
+  
+  p {
+    margin: 4px 0 0;
+    color: #666;
+  }
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #3f51b5;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+    }
+  }
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  gap: 16px;
+  height: calc(100% - 100px);
+}
+
+.map-container {
+  flex: 3;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nodes-list, .routes-list {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  
+  h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #333;
+  }
+}
+
+.node-item, .route-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+  
+  &.active {
+    background-color: #e3f2fd;
+  }
+}
+
+.node-color, .route-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.node-info, .route-info {
+  display: flex;
+  flex-direction: column;
+  
+  .node-name, .route-name {
+    font-weight: 500;
+  }
+  
+  .node-type, .route-distance, .route-duration {
+    font-size: 12px;
+    color: #666;
+  }
+}
+
+.route-info {
+  .route-distance, .route-duration {
+    display: inline-block;
+    margin-right: 8px;
+  }
+}
+
+.info-window {
+  h3 {
+    margin: 0 0 8px;
+    color: #3f51b5;
+  }
+  
+  p {
+    margin: 4px 0;
+    font-size: 14px;
+  }
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.error-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffebee;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  z-index: 1000;
+  
+  button {
+    margin-top: 16px;
+  }
+}

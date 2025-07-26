@@ -1,0 +1,19 @@
+<div class="map-container">
+  <div id="map" [style.height]="height" [style.width]="width"></div>
+  
+  <div class="map-controls" *ngIf="routes.length > 0">
+    <button mat-mini-fab (click)="showRoads = !showRoads" 
+            [matTooltip]="showRoads ? 'Hide roads' : 'Show roads'">
+      <mat-icon>{{ showRoads ? 'directions' : 'map' }}</mat-icon>
+    </button>
+    
+    <button mat-mini-fab (click)="showMarkers = !showMarkers"
+            [matTooltip]="showMarkers ? 'Hide markers' : 'Show markers'">
+      <mat-icon>{{ showMarkers ? 'place' : 'place_outline' }}</mat-icon>
+    </button>
+    
+    <button mat-mini-fab (click)="fitMapToBounds()" matTooltip="Fit to routes">
+      <mat-icon>zoom_out_map</mat-icon>
+    </button>
+  </div>
+</div>
