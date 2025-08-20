@@ -19,6 +19,10 @@ import { EdgesComponent } from './edges/edges.component';
 import { NodesComponent } from './nodes/nodes.component';
 import { NodeComponent } from './node/node.component'; // Import the module
 import { FormsModule } from '@angular/forms';
+import { ClusterComponent } from './cluster/cluster.component';
+import { ClustersComponent } from './clusters/clusters.component';
+import { PipesComponent } from './pipes/pipes.component';
+import { PipeComponent } from './pipe/pipe.component';
 
 
 
@@ -36,7 +40,11 @@ import { FormsModule } from '@angular/forms';
     RoutesComponent,
     EdgesComponent,
     NodesComponent,
-    NodeComponent
+    NodeComponent,
+    ClusterComponent,
+    ClustersComponent,
+    PipesComponent,
+    PipeComponent
   ],
   imports: [
     CommonModule,

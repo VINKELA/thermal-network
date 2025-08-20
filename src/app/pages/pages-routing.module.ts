@@ -22,6 +22,10 @@ import { BuildingsComponent } from './buildings/buildings/buildings.component';
 import { TranslationsComponent } from './networks/translations/translations.component';
 import { EdgeComponent } from './networks/edge/edge.component';
 import { NodeComponent } from './networks/node/node.component';
+import { ClustersComponent } from './networks/clusters/clusters.component';
+import { ClusterComponent } from './networks/cluster/cluster.component';
+import { PipesComponent } from './networks/pipes/pipes.component';
+import { PipeComponent } from './networks/pipe/pipe.component';
 
 const routes: Routes = [{
   path: '',
@@ -42,6 +46,14 @@ const routes: Routes = [{
     {
       path: 'networks',
       component: NetworksComponent,
+    },
+    {
+      path: 'clusters',
+      component: ClustersComponent,
+    },
+    {
+      path: 'clusters/:id',
+      component: ClusterComponent,
     },
     {
       path: 'nodes',
@@ -79,6 +91,14 @@ const routes: Routes = [{
     {
       path: 'buildings',
       component: BuildingsComponent,
+    },
+     {
+      path: 'pipes',
+      component: PipesComponent,
+    },
+    {
+      path: 'pipes/:id',
+      component: PipeComponent,
     },
     {
       path: 'layout',

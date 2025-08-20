@@ -1,10 +1,4 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, Inject, Input } from '@angular/core';
-import * as L from 'leaflet';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { NetworkApiService } from '../../../@core/data-services/networks/network-api.service';
-import { id } from '@swimlane/ngx-charts';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { RestApiService } from '../../../@core/utils/rest-api.service';
@@ -23,8 +17,6 @@ interface NetworkData {
 })
 
 export class NetworkComponent {
- algorithmId: number = 1; // Default or get from route
-   translationId: number = 1; // Default or get from route
    apiUrl = environment.appUrl;
    
    networkData: NetworkData | null = null;
@@ -134,26 +126,31 @@ export class NetworkComponent {
      if (!data.nodes?.length) return;
  
      // Calculate center based on nodes
-      this.bounds = new google.maps.LatLngBounds();
-     const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
-     
+      this.bounds = new google.maps.LatLngBounds();     
      // Create markers for nodes
      this.markers = data.nodes.map(node => {
        const position = { lat: node.latitude, lng: node.longitude };
        this.bounds.extend(position);
-       
+       const iconUrls: Record<string, string> = {
+        producer: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+        return: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+        consumer: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+        storage: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png', // or teal if you have a custom icon
+      };
+
+
        return {
          position,
          title: node.name,
          label: {
            text: node.name,
-           color: '#333',
+           color: this.getNodeColor(node.node_type),
            fontSize: '12px',
            fontWeight: 'bold',
          },
          options: {
           icon: {
-              url: 'https://maps.google.com/mapfiles/ms/micons/red.png', // Default Google Maps marker
+              url: iconUrls[node.node_type], // Default Google Maps marker
               // OR use the standard red pin:
               // url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
               
@@ -167,10 +164,9 @@ export class NetworkComponent {
        };
      });
  
-     // Create polylines for routes
      this.polylines = data.routes.map((route, index) => {
        const path = this.decodePolyline(route.polyline);
-       const color = colors[(index + 1) % colors.length];
+       const color = this.getRouteColor(route);
        path.forEach(coord => {
        this.bounds.extend(coord);
      });
@@ -179,7 +175,8 @@ export class NetworkComponent {
          strokeColor: color,
          strokeOpacity: 0.8,
          strokeWeight: 4,
-         routeData: route
+         routeData: route,
+         name: index
        };
      });
  
@@ -198,6 +195,15 @@ export class NetworkComponent {
        'storage': '#008080',     // Teal
      };
      return colors[nodeType] || '#333333'; // Default gray
+   }
+   getRouteColor(route:any): string {
+     const colors: Record<string, string> = {
+       'producer': '#FF0000',      // Red
+       'return': '#00FF00',      // Green
+       'consumer': '#0000FF',    // Blue
+       'storage': '#008080',     // Teal
+     };
+     return  route.route_type == 'supply' ? '#FF0000':  '#0000FF'; // Default gray
    }
  
    decodePolyline(encoded: string): google.maps.LatLngLiteral[] {

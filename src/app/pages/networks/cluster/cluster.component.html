@@ -1,0 +1,55 @@
+<div class="cluster-map-container">
+  <h2 *ngIf="clusterName">{{ clusterName }}</h2>
+  
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner></mat-spinner>
+    <p>Loading cluster data...</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <google-map
+    *ngIf="!loading && !error"
+    [center]="center"
+    [zoom]="zoom"
+    [options]="mapOptions"
+    height="800px"
+    width="100%"
+  >
+    <!-- Markers for nodes -->
+    <map-marker
+      *ngFor="let marker of markers"
+      [position]="marker.position"
+      [title]="marker.title"
+      [options]="marker.options"
+      [icon]="marker.icon"
+      (mapClick)="openInfoWindow(markerRef, marker)"
+      #markerRef="mapMarker"
+    >
+    </map-marker>
+
+     <!-- Route polylines -->
+        <map-polyline 
+          *ngFor="let polyline of polylines"
+          [path]="polyline.path"
+          [options]="{
+            strokeColor: polyline.strokeColor,
+            strokeOpacity: polyline.strokeOpacity,
+            strokeWeight: polyline.strokeWeight,
+            clickable: true,
+            zIndex: 1,
+            title: polyline.name,
+            routeData: polyline.routeData,
+            name: polyline.name,
+            draggable: true
+
+
+
+          }"
+          (mapClick)="onRouteClick(polyline.routeData)">
+        </map-polyline>
+  </google-map>
+</div>

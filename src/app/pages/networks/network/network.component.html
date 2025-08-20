@@ -86,7 +86,16 @@
           [options]="{
             strokeColor: polyline.strokeColor,
             strokeOpacity: polyline.strokeOpacity,
-            strokeWeight: polyline.strokeWeight
+            strokeWeight: polyline.strokeWeight,
+            clickable: true,
+            zIndex: 1,
+            title: polyline.name,
+            routeData: polyline.routeData,
+            name: polyline.name,
+            draggable: true
+
+
+
           }"
           (mapClick)="onRouteClick(polyline.routeData)">
         </map-polyline>

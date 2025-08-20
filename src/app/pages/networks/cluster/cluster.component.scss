@@ -1,0 +1,49 @@
+.cluster-map-container {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+
+  mat-spinner {
+    margin-bottom: 20px;
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  color: #d32f2f;
+  padding: 20px;
+  background-color: #fde0e0;
+  border-radius: 4px;
+
+  mat-icon {
+    margin-right: 10px;
+  }
+}
+
+.map-info-window {
+  h3 {
+    margin: 0 0 10px 0;
+    color: #1976d2;
+  }
+
+  p {
+    margin: 5px 0;
+    font-size: 14px;
+  color: #555;
+  }
+}

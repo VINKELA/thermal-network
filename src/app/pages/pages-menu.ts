@@ -17,6 +17,11 @@ export const MENU_ITEMS: NbMenuItem[] = [
     link: '/pages/networks',
     },
     {
+    title: 'Clusters',
+    icon: 'shuffle-2-outline',
+    link: '/pages/clusters',
+    },
+    {
     title: 'Nodes',
     icon: 'pin-outline',
     link: '/pages/nodes',
@@ -54,6 +59,11 @@ export const MENU_ITEMS: NbMenuItem[] = [
     title: 'Buildings',
     icon: 'home-outline',
     link: '/pages/buildings',
+  },
+    {
+    title: 'Pipes',
+    icon: 'droplet-outline',
+    link: '/pages/pipes',
   },
   {
     title: 'Pumps',
