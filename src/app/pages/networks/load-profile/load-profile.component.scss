@@ -1,0 +1,38 @@
+// Make the list scrollable while keeping the header fixed
+.entity-list {
+  overflow-y: auto;
+  max-height: 400px; // Or utilize flex-grow in parent
+  border-top: 1px solid #edf1f7;
+}
+
+.entity-item {
+  transition: background-color 0.2s;
+  &:hover {
+    background-color: #f7f9fc;
+  }
+  &.selected {
+    background-color: #e4e9f2; // Highlight color
+    border-left: 4px solid #3366ff;
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+// Chart container needs explicit height rules to work with ECharts
+.chart-body {
+  min-height: 400px;
+  overflow: hidden; // Prevent scrollbars from popping up during zoom
+}
+
+// Nebular dark mode overrides (Optional)
+:host-context(.nb-theme-dark) {
+  .entity-item:hover {
+    background-color: #222b45;
+  }
+  .entity-item.selected {
+    background-color: #2f3a56;
+    border-left-color: #3366ff;
+  }
+}

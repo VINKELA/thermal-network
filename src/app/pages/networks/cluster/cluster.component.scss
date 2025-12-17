@@ -1,49 +1,128 @@
-.cluster-map-container {
-  padding: 20px;
-  height: 100%;
+.cluster-container {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  height: 650px; /* Fixed height for dashboard feel */
+  border: 1px solid #edf1f7;
+  font-family: 'Inter', sans-serif;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    height: auto;
+    grid-template-rows: auto 500px;
+  }
+}
+
+/* LEFT PANEL */
+.info-panel {
   display: flex;
   flex-direction: column;
+  padding: 32px;
+  background: white;
+  overflow-y: auto;
+}
 
-  h2 {
-    margin-bottom: 20px;
-    color: #333;
+.panel-header {
+  .badge-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  
+  .type-badge {
+    background: #e0f2fe; color: #0284c7;
+    padding: 6px 12px; border-radius: 50px;
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .algo-badge {
+    background: #f1f5f9; color: #64748b;
+    padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+  }
+
+  h1 { margin: 0; font-size: 1.5rem; color: #0f172a; }
+  .id-text { margin: 4px 0 0 0; color: #94a3b8; font-family: monospace; font-size: 0.85rem;}
+}
+
+.divider { border: 0; border-top: 1px dashed #e2e8f0; margin: 24px 0; }
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .stat-card {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    
+    .label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+    .value { font-size: 1.1rem; font-weight: 600; color: #0f172a; }
+
+    &.heat .value { color: #be123c; }
+    &.cool .value { color: #0369a1; }
   }
 }
 
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
+/* BUILDING LIST */
+.buildings-list-section {
+  flex-grow: 1;
+  h3 { font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 12px; }
+  
+  .list-wrapper {
+    display: flex; flex-direction: column; gap: 8px;
+  }
 
-  mat-spinner {
-    margin-bottom: 20px;
+  .b-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;
+    cursor: pointer; transition: all 0.2s;
+
+    &:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+    .b-name { font-weight: 600; font-size: 0.9rem; color: #334155; display: block; }
+    .b-type { font-size: 0.75rem; color: #64748b; }
+    i { color: #cbd5e1; }
   }
 }
 
-.error-message {
-  display: flex;
-  align-items: center;
-  color: #d32f2f;
-  padding: 20px;
-  background-color: #fde0e0;
-  border-radius: 4px;
-
-  mat-icon {
-    margin-right: 10px;
+.action-footer {
+  margin-top: 24px;
+  .btn-back {
+    display: flex; align-items: center; gap: 8px;
+    background: none; border: none; color: #64748b;
+    font-weight: 600; cursor: pointer; padding: 0;
+    &:hover { color: #0f172a; }
   }
 }
 
-.map-info-window {
-  h3 {
-    margin: 0 0 10px 0;
-    color: #1976d2;
+/* MAP PANEL */
+.map-panel {
+  position: relative;
+  background: #f8fafc;
+
+  .legend-card {
+    position: absolute; bottom: 24px; left: 24px;
+    background: white; padding: 12px 16px; border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    
+    .legend-row {
+      display: flex; align-items: center; gap: 8px; font-size: 0.8rem; margin-bottom: 4px;
+      .dot { width: 10px; height: 10px; border-radius: 50%; display: block; }
+      .dot.zone { background: rgba(51, 102, 255, 0.4); border: 1px solid #3366ff; }
+      .dot.center { background: black; }
+      .dot.marker { background: #ea4335; } /* Standard Google Red */
+    }
   }
 
-  p {
-    margin: 5px 0;
-    font-size: 14px;
-  color: #555;
+  .info-popup {
+    padding: 4px;
+    h4 { margin: 0 0 4px 0; font-size: 0.9rem; }
+    p { font-size: 0.8rem; color: #666; margin: 0 0 8px 0; }
+    button { background: #3366ff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
   }
 }

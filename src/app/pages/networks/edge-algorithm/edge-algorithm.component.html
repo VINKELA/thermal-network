@@ -1,0 +1,99 @@
+<div class="algo-container" *ngIf="algorithm; else loading">
+
+  <div class="info-panel">
+    <header class="panel-header">
+      <div class="badge">Edge Generation</div>
+      <h1>{{ algorithm.name }}</h1>
+      <div class="meta">
+        <span class="type-tag">{{ algorithm.algorithm | uppercase }}</span>
+        <span *ngIf="algorithm.is_default" class="default-tag">Default</span>
+      </div>
+      <p class="desc">{{ algorithm.description }}</p>
+    </header>
+
+    <hr class="divider">
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <label>Total Length</label>
+        <div class="val">{{ algorithm.total_edge_length | number:'1.0-0' }} m</div>
+      </div>
+      <div class="stat-card">
+        <label>Edges Created</label>
+        <div class="val">{{ edges.length }}</div>
+      </div>
+      <div class="stat-card" *ngIf="algorithm.distance_threshold">
+        <label>Threshold</label>
+        <div class="val">{{ algorithm.distance_threshold }} m</div>
+      </div>
+    </div>
+
+    <div class="params-section" *ngIf="algorithm.parameters">
+      <h3>Configuration Parameters</h3>
+      <pre>{{ algorithm.parameters | json }}</pre>
+    </div>
+
+    <div class="footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back"></i> Back
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions">
+
+      <map-polyline 
+        *ngFor="let edge of edges"
+        [path]="edge.path"
+        [options]="selectedItem === edge ? selectedEdgeOptions : edgeOptions"
+        (polylineClick)="selectEdge(edge, lineRef)"
+        #lineRef="mapPolyline">
+      </map-polyline>
+
+      <map-marker 
+        *ngFor="let node of nodes"
+        [position]="{ lat: node.latitude, lng: node.longitude }"
+        [options]="nodeOptions"
+        (mapClick)="selectNode(node, markerRef)"
+        #markerRef="mapMarker">
+      </map-marker>
+
+      <map-info-window>
+        <div class="popup" *ngIf="selectedItem">
+          
+          <div *ngIf="selectedType === 'node'">
+            <span class="tag node">Node</span>
+            <h4>{{ selectedItem.name || 'Unnamed Node' }}</h4>
+            <div class="sub">{{ selectedItem.node_type | titlecase }}</div>
+          </div>
+
+          <div *ngIf="selectedType === 'edge'">
+            <span class="tag edge">Edge</span>
+            <h4>{{ selectedItem.length | number:'1.2-2' }} meters</h4>
+            <div class="coords">
+              ID: #{{ selectedItem.id }}
+            </div>
+          </div>
+
+        </div>
+      </map-info-window>
+
+    </google-map>
+
+    <div class="legend">
+      <div class="item"><span class="line edge"></span> Edge</div>
+      <div class="item"><span class="dot node"></span> Node</div>
+    </div>
+  </div>
+
+</div>
+
+<ng-template #loading>
+  <div class="loader">Loading Algorithm Data...</div>
+</ng-template>

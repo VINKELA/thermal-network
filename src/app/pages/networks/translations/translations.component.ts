@@ -9,6 +9,7 @@ import { RestApiService } from '../../../@core/utils/rest-api.service';
 })
 export class TranslationsComponent {
 url: string =  'edge_translations/';
+link: string = 'edge_translations';
 settings = {
     add: {
       addButtonContent: '<i class="nb-plus"></i>',
@@ -33,7 +34,7 @@ settings = {
        title: 'Name',
       type: 'html',
           valuePrepareFunction: (name: string, row: any) => {
-        return `<a href="pages/algorithm/${row.algorithm}/translation/${row.id}">${name}</a>`;
+        return `<a href="pages/${this.link}/${row.id}">${name}</a>`;
       }
       },
       description: {

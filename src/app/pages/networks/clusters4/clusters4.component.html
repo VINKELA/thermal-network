@@ -1,0 +1,25 @@
+<div class="combined-root">
+  <div class="map-column">
+    <google-map height="64vh" width="100%" [center]="center" [zoom]="zoom" #map>
+      <ng-container *ngFor="let c of clusters">
+        <map-polygon *ngIf="c.hull && c.hull.length>2" [paths]="c.hull"
+          [options]="{fillColor: activeClusterId===c.id ? '#ff7043' : '#1976d2', strokeColor: activeClusterId===c.id ? '#d84315' : '#0d47a1', fillOpacity:0.22, strokeOpacity:0.9, strokeWeight:1.6}">
+        </map-polygon>
+
+        <map-marker *ngIf="c.latitude && c.longitude" [position]="{lat:c.latitude, lng:c.longitude}" (mapClick)="setActive(c)"></map-marker>
+      </ng-container>
+    </google-map>
+  </div>
+
+  <aside class="list-column">
+    <h3>Clusters</h3>
+    <div *ngIf="loading">Loading...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+    <ul>
+      <li *ngFor="let c of clusters" (click)="setActive(c)" [class.active]="activeClusterId===c.id">
+        <div>{{ c.name || ('Cluster ' + c.id) }}</div>
+        <div>Buildings: {{ c.buildings?.length ?? 0 }} • Peak: {{ formatKw(c.heating_demand/1000) }}</div>
+      </li>
+    </ul>
+  </aside>
+</div>

@@ -1,1 +1,56 @@
-<p>project works!</p>
+<div class="project-container" *ngIf="project$ | async as project; else loading">
+  
+  <header class="project-header">
+    <div class="header-top">
+      <h1 class="project-title">{{ project.name }}</h1>
+      
+      <span class="status-badge" [ngClass]="statusConfig[project.status].class">
+        {{ statusConfig[project.status].label }}
+      </span>
+    </div>
+
+    <div class="meta-row">
+      <span class="location">
+        <i class="icon-location">📍</i> {{ getLocationString(project) }}
+      </span>
+      <span class="project-id">ID: #{{ project.id }}</span>
+    </div>
+  </header>
+
+  <hr class="divider" />
+
+  <section class="project-stats">
+    <div class="stat-item" *ngIf="project.budget">
+      <span class="label">Budget</span>
+      <span class="value budget">
+        {{ project.budget | currency:'USD':'symbol':'1.0-0' }}
+      </span>
+    </div>
+
+    <div class="stat-item">
+      <span class="label">Start Date</span>
+      <span class="value">{{ project.start_date | date:'mediumDate' }}</span>
+    </div>
+
+    <div class="stat-item">
+      <span class="label">Target End</span>
+      <span class="value">
+        {{ (project.end_date | date:'mediumDate') || 'Ongoing' }}
+      </span>
+    </div>
+  </section>
+
+  <section class="project-body" *ngIf="project.description">
+    <h3>About this Project</h3>
+    <p>{{ project.description }}</p>
+  </section>
+
+  <footer class="project-footer">
+    Last updated: {{ project.updated_at | date:'short' }}
+  </footer>
+
+</div>
+
+<ng-template #loading>
+  <div class="skeleton-loader">Loading Project Details...</div>
+</ng-template>

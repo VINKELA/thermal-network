@@ -1,55 +1,119 @@
-<div class="cluster-map-container">
-  <h2 *ngIf="clusterName">{{ clusterName }}</h2>
-  
-  <div *ngIf="loading" class="loading-spinner">
-    <mat-spinner></mat-spinner>
-    <p>Loading cluster data...</p>
+<div class="cluster-container" *ngIf="cluster; else loading">
+
+  <div class="info-panel">
+    
+    <header class="panel-header">
+      <div class="badge-row">
+        <span class="type-badge">
+          <i class="eva eva-grid-outline"></i> Cluster
+        </span>
+        <span class="algo-badge" *ngIf="cluster.type">
+          {{ cluster.type | titlecase }}
+        </span>
+      </div>
+      <h1>{{ cluster.name || 'Unnamed Cluster' }}</h1>
+      <p class="id-text">Cluster ID: #{{ cluster.id }}</p>
+    </header>
+
+    <hr class="divider">
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="label">Total Buildings</span>
+        <span class="value">{{ cluster.no_of_buildings }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Radius</span>
+        <span class="value">{{ cluster.effective_radius | number:'1.0-1' }} m</span>
+      </div>
+      <div class="stat-card heat">
+        <span class="label">Heating Demand</span>
+        <span class="value">{{ cluster.heating_demand | number:'1.0-0' }} kW</span>
+      </div>
+      <div class="stat-card cool">
+        <span class="label">Cooling Demand</span>
+        <span class="value">{{ cluster.cooling_demand | number:'1.0-0' }} kW</span>
+      </div>
+      <div class="stat-card" *ngIf="cluster.total_edge_length">
+        <span class="label">Est. Piping</span>
+        <span class="value">{{ cluster.total_edge_length | number:'1.0-0' }} m</span>
+      </div>
+    </div>
+
+    <div class="buildings-list-section" *ngIf="buildings.length > 0">
+      <h3>Included Buildings</h3>
+      <div class="list-wrapper">
+        <div class="b-item" *ngFor="let b of buildings" (click)="goToBuilding(b.id)">
+          <div class="b-info">
+            <span class="b-name">{{ b.name }}</span>
+            <span class="b-type">{{ b.building_type }}</span>
+          </div>
+          <i class="eva eva-chevron-right-outline"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back-outline"></i> Back to Analysis
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="error" class="error-message">
-    <mat-icon>error_outline</mat-icon>
-    <p>{{ error }}</p>
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions">
+      
+      <map-circle 
+        *ngIf="cluster.effective_radius"
+        [center]="center"
+        [radius]="cluster.effective_radius"
+        [options]="circleOptions">
+      </map-circle>
+
+      <map-marker 
+        [position]="center"
+        [title]="'Cluster Center'"
+        [options]="{ icon: { path: 1, scale: 8, fillColor: '#000', strokeColor: '#fff' } }">
+      </map-marker>
+
+      <map-marker 
+        *ngFor="let b of buildings"
+        [position]="{ lat: b.latitude, lng: b.longitude }"
+        [title]="b.name"
+        (mapClick)="openBuildingInfo(markerRef, b)"
+        #markerRef="mapMarker">
+      </map-marker>
+
+      <map-info-window>
+        <div class="info-popup" *ngIf="selectedBuilding">
+          <h4>{{ selectedBuilding.name }}</h4>
+          <p>{{ selectedBuilding.address }}</p>
+          <button (click)="goToBuilding(selectedBuilding.id)">View Building</button>
+        </div>
+      </map-info-window>
+
+    </google-map>
+
+    <div class="legend-card">
+      <div class="legend-row">
+        <span class="dot zone"></span> Boundary
+      </div>
+      <div class="legend-row">
+        <span class="dot center"></span> Center
+      </div>
+      <div class="legend-row">
+        <span class="dot marker"></span> Building
+      </div>
+    </div>
   </div>
 
-  <google-map
-    *ngIf="!loading && !error"
-    [center]="center"
-    [zoom]="zoom"
-    [options]="mapOptions"
-    height="800px"
-    width="100%"
-  >
-    <!-- Markers for nodes -->
-    <map-marker
-      *ngFor="let marker of markers"
-      [position]="marker.position"
-      [title]="marker.title"
-      [options]="marker.options"
-      [icon]="marker.icon"
-      (mapClick)="openInfoWindow(markerRef, marker)"
-      #markerRef="mapMarker"
-    >
-    </map-marker>
-
-     <!-- Route polylines -->
-        <map-polyline 
-          *ngFor="let polyline of polylines"
-          [path]="polyline.path"
-          [options]="{
-            strokeColor: polyline.strokeColor,
-            strokeOpacity: polyline.strokeOpacity,
-            strokeWeight: polyline.strokeWeight,
-            clickable: true,
-            zIndex: 1,
-            title: polyline.name,
-            routeData: polyline.routeData,
-            name: polyline.name,
-            draggable: true
-
-
-
-          }"
-          (mapClick)="onRouteClick(polyline.routeData)">
-        </map-polyline>
-  </google-map>
 </div>
+
+<ng-template #loading>
+  <div class="skeleton-loader">Loading Cluster Data...</div>
+</ng-template>

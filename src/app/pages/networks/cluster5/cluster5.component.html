@@ -1,0 +1,143 @@
+<div class="cluster-view" *ngIf="cluster; else loading">
+
+  <div class="info-panel">
+    
+    <header class="panel-header">
+      <div class="badge">Cluster Detail</div>
+      <h1>{{ cluster.name || 'Cluster #' + cluster.id }}</h1>
+      <div class="meta-row">
+        <span>{{ cluster.type | titlecase }}</span> • 
+        <span>{{ buildings.length }} Buildings</span>
+      </div>
+    </header>
+
+    <hr class="divider">
+
+    <div class="control-section">
+      <h3>Boundary Representation</h3>
+      <div class="toggle-group">
+        
+        <button 
+          [class.active]="boundaryType === 'hull'" 
+          [disabled]="!isHullAvailable"
+          (click)="setBoundary('hull')"
+          [title]="isHullAvailable ? 'Tight polygon around buildings' : 'Need at least 3 buildings for hull'">
+          <i class="eva eva-cube-outline"></i> Hull
+        </button>
+        
+        <button 
+          [class.active]="boundaryType === 'circle'" 
+          (click)="setBoundary('circle')"
+          title="Service radius circle (Enclosing all buildings)">
+          <i class="eva eva-radio-button-on-outline"></i> Radius
+        </button>
+        
+        <button 
+          [class.active]="boundaryType === 'none'" 
+          (click)="setBoundary('none')"
+          title="Hide boundary">
+          <i class="eva eva-eye-off-outline"></i> Off
+        </button>
+
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-item heat">
+        <label>Heating Demand</label>
+        <strong>{{ cluster.heating_demand | number:'1.0-0' }} kW</strong>
+      </div>
+      <div class="stat-item cool">
+        <label>Cooling Demand</label>
+        <strong>{{ cluster.cooling_demand | number:'1.0-0' }} kW</strong>
+      </div>
+      <div class="stat-item">
+        <label>Service Radius</label>
+        <strong>{{ cluster.effective_radius | number:'1.0-0' }} m</strong>
+      </div>
+    </div>
+
+    <div class="list-section">
+      <h3>Buildings</h3>
+      <div class="scroll-list">
+        <div class="b-row" *ngFor="let b of buildings" (click)="goToBuilding(b.id)">
+          <div class="b-info">
+            <span class="name">{{ b.name }}</span>
+            <span class="sub">{{ b.building_type }}</span>
+          </div>
+          <i class="eva eva-chevron-right"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back"></i> Back
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions">
+
+      <map-polygon 
+        *ngIf="boundaryType === 'hull' && boundaryPath.length > 0"
+        [paths]="boundaryPath"
+        [options]="hullOptions">
+      </map-polygon>
+
+      <map-circle 
+        *ngIf="boundaryType === 'circle'"
+        [center]="center"
+        [radius]="cluster.effective_radius"
+        [options]="circleOptions">
+      </map-circle>
+
+      <map-marker 
+        [position]="center"
+        [options]="{ icon: { path: 1, scale: 6, fillColor: '#000', strokeColor: '#fff', strokeWeight: 2 } }"
+        title="Cluster Center">
+      </map-marker>
+
+      <map-marker 
+        *ngFor="let b of buildings"
+        [position]="{ lat: b.latitude, lng: b.longitude }"
+        [title]="b.name"
+        [options]="{ icon: { path: 0, scale: 4, fillColor: '#ff3d71', fillOpacity: 1, strokeColor: 'white' } }"
+        (mapClick)="openInfo(markerRef, b)"
+        #markerRef="mapMarker">
+      </map-marker>
+
+      <map-info-window>
+        <div class="popup" *ngIf="selectedBuilding">
+          <h4>{{ selectedBuilding.name }}</h4>
+          <p>{{ selectedBuilding.address }}</p>
+          <button (click)="goToBuilding(selectedBuilding.id)">View Details</button>
+        </div>
+      </map-info-window>
+
+    </google-map>
+    
+    <div class="legend-overlay">
+      <div class="legend-row" *ngIf="boundaryType === 'hull'">
+        <span class="dot hull"></span> Convex Hull
+      </div>
+      <div class="legend-row" *ngIf="boundaryType === 'circle'">
+        <span class="dot circle"></span> Enclosing Radius
+      </div>
+      <div class="legend-row">
+        <span class="dot building"></span> Building
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="loading-state">Loading Cluster...</div>
+</ng-template>

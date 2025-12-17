@@ -1,0 +1,58 @@
+.subtitle {
+  font-size: 0.75rem; color: #8f9bb3; font-weight: normal; margin-left: 10px;
+}
+
+.upload-container {
+  padding: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.instructions {
+  background: #f7f9fc;
+  border: 1px solid #edf1f7;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  
+  h6 { font-size: 0.9rem; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  p { font-size: 0.85rem; margin: 0; color: #59657b; }
+  code { background: #e4e9f2; padding: 2px 4px; border-radius: 3px; font-size: 0.8em; color: #c0392b; }
+}
+
+.form-group {
+  margin-bottom: 20px;
+  label { display: block; margin-bottom: 8px; font-weight: 600; color: #222b45; font-size: 0.8rem; text-transform: uppercase;}
+}
+
+/* Custom File Input Styling */
+.file-drop-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  padding: 25px;
+  border: 2px dashed #c5cee0;
+  border-radius: 6px;
+  transition: 0.2s;
+  background-color: #ffffff;
+
+  &:hover { background-color: #f7f9fc; border-color: #3366ff; }
+  
+  input[type=file] {
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%; width: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  .file-msg {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #8f9bb3;
+    pointer-events: none;
+  }
+}

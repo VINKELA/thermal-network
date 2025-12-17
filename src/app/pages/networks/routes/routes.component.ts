@@ -33,7 +33,7 @@ settings = {
        title: 'Polyline',
       type: 'html',
           valuePrepareFunction: (name: string, row: any) => {
-        return `<a href="pages/networks/${row.id}">${name}</a>`;
+        return `<a href="pages/routes/${row.id}">${name}</a>`;
       }
       },
       distance_meters: {

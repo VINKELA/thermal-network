@@ -1,0 +1,124 @@
+<div class="config-container" *ngIf="configuration; else loading">
+
+  <div class="info-panel">
+    <header class="panel-header">
+      <div class="badge">Configuration</div>
+      <h1>{{ configuration.name || 'Unnamed Configuration' }}</h1>
+      <p class="desc">{{ configuration.description }}</p>
+      
+      <div class="params" *ngIf="configuration.parameters">
+        <code>{{ configuration.parameters | json }}</code>
+      </div>
+    </header>
+
+    <hr class="divider">
+
+    <div class="cluster-list">
+      <h3>Generated Clusters ({{ configuration.clusters.length }})</h3>
+      
+      <div class="cluster-card" 
+           *ngFor="let c of configuration.clusters"
+           (click)="selectClusterFromList(c)">
+        <div class="card-top">
+          <span class="c-name">{{ c.name || 'Cluster ' + c.id }}</span>
+          <span class="c-bldgs">{{ c.no_of_buildings }} Bldgs</span>
+        </div>
+        <div class="card-btm">
+          <span><i class="eva eva-thermometer-outline"></i> {{ c.heating_demand | number:'1.0-0' }} kW</span>
+          <span><i class="eva eva-radio-button-on-outline"></i> {{ c.effective_radius | number:'1.0-0' }} m</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back-outline"></i> Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions"
+      (zoomChanged)="onZoomChanged()"
+      >
+
+      <ng-container *ngFor="let c of configuration.clusters">
+
+        <ng-container *ngIf="!showBuildings">
+          <map-circle 
+            *ngIf="c.effective_radius"
+            [center]="{ lat: c.latitude, lng: c.longitude }"
+            [radius]="c.effective_radius"
+            [options]="circleOptions"
+            (circleClick)="selectClusterFromList(c)">
+          </map-circle>
+
+          <map-marker
+            [position]="{ lat: c.latitude, lng: c.longitude }"
+            [title]="c.name"
+            [options]="centerMarkerOptions"
+            (mapClick)="openInfo(markerRef, c, 'cluster')"
+            #markerRef="mapMarker">
+          </map-marker>
+        </ng-container>
+
+        <ng-container *ngIf="showBuildings">
+          
+          <map-polygon 
+            *ngIf="c.boundaryPath && c.boundaryPath.length >= 3"
+            [paths]="c.boundaryPath"
+            [options]="polygonOptions">
+          </map-polygon>
+
+          <map-circle 
+            *ngIf="!c.boundaryPath || c.boundaryPath.length < 3"
+            [center]="{ lat: c.latitude, lng: c.longitude }"
+            [radius]="c.effective_radius"
+            [options]="circleOptions">
+          </map-circle>
+
+          <map-marker 
+            *ngFor="let b of c.buildings"
+            [position]="{ lat: b.latitude, lng: b.longitude }"
+            [title]="b.name"
+            [options]="buildingMarkerOptions"
+            (mapClick)="openInfo(bMarker, b, 'building')"
+            #bMarker="mapMarker">
+          </map-marker>
+        </ng-container>
+
+      </ng-container>
+
+      <map-info-window>
+        <div class="popup" *ngIf="selectedItem">
+          <span class="tag" [class]="selectedItem._type">{{ selectedItem._type | titlecase }}</span>
+          <h4>{{ selectedItem.name }}</h4>
+          
+          <div *ngIf="selectedItem._type === 'cluster'" class="popup-meta">
+            <div>Buildings: <strong>{{ selectedItem.no_of_buildings }}</strong></div>
+            <div>Radius: <strong>{{ selectedItem.effective_radius | number:'1.0-0' }} m</strong></div>
+          </div>
+          
+          <div *ngIf="selectedItem._type === 'building'" class="popup-meta">
+            <div>Type: {{ selectedItem.building_type }}</div>
+          </div>
+        </div>
+      </map-info-window>
+
+    </google-map>
+
+    <div class="zoom-hint" *ngIf="!showBuildings">
+      <i class="eva eva-search-outline"></i> Zoom in to see details
+    </div>
+  </div>
+
+</div>
+
+<ng-template #loading>
+  <div class="skeleton-loader">Loading Configuration Data...</div>
+</ng-template>

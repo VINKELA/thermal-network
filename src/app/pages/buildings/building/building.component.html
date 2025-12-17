@@ -1,1 +1,80 @@
-<p>building works!</p>
+<div class="building-container" 
+     *ngIf="building" 
+     [ngClass]="loadConfig[building.load_type].themeClass">
+  
+  <div class="info-panel">
+    
+    <header class="panel-header">
+      <div class="type-badge">
+        <i [class]="'eva eva-' + typeConfig[building.building_type].icon"></i>
+        <span>{{ typeConfig[building.building_type].label }}</span>
+      </div>
+      
+      <h1>{{ building.name || 'Unnamed Building' }}</h1>
+      
+      <div class="load-badge">
+        <i [class]="'eva eva-' + loadConfig[building.load_type].icon"></i>
+        {{ loadConfig[building.load_type].label }}
+      </div>
+    </header>
+
+    <hr class="divider">
+
+    <div class="specs-grid">
+      
+      <div class="spec-group">
+        <h3>Energy Profile</h3>
+        <div class="data-row" *ngIf="building.heating_demand">
+          <span class="label">Heating Demand</span>
+          <span class="value">{{ building.heating_demand | number:'1.0-0' }} kW</span>
+        </div>
+        <div class="data-row" *ngIf="building.cooling_demand">
+          <span class="label">Cooling Demand</span>
+          <span class="value">{{ building.cooling_demand | number:'1.0-0' }} kW</span>
+        </div>
+      </div>
+
+      <div class="spec-group">
+        <h3>Dimensions</h3>
+        <div class="data-row">
+          <span class="label">Floor Area</span>
+          <span class="value">{{ building.floor_area | number }} m²</span>
+        </div>
+        <div class="data-row" *ngIf="building.number_of_floors">
+          <span class="label">Floors</span>
+          <span class="value">{{ building.number_of_floors }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="action-footer">
+      <button class="btn-back" (click)="goBack()">
+        <span class="icon-wrap">←</span>
+        <span>Back to Map</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions">
+      
+      <map-marker 
+        [position]="center"
+        [title]="building.name">
+      </map-marker>
+
+    </google-map>
+    
+    <div class="fsa-card" *ngIf="building.fsa">
+      <span class="label">Postal Area</span>
+      <span class="value">{{ building.fsa }}</span>
+    </div>
+  </div>
+
+</div>

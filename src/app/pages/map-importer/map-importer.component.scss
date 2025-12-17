@@ -1,0 +1,43 @@
+:host {
+  display: block;
+  height: calc(100vh - 150px);
+}
+
+.map-card {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Custom Search Box Styled to look like Google Maps native search */
+.map-search-box {
+  position: absolute;
+  top: 10px;
+  left: 10px; /* Or 50% with transform translate-x for center */
+  z-index: 5;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 0 12px;
+  border-radius: 2px;
+  width: 300px;
+  height: 40px;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  outline: none;
+  
+  &:focus {
+    border-color: #4d90fe;
+  }
+}
+
+.building-list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #edf1f7;
+  border-radius: 4px;
+}
+
+nb-list-item {
+  padding: 0.75rem;
+}
+

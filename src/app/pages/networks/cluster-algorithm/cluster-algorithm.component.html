@@ -1,0 +1,41 @@
+<div class="clusters-root">
+<div class="map-column">
+<google-map height="100%" width="100%" [center]="center" [zoom]="zoom" #map>
+<ng-container *ngFor="let c of clusters">
+<map-marker *ngIf="c.latitude && c.longitude" [position]="{lat: c.latitude, lng: c.longitude}" (mapClick)="onSelectCluster(c)">
+</map-marker>
+<map-circle *ngIf="c.latitude && c.longitude" [center]="{lat: c.latitude, lng: c.longitude}" [radius]="clusterCircleRadiusMeters(c)"></map-circle>
+</ng-container>
+</google-map>
+<div class="map-overlays">
+<div *ngIf="loading" class="loading-pill">Loading clusters…</div>
+<div *ngIf="error" class="error-pill">{{error}}</div>
+</div>
+</div>
+
+
+<aside class="list-column">
+<div class="header">
+<h3>Clusters</h3>
+<div class="meta">{{ clusters.length }} clusters</div>
+</div>
+
+
+<div *ngIf="clusters.length === 0 && !loading" class="empty">No clusters found</div>
+
+
+<ul class="cluster-list">
+<li *ngFor="let c of clusters" class="cluster-item" (click)="onSelectCluster(c)">
+<div class="title">{{c.name || ('Cluster ' + c.id)}}</div>
+<div class="row">
+<div>Buildings: <strong>{{c.no_of_buildings ?? 0}}</strong></div>
+<div>Peak: <strong>{{ formatKw(c.aggregate_peak_kw) }}</strong></div>
+</div>
+<div class="row small">
+<div>Radius: {{ (c.radius_km ?? 0.5) | number:'1.2-2' }} km</div>
+<div>Edges: {{ c.total_edge_length ?? '-' }} m</div>
+</div>
+</li>
+</ul>
+</aside>
+</div>

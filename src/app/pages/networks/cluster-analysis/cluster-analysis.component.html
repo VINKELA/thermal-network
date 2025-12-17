@@ -1,0 +1,97 @@
+<div class="analysis-container" *ngIf="result; else loading">
+  
+  <div class="info-panel">
+    
+    <header class="panel-header">
+      <div class="meta-badge">Algorithm Run</div>
+      <h1>{{ result.name }}</h1>
+      <div class="tags">
+        <span class="alg-tag">{{ result.algorithm | uppercase }}</span>
+        <span class="date-tag">{{ result.created_at | date:'mediumDate' }}</span>
+      </div>
+      
+      <div class="params-box" *ngIf="result.parameters">
+        <span class="label">Configuration Parameters:</span>
+        <code>{{ formatParams }}</code>
+      </div>
+    </header>
+
+    <hr class="divider">
+
+    <section class="results-section">
+      <h3>Generated Clusters ({{ result.clusters?.length || 0 }})</h3>
+      
+      <div class="cluster-list">
+        <div class="cluster-item" 
+             *ngFor="let c of result.clusters" 
+             [class.active]="c.id === selectedClusterId"
+             (click)="selectCluster(c)">
+          
+          <div class="item-header">
+            <span class="cluster-name">{{ c.name || 'Cluster #' + c.id }}</span>
+            <span class="building-count">{{ c.no_of_buildings }} Bldgs</span>
+          </div>
+
+          <div class="item-stats">
+            <div class="stat">
+              <span class="lbl">Heat</span>
+              <span class="val">{{ c.heating_demand | number:'1.0-0' }} kW</span>
+            </div>
+            <div class="stat">
+              <span class="lbl">Radius</span>
+              <span class="val">{{ c.effective_radius | number:'1.0-0' }} m</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <div class="action-footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back-outline"></i> Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [options]="mapOptions">
+      
+      <ng-container *ngFor="let c of result.clusters">
+        
+        <map-circle 
+          *ngIf="c.effective_radius && c.latitude"
+          [center]="{ lat: c.latitude, lng: c.longitude }"
+          [radius]="c.effective_radius"
+          [options]="c.id === selectedClusterId ? activeCircleOptions : circleOptions"
+          (circleClick)="selectCluster(c)">
+        </map-circle>
+
+        <map-marker
+          *ngIf="c.latitude"
+          [position]="{ lat: c.latitude, lng: c.longitude }"
+          [title]="c.name">
+        </map-marker>
+
+      </ng-container>
+
+    </google-map>
+
+    <div class="map-legend">
+      <div class="legend-item">
+        <span class="dot blue"></span> Defined Cluster
+      </div>
+      <div class="legend-item">
+        <span class="dot red"></span> Selected
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<ng-template #loading>
+  <div class="skeleton-loader">Processing Clustering Results...</div>
+</ng-template>

@@ -1,1 +1,89 @@
-<p>edge works!</p>
+<div class="edge-container" *ngIf="edge; else loading">
+  
+  <div class="info-panel">
+    
+    <header class="panel-header">
+      <div class="badges">
+        <span class="type-badge">
+          <i class="eva eva-trending-up-outline"></i> Pipe Segment
+        </span>
+        <span class="default-badge" *ngIf="edge.is_default">Default Route</span>
+      </div>
+      
+      <h1>{{ edge.name || 'Unnamed Connection' }}</h1>
+      <p class="id-text">Edge ID: #{{ edge.id }}</p>
+    </header>
+
+    <hr class="divider">
+
+    <section class="flow-section">
+      <h3 class="section-label">Connection Flow</h3>
+      
+      <div class="flow-diagram">
+        <div class="node-card start" (click)="navigateToNode(edge.start_node.id)">
+          <span class="label">From (Source)</span>
+          <span class="name">{{ edge.start_node.name || 'Node #' + edge.start_node.id }}</span>
+          <i class="eva eva-external-link-outline icon-link"></i>
+        </div>
+
+        <div class="flow-arrow">
+          <i class="eva eva-arrow-forward-outline"></i>
+          <span class="distance">{{ edge.length | number:'1.0-1' }}m</span>
+        </div>
+
+        <div class="node-card end" (click)="navigateToNode(edge.end_node.id)">
+          <span class="label">To (Target)</span>
+          <span class="name">{{ edge.end_node.name || 'Node #' + edge.end_node.id }}</span>
+          <i class="eva eva-external-link-outline icon-link"></i>
+        </div>
+      </div>
+    </section>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="label">Physical Length</span>
+        <span class="value">{{ edge.length | number }} meters</span>
+      </div>
+      <div class="meta-item" *ngIf="edge.edge_algorithm">
+        <span class="label">Algorithm ID</span>
+        <span class="value">#{{ edge.edge_algorithm }}</span>
+      </div>
+    </div>
+
+    <div class="action-footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-list-outline"></i> Back to Edge List
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [options]="mapOptions">
+      
+      <map-polyline 
+        [path]="polylinePath" 
+        [options]="polylineOptions">
+      </map-polyline>
+
+      <map-marker 
+        *ngIf="polylinePath[0]"
+        [position]="polylinePath[0]" 
+        title="Start Node">
+      </map-marker>
+
+      <map-marker 
+        *ngIf="polylinePath[1]"
+        [position]="polylinePath[1]" 
+        title="End Node">
+      </map-marker>
+
+    </google-map>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="skeleton-loader">Loading Connection Data...</div>
+</ng-template>

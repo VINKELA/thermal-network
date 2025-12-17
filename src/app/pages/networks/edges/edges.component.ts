@@ -33,7 +33,7 @@ settings = {
        title: 'Name',
       type: 'html',
           valuePrepareFunction: (name: string, row: any) => {
-        return `<a href="pages/networks/${row.id}">${name}</a>`;
+        return `<a href="pages/edges/${row.id}">${name}</a>`;
       }
       },
       description: {

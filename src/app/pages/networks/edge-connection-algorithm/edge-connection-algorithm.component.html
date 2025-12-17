@@ -1,0 +1,90 @@
+<div class="conn-wrapper" *ngIf="algorithm; else loading">
+  
+  <div class="info-panel">
+    <header>
+      <span class="badge">Connection Strategy</span>
+      <h1>{{ algorithm.name }}</h1>
+      <p class="desc">{{ algorithm.description || 'No description provided' }}</p>
+      <div class="date">Run on: {{ algorithm.created_at | date:'mediumDate' }}</div>
+    </header>
+
+    <hr class="divider">
+
+    <div class="stats-grid">
+      <div class="stat">
+        <label>Connections</label>
+        <span class="val">{{ edges.length }}</span>
+      </div>
+      <div class="stat" *ngIf="algorithm.total_length">
+        <label>Total Length</label>
+        <span class="val">{{ algorithm.total_length | number:'1.0-0' }} m</span>
+      </div>
+    </div>
+
+    <div class="params-section" *ngIf="algorithm.parameters">
+      <h3>Parameters</h3>
+      <pre>{{ algorithm.parameters | json }}</pre>
+    </div>
+
+    <div class="footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back"></i> Back
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions">
+
+      <map-polyline 
+        *ngFor="let edge of edges"
+        [path]="edge.path" 
+        [options]="selectedItem === edge ? selectedEdgeOptions : edgeOptions"
+        (polylineClick)="selectEdge(edge, lineRef)"
+        #lineRef="mapPolyline">
+      </map-polyline>
+
+      <map-marker 
+        *ngFor="let node of nodes"
+        [position]="{ lat: node.latitude, lng: node.longitude }"
+        [options]="nodeOptions"
+        (mapClick)="selectNode(node, markerRef)"
+        #markerRef="mapMarker">
+      </map-marker>
+
+      <map-info-window>
+        <div class="popup" *ngIf="selectedItem">
+          
+          <div *ngIf="selectedType === 'node'">
+            <span class="tag node">Node</span>
+            <h4>{{ selectedItem.name }}</h4>
+            <div class="sub">{{ selectedItem.node_type }}</div>
+          </div>
+
+          <div *ngIf="selectedType === 'edge'">
+            <span class="tag edge">Connection</span>
+            <h4>Length: {{ selectedItem.length | number:'1.0-2' }} m</h4>
+            <div class="sub">ID: #{{ selectedItem.id }}</div>
+          </div>
+
+        </div>
+      </map-info-window>
+
+    </google-map>
+    
+    <div class="legend">
+      <div class="item"><span class="line edge"></span> Service Line</div>
+      <div class="item"><span class="dot node"></span> Node</div>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="loading">Loading Connection Data...</div>
+</ng-template>

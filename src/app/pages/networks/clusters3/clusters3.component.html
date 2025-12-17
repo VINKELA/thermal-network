@@ -1,0 +1,15 @@
+<div class="heat-root">
+  <google-map height="64vh" width="100%" [center]="center" [zoom]="zoom" #map></google-map>
+
+  <aside class="list-column">
+    <h3>Clusters (Heatmap)</h3>
+    <div *ngIf="loading">Loading...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+    <ul>
+      <li *ngFor="let c of clusters" (click)="onSelectCluster(c)">
+        <div>{{ c.name || ('Cluster ' + c.id) }}</div>
+        <div>Peak: {{ formatKw(c.aggregate_peak_kw) }} • Buildings: {{ c.no_of_buildings ?? 0 }}</div>
+      </li>
+    </ul>
+  </aside>
+</div>

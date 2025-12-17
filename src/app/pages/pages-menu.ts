@@ -8,6 +8,21 @@ export const MENU_ITEMS: NbMenuItem[] = [
     home: true,
   },
    {
+    title: 'Buildings',
+    icon: 'home-outline',
+    link: '/pages/buildings'
+  },
+  {
+    title: 'LoadProfiles',
+    icon: 'thermometer-outline',
+    link: '/pages/load-profiles'
+  },
+   {
+    title: 'Data',
+    icon: 'cloud-upload-outline',
+    link: '/pages/data-upload'
+  },
+   {
     title: 'NETWORKS',
     group: true,
   },
@@ -15,11 +30,6 @@ export const MENU_ITEMS: NbMenuItem[] = [
     title: 'Networks',
     icon: 'wifi-outline',
     link: '/pages/networks',
-    },
-    {
-    title: 'Clusters',
-    icon: 'shuffle-2-outline',
-    link: '/pages/clusters',
     },
     {
     title: 'Nodes',
@@ -31,39 +41,49 @@ export const MENU_ITEMS: NbMenuItem[] = [
     icon: 'shuffle-2-outline',
     link: '/pages/edges',
     },
-    {
-    title: 'Algorithms',
+     {
+    title: 'Clusters',
+    icon: 'pie-chart-outline',
+    link: '/pages/clusters',
+    },
+      {
+    title: 'Cluster Configurations',
+    icon: 'file-text-outline',
+    link: '/pages/cluster-configurations',
+    },
+     {
+    title: 'Edge Generation Algorithms',
     icon: 'settings-2-outline',
-    link: '/pages/algorithms',
+    link: '/pages/edge-algorithms',
     },
     {
-    title: 'Translations',
-    icon: 'wifi-off-outline',
-    link: '/pages/translations',
+    title: 'Edge Connection Algorithms',
+    icon: 'settings-2-outline',
+    link: '/pages/edge-connection-algorithms',
+    },
+    {
+    title: 'Edge Route Traces',
+    icon: 'map-outline',
+    link: '/pages/edge_translations',
     },
     {
     title: 'Routes',
     icon: 'map-outline',
     link: '/pages/routes',
     },
-     {
-    title: 'Control Center',
-    icon: 'settings-2-outline',
-    link: '/pages/iot-dashboard',
-  },
   {
     title: 'NETWORK FEATURES',
     group: true,
-  },
-   {
-    title: 'Buildings',
-    icon: 'home-outline',
-    link: '/pages/buildings',
   },
     {
     title: 'Pipes',
     icon: 'droplet-outline',
     link: '/pages/pipes',
+  },
+  {
+    title: 'Control Center',
+    icon: 'settings-2-outline',
+    link: '/pages/iot-dashboard',
   },
   {
     title: 'Pumps',

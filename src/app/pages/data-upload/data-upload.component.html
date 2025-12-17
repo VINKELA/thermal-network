@@ -1,0 +1,68 @@
+<div class="row">
+  <div class="col-md-12">
+    <nb-card [nbSpinner]="isUploading" nbSpinnerStatus="primary">
+      <nb-card-header>
+        Data Import Tool
+        <span class="subtitle">Supports .csv and .xlsx</span>
+      </nb-card-header>
+
+      <nb-card-body>
+        <nb-tabset fullWidth>
+          
+          <nb-tab tabTitle="Buildings">
+            <div class="upload-container">
+              <div class="instructions">
+                <h6><nb-icon icon="info-outline"></nb-icon> Instructions</h6>
+                <p>Upload a file with columns: <code>latitude</code>, <code>longitude</code>, <code>name</code> (optional).</p>
+              </div>
+
+              <div class="form-group">
+                <label class="label">Assign to Project</label>
+                <nb-select placeholder="Select Project" fullWidth [(selected)]="selectedProjectId">
+                  <nb-option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</nb-option>
+                </nb-select>
+              </div>
+
+              <div class="form-group">
+                <label class="label">Select File</label>
+                <div class="file-drop-area">
+                  <input type="file" (change)="onFileChange($event, 'building')" accept=".csv, .xlsx">
+                  <span *ngIf="buildingFile" class="file-msg">{{ buildingFile.name }}</span>
+                  <span *ngIf="!buildingFile" class="file-msg">Drag file here or click</span>
+                </div>
+              </div>
+
+              <button nbButton status="primary" (click)="uploadBuildings()" [disabled]="!buildingFile || !selectedProjectId">
+                <nb-icon icon="cloud-upload-outline"></nb-icon> Upload Buildings
+              </button>
+            </div>
+          </nb-tab>
+
+          <nb-tab tabTitle="Load Profiles">
+            <div class="upload-container">
+              <div class="instructions">
+                <h6><nb-icon icon="info-outline"></nb-icon> Instructions</h6>
+                <p>Upload a file with columns: <code>start_date</code>, <code>end_date</code>, <code>building_name</code>, <code>heating</code> (optional), <code>cooling</code> (optional).</p>
+                <small class="text-hint">Ensure 'building_name' matches an existing building exactly.</small>
+              </div>
+
+              <div class="form-group">
+                <label class="label">Select File</label>
+                <div class="file-drop-area">
+                  <input type="file" (change)="onFileChange($event, 'profile')" accept=".csv, .xlsx">
+                  <span *ngIf="profileFile" class="file-msg">{{ profileFile.name }}</span>
+                  <span *ngIf="!profileFile" class="file-msg">Drag file here or click</span>
+                </div>
+              </div>
+
+              <button nbButton status="success" (click)="uploadProfiles()" [disabled]="!profileFile">
+                <nb-icon icon="cloud-upload-outline"></nb-icon> Upload Profiles
+              </button>
+            </div>
+          </nb-tab>
+
+        </nb-tabset>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>

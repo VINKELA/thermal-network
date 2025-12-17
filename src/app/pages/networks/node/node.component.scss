@@ -1,0 +1,166 @@
+.node-container {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  min-height: 500px;
+  border: 1px solid #edf1f7;
+  font-family: 'Inter', sans-serif;
+
+  /* CSS Variables for Themes */
+  &.type-consumer { --theme-color: #0ea5e9; --theme-bg: #e0f2fe; } /* Blue */
+  &.type-producer { --theme-color: #10b981; --theme-bg: #d1fae5; } /* Green */
+  &.type-storage  { --theme-color: #8b5cf6; --theme-bg: #ede9fe; } /* Purple */
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 400px;
+  }
+}
+
+/* LEFT PANEL */
+.info-panel {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 50px;
+    background: var(--theme-bg);
+    color: var(--theme-color);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .default-badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #0f172a;
+  }
+  
+  .node-id {
+    color: #94a3b8;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+}
+
+.divider { border: 0; border-top: 1px dashed #e2e8f0; margin: 24px 0; }
+
+/* ASSET CARD (The highlighted box) */
+.asset-section {
+  flex-grow: 1;
+  margin-bottom: 24px;
+
+  .asset-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid var(--theme-color);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+    .card-content {
+      .label { display: block; font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 4px; }
+      .asset-name { margin: 0; font-size: 1.1rem; color: #334155; }
+      .asset-type { font-size: 0.85rem; color: var(--theme-color); font-weight: 500; }
+    }
+
+    .btn-visit {
+      background: none;
+      border: 1px solid var(--theme-color);
+      color: var(--theme-color);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+
+      &:hover {
+        background: var(--theme-color);
+        color: white;
+      }
+    }
+  }
+
+  &.empty .empty-state {
+    text-align: center;
+    padding: 32px;
+    background: #f8fafc;
+    border-radius: 8px;
+    color: #94a3b8;
+    
+    i { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
+    p { margin: 0; font-size: 0.9rem; }
+  }
+}
+
+/* FOOTER */
+.action-footer {
+  margin-top: auto;
+  .btn-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.9rem;
+
+    &:hover { color: #334155; }
+  }
+}
+
+/* MAP PANEL */
+.map-panel {
+  position: relative;
+  background: #0f172a; /* Dark bg for satellite feel */
+
+  .coords-card {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-family: 'Roboto Mono', monospace;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}

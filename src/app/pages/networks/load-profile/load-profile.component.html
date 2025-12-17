@@ -1,0 +1,90 @@
+<div class="row h-100">
+  
+  <div class="col-md-4 col-lg-3 d-flex flex-column h-100">
+    <nb-card class="flex-grow-1" [nbSpinner]="isListLoading" nbSpinnerStatus="primary">
+      <nb-card-header>
+        <div class="subtitle-2">Load Analytics</div>
+      </nb-card-header>
+      
+      <nb-card-body class="p-3 d-flex flex-column">
+        
+        <div class="mb-3">
+          <label class="label">Entity Type</label>
+          <nb-select fullWidth [(selected)]="selectedType" (selectedChange)="onTypeChange($event)">
+            <nb-option value="building">Building</nb-option>
+            <nb-option value="boiler">Boiler</nb-option>
+          </nb-select>
+        </div>
+
+        <div class="mb-3">
+          <label class="label">Target Year</label>
+          <nb-select fullWidth [(selected)]="selectedYear" (selectedChange)="fetchLoadProfile()">
+            <nb-option *ngFor="let y of availableYears" [value]="y">{{ y }}</nb-option>
+          </nb-select>
+        </div>
+
+        <nb-form-field class="mb-3">
+          <nb-icon nbPrefix icon="search-outline" pack="eva"></nb-icon>
+          <input 
+            nbInput 
+            fullWidth 
+            [placeholder]="searchPlaceholder" 
+            [(ngModel)]="searchText" 
+            (keyup)="filterEntities()">
+        </nb-form-field>
+
+        <nb-list class="entity-list flex-grow-1">
+          <nb-list-item *ngIf="filteredEntities.length === 0" class="text-center">
+            <span class="text-hint">No results found.</span>
+          </nb-list-item>
+
+          <nb-list-item 
+            *ngFor="let item of filteredEntities" 
+            (click)="selectEntity(item)"
+            [class.selected]="selectedEntity?.id === item.id"
+            class="cursor-pointer entity-item">
+            
+            <div class="d-flex align-items-center w-100">
+              <div class="icon-container mr-3">
+                 <nb-icon [icon]="selectedType === 'building' ? 'home-outline' : 'layers-outline'" status="basic"></nb-icon>
+              </div>
+              <div class="text-overflow-hidden">
+                <div class="subtitle-2 text-truncate">{{ item.name }}</div>
+                <div class="caption text-hint">ID: {{ item.id }}</div>
+              </div>
+            </div>
+          </nb-list-item>
+        </nb-list>
+
+        <div class="text-center mt-2 caption text-hint" *ngIf="entities.length > filteredEntities.length">
+          Showing top {{ filteredEntities.length }} results
+        </div>
+
+      </nb-card-body>
+    </nb-card>
+  </div>
+
+  <div class="col-md-8 col-lg-9 h-100">
+    <nb-card class="h-100" [nbSpinner]="isChartLoading" nbSpinnerStatus="info" nbSpinnerSize="large">
+      <nb-card-header class="d-flex justify-content-between align-items-center">
+        <div>
+          {{ selectedEntity ? selectedEntity.name : 'Select an Entity' }}
+          <span *ngIf="selectedEntity" class="caption status-primary ml-2">({{ selectedYear }})</span>
+        </div>
+        </nb-card-header>
+
+      <nb-card-body class="chart-body p-0 position-relative">
+        
+        <div *ngIf="!selectedEntity" class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
+          <nb-icon icon="bar-chart-outline" style="font-size: 4rem; color: #e4e9f2;"></nb-icon>
+          <h6 class="text-hint mt-3">Select a building to view load profile</h6>
+        </div>
+
+        <div *ngIf="selectedEntity" class="echarts-container h-100 w-100">
+          <div echarts [options]="echartsOptions" class="echart h-100 w-100"></div>
+        </div>
+
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>

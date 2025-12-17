@@ -1,0 +1,156 @@
+<div class="row h-100">
+  <div class="col-lg-8 col-md-7 h-100">
+    <nb-card class="h-100 map-card">
+      <nb-card-body class="p-0 position-relative">
+        
+        <input #search type="text" class="map-search-box" placeholder="Search Location" />
+        
+        <google-map 
+          #map
+          height="100%" 
+          width="100%" 
+          [center]="center" 
+          [zoom]="zoom" 
+          [options]="mapOptions"
+          (mapClick)="onMapClick($event)">
+          
+          <map-marker 
+            *ngFor="let b of foundBuildings"
+            [position]="{ lat: b.lat, lng: b.lng }"
+            [title]="b.name">
+          </map-marker>
+
+        </google-map>
+      </nb-card-body>
+    </nb-card>
+  </div>
+
+  <div class="col-lg-4 col-md-5 h-100 d-flex flex-column">
+    <nb-card class="flex-grow-1" [nbSpinner]="isSaving">
+      
+      <nb-card-header class="d-flex justify-content-between align-items-center">
+        <label class="label mb-0">Target Project</label>
+        <nb-select fullWidth size="small" placeholder="Select Project" [(selected)]="selectedProjectId" class="ml-2 flex-grow-1">
+          <nb-option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</nb-option>
+        </nb-select>
+      </nb-card-header>
+      
+      <nb-card-body class="d-flex flex-column">
+        
+        <div class="form-group mb-3 border-bottom pb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="subtitle-2">Import Buildings</div>
+            <button nbButton size="tiny" status="danger" ghost (click)="foundBuildings = []" *ngIf="foundBuildings.length">
+              Clear
+            </button>
+          </div>
+          
+          <button nbButton size="small" [status]="isClickMode ? 'warning' : 'primary'" outline (click)="toggleMode()" fullWidth>
+            <nb-icon [icon]="isClickMode ? 'hand-right-outline' : 'scan-outline'"></nb-icon>
+            {{ isClickMode ? 'Click Mode' : 'Scan Mode' }}
+          </button>
+          <small class="text-hint mt-1 d-block text-center">
+            {{ isClickMode ? 'Click any house on the map.' : 'Draw a box to scan area.' }}
+          </small>
+        </div>
+
+        <nb-list class="building-list flex-grow-1">
+          <nb-list-item *ngIf="foundBuildings.length === 0" class="text-center text-hint">
+            <span>No buildings selected.</span>
+          </nb-list-item>
+
+          <nb-list-item *ngFor="let b of foundBuildings; let i = index" class="d-block">
+            
+            <div class="d-flex align-items-start">
+              <nb-checkbox [(checked)]="b.selected" class="mt-1"></nb-checkbox>
+              <div class="ml-2 flex-grow-1 text-overflow-hidden">
+                <div class="subtitle-2 text-truncate" style="max-width: 180px;">{{ b.name }}</div>
+                <div class="caption text-hint">
+                  <span *ngIf="b.type === 'residential'" class="badge badge-success mr-1">RES</span>
+                  {{ b.lat | number:'1.4-4' }}, {{ b.lng | number:'1.4-4' }}
+                </div>
+              </div>
+              <button nbButton ghost status="basic" size="tiny" (click)="removeBuilding(i)">
+                <nb-icon icon="close-outline"></nb-icon>
+              </button>
+            </div>
+
+            <div class="mt-2 pl-4">
+               <div class="d-flex align-items-center">
+                 <span class="caption mr-2" 
+                       [class.text-success]="b.wasteHeatSource" 
+                       [class.text-hint]="!b.wasteHeatSource"
+                       style="white-space: nowrap; font-size: 0.75rem;">
+                   <nb-icon icon="flash-outline" style="font-size: 0.8rem;"></nb-icon>
+                   {{ b.wasteHeatSource ? 'Detected:' : 'Source:' }}
+                 </span>
+ 
+                 <nb-select size="tiny" 
+                            [(selected)]="b.wasteHeatSource" 
+                            placeholder="None" 
+                            fullWidth 
+                            class="flex-grow-1">
+                   <nb-option [value]="null">None</nb-option>
+                   <nb-option *ngFor="let opt of sourceOptions" [value]="opt.value">
+                     {{ opt.label }}
+                   </nb-option>
+                 </nb-select>
+               </div>
+            </div>
+          </nb-list-item>
+        </nb-list>
+
+      </nb-card-body>
+
+      <nb-card-footer style="overflow-y: auto; max-height: 45vh;">
+        
+        <button nbButton fullWidth status="primary" 
+                [disabled]="!selectedProjectId || foundBuildings.length === 0" 
+                (click)="saveBuildings()">
+          Save Selected ({{ foundBuildings.length }})
+        </button>
+
+        <div class="mt-4 border-top pt-3">
+          <label class="label text-hint mb-2">Simulation Tools</label>
+          
+          <div class="form-group row">
+            <label class="col-4 col-form-label caption">Target Year</label>
+            <div class="col-8">
+              <input nbInput fullWidth fieldSize="small" type="number" [(ngModel)]="selectedYear">
+            </div>
+          </div>
+
+          <div class="mb-3 p-2 bg-light rounded border">
+            <div class="form-group mb-2">
+              <nb-select fullWidth size="small" [(selected)]="selectedModel" placeholder="Select Model">
+                <nb-option *ngFor="let m of availableModels" [value]="m.id">{{ m.name }}</nb-option>
+              </nb-select>
+            </div>
+            <button nbButton fullWidth size="small" status="info" outline 
+                    [disabled]="!selectedProjectId || !selectedModel || !selectedYear" 
+                    [nbSpinner]="isCalculating"
+                    (click)="generateProfiles()">
+              <nb-icon icon="home-outline"></nb-icon> Generate Heating Demand
+            </button>
+          </div>
+
+          <div class="p-2 bg-light rounded border">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="caption text-success font-weight-bold">
+                <nb-icon icon="flash-outline"></nb-icon> Waste Heat Supply
+              </span>
+              <span class="caption text-hint" style="font-size: 0.7rem;">(Albert 2025)</span>
+            </div>
+            <button nbButton fullWidth size="small" status="success" outline 
+                    [disabled]="!selectedProjectId || !selectedYear" 
+                    [nbSpinner]="isCalculating"
+                    (click)="generateWasteHeat()">
+              <nb-icon icon="activity-outline"></nb-icon> Generate Supply Profile
+            </button>
+          </div>
+
+        </div>
+      </nb-card-footer>
+    </nb-card>
+  </div>
+</div>

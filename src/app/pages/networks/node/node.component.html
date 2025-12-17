@@ -1,1 +1,71 @@
-<p>node works!</p>
+<div class="node-container" *ngIf="node" [ngClass]="typeConfig[node.node_type]?.class">
+  
+  <div class="info-panel">
+    
+    <header class="panel-header">
+      <div class="badge-row">
+        <span class="type-badge">
+          <i [class]="'eva eva-' + typeConfig[node.node_type]?.icon"></i>
+          {{ typeConfig[node.node_type]?.label }}
+        </span>
+        <span class="default-badge" *ngIf="node.is_default">Default Node</span>
+      </div>
+
+      <h1>{{ node.name || 'Unnamed Node' }}</h1>
+      <p class="node-id">System ID: #{{ node.id }}</p>
+    </header>
+
+    <hr class="divider">
+
+    <section class="asset-section" *ngIf="activeAsset as asset">
+      <div class="asset-card">
+        <div class="card-content">
+          <span class="label">Connected Infrastructure</span>
+          <h3 class="asset-name">{{ asset.name }}</h3>
+          <span class="asset-type">{{ asset.type }}</span>
+        </div>
+        <button class="btn-visit" (click)="goToAsset(asset.route, asset.id)">
+          View Details →
+        </button>
+      </div>
+    </section>
+
+
+    <div class="meta-grid">
+      <div class="meta-item" *ngIf="node.cluster">
+        <span class="label">Cluster ID</span>
+        <span class="value"> #{{ node.cluster }}</span>
+      </div>
+    </div>
+
+    <div class="action-footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back-outline"></i> Back to Nodes
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions">
+      
+      <map-marker 
+        *ngIf="node.latitude && node.longitude"
+        [position]="center"
+        [title]="node.name">
+      </map-marker>
+
+    </google-map>
+
+    <div class="coords-card">
+      <i class="eva eva-pin-outline"></i>
+      <span *ngIf="node.latitude">{{ node.latitude | number:'1.5-5' }}, {{ node.longitude | number:'1.5-5' }}</span>
+      <span *ngIf="!node.latitude">No Geolocation</span>
+    </div>
+  </div>
+
+</div>

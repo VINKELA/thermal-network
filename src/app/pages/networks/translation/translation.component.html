@@ -1,9 +1,100 @@
-<nb-card>
-  <nb-card-header>
-   Translation List
-  </nb-card-header>
-  <nb-card-body>
-    <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)" (editConfirm)="onEditConfirm($event)" (createConfirm)="onCreateConfirm($event)">>
-    </ng2-smart-table>
-  </nb-card-body>
-</nb-card>
+<div class="trans-wrapper" *ngIf="translation; else loading">
+
+  <div class="info-panel">
+    <header>
+      <span class="badge">Route Translation</span>
+      <h1>{{ translation.name }}</h1>
+      
+      <div class="meta-row">
+        <div class="mode-tag">
+          <i class="eva" 
+             [class.eva-person-outline]="translation.translation === 'walking'"
+             [class.eva-car-outline]="translation.translation === 'driving'"
+             [class.eva-bicycle-outline]="translation.translation === 'bicycling'">
+          </i>
+          {{ translation.translation | titlecase }}
+        </div>
+        
+        <span *ngIf="translation.is_default" class="default-tag">Default</span>
+      </div>
+      
+      <p class="desc">{{ translation.description }}</p>
+    </header>
+
+    <hr class="divider">
+
+    <div class="stats-grid">
+      <div class="stat">
+        <label>Total Distance</label>
+        <span class="val">{{ translation.total_edge_length | number:'1.0-0' }} m</span>
+      </div>
+      <div class="stat">
+        <label>Routes</label>
+        <span class="val">{{ visualRoutes.length }}</span>
+      </div>
+    </div>
+    
+    <div class="legend-box">
+      <h4>Map Legend</h4>
+      <div class="l-item"><span class="line supply"></span> Supply Route</div>
+      <div class="l-item"><span class="line return"></span> Return Route</div>
+      <div class="l-item"><span class="dot node"></span> Node</div>
+    </div>
+
+    <div class="footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back"></i> Back
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions">
+
+      <map-polyline 
+        *ngFor="let r of visualRoutes"
+        [path]="r.decodedPath"
+        [options]="selectedRoute === r ? selectedOptions : (r.route_type === 'supply' ? supplyOptions : returnOptions)"
+        (polylineClick)="selectRoute(r, lineRef)"
+        #lineRef="mapPolyline">
+      </map-polyline>
+
+      <map-marker 
+        *ngFor="let node of nodes"
+        [position]="{ lat: node.latitude, lng: node.longitude }"
+        [options]="nodeOptions"
+        [title]="node.name || 'Node'">
+      </map-marker>
+
+      <map-info-window>
+        <div class="popup" *ngIf="selectedRoute">
+          <span class="tag" [class.supply]="selectedRoute.route_type === 'supply'" [class.return]="selectedRoute.route_type === 'return'">
+            {{ selectedRoute.route_type | titlecase }}
+          </span>
+          
+          <div class="row">
+            <i class="eva eva-navigation-2-outline"></i>
+            <strong>{{ selectedRoute.distance_meters | number:'1.0-0' }} m</strong>
+          </div>
+          
+          <div class="row">
+            <i class="eva eva-clock-outline"></i>
+            <strong>{{ selectedRoute.duration_seconds }} sec</strong>
+          </div>
+          
+          <div class="sub">ID: #{{ selectedRoute.id }}</div>
+        </div>
+      </map-info-window>
+
+    </google-map>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="loading">Loading Routes...</div>
+</ng-template>

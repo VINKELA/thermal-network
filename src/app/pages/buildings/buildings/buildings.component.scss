@@ -1,0 +1,86 @@
+.map-wrapper {
+  position: relative;
+  height: 600px;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: #edf1f7; /* Background while map loads */
+}
+
+/* SEARCH OVERLAY */
+.search-overlay {
+  position: absolute;
+  top: 10px;
+  left: 200px;
+  z-index: 100; /* High z-index is crucial for Google Maps */
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.2s;
+
+  &:focus-within {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    transform: translateY(-1px);
+  }
+
+  .search-icon {
+    margin-right: 12px;
+    font-size: 1.1rem;
+    opacity: 0.5;
+  }
+
+  input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.95rem;
+    color: #222b45;
+    font-family: 'Inter', sans-serif;
+
+    &::placeholder {
+      color: #8f9bb3;
+    }
+  }
+}
+
+/* RESULTS BADGE */
+.results-badge {
+  align-self: flex-start;
+  background: rgba(34, 43, 69, 0.9);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  animation: slideIn 0.3s ease-out;
+
+  &.error {
+    background: rgba(255, 61, 113, 0.9); /* Red for no results */
+  }
+}
+
+/* SIMPLE SPINNER */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #edf1f7;
+  border-top: 2px solid #3366ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }

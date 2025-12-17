@@ -1,19 +1,89 @@
-<div class="map-container">
-  <div id="map" [style.height]="height" [style.width]="width"></div>
-  
-  <div class="map-controls" *ngIf="routes.length > 0">
-    <button mat-mini-fab (click)="showRoads = !showRoads" 
-            [matTooltip]="showRoads ? 'Hide roads' : 'Show roads'">
-      <mat-icon>{{ showRoads ? 'directions' : 'map' }}</mat-icon>
-    </button>
-    
-    <button mat-mini-fab (click)="showMarkers = !showMarkers"
-            [matTooltip]="showMarkers ? 'Hide markers' : 'Show markers'">
-      <mat-icon>{{ showMarkers ? 'place' : 'place_outline' }}</mat-icon>
-    </button>
-    
-    <button mat-mini-fab (click)="fitMapToBounds()" matTooltip="Fit to routes">
-      <mat-icon>zoom_out_map</mat-icon>
-    </button>
+<div class="route-wrapper" *ngIf="routeData; else loading">
+
+  <div class="info-panel">
+    <header>
+      <span class="badge">Single Route Inspection</span>
+      <h1>Route #{{ routeData.id }}</h1>
+      
+      <div class="meta-row">
+        <span class="type-tag" 
+              [class.supply]="routeData.route_type === 'supply'"
+              [class.return]="routeData.route_type === 'return'">
+          {{ routeData.route_type | titlecase }}
+        </span>
+      </div>
+    </header>
+
+    <hr class="divider">
+
+    <div class="stats-grid">
+      <div class="stat">
+        <label>Real Distance</label>
+        <span class="val">{{ routeData.distance_meters | number:'1.0-0' }} m</span>
+      </div>
+      <div class="stat">
+        <label>Est. Duration</label>
+        <span class="val">{{ routeData.duration_seconds }} sec</span>
+      </div>
+      <div class="stat" *ngIf="routeData.edge">
+        <label>Theoretical Edge</label>
+        <span class="val">{{ routeData.edge.length | number:'1.0-0' }} m</span>
+      </div>
+    </div>
+
+    <div class="node-context" *ngIf="startNode && endNode">
+      <h3>Connection</h3>
+      <div class="flow-row">
+        <div class="node-box">
+          <label>From</label>
+          <strong>{{ startNode.name }}</strong>
+        </div>
+        <i class="eva eva-arrow-forward-outline"></i>
+        <div class="node-box">
+          <label>To</label>
+          <strong>{{ endNode.name }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <button class="btn-back" (click)="goBack()">
+        <i class="eva eva-arrow-back"></i> Back to Translation
+      </button>
+    </div>
+  </div>
+
+  <div class="map-panel">
+    <google-map 
+      height="100%" 
+      width="100%" 
+      [center]="center" 
+      [zoom]="zoom"
+      [options]="mapOptions">
+
+      <map-polyline 
+        [path]="decodedPath"
+        [options]="lineOptions">
+      </map-polyline>
+
+      <map-marker 
+        *ngIf="startNode"
+        [position]="{ lat: startNode.latitude, lng: startNode.longitude }"
+        [options]="nodeOptions"
+        [title]="'Start: ' + startNode.name">
+      </map-marker>
+
+      <map-marker 
+        *ngIf="endNode"
+        [position]="{ lat: endNode.latitude, lng: endNode.longitude }"
+        [options]="nodeOptions"
+        [title]="'End: ' + endNode.name">
+      </map-marker>
+
+    </google-map>
   </div>
 </div>
+
+<ng-template #loading>
+  <div class="loading">Loading Route Data...</div>
+</ng-template>

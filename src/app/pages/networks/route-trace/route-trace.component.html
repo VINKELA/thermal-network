@@ -1,0 +1,131 @@
+<!-- network-visualization.component.html -->
+<div class="network-container">
+  <!-- network-visualization.component.html -->
+<!-- src/app/components/cascade-dropdown/cascade-dropdown.component.html -->
+
+  <div class="header">
+    <h3 *ngIf="networkData">{{ networkData?.network?.name }}</h3>
+    <div class="dropdown-container row">
+  <!-- Primary Dropdown -->
+  <div class="dropdown-group col">
+    <label for="primarySelect">Routing Algorithm:</label>
+    <select 
+      id="primarySelect" 
+      [(ngModel)]="selectedPrimary" 
+      (ngModelChange)="onPrimaryChange($event)"
+      class="form-control"
+    >
+      <option *ngFor="let option of primaryOptions" [value]="option.id">
+        {{ option.name }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Secondary Dropdown -->
+  <div class="dropdown-group col">
+    <label for="secondarySelect">Route Translations:</label>
+    <select 
+      id="secondarySelect" 
+      [(ngModel)]="selectedSecondary" 
+      (ngModelChange)="onSecondaryChange($event)"
+      class="form-control"
+    >
+      <option *ngFor="let option of secondaryOptions" [value]="option.id">
+        {{ option.name }}
+      </option>
+    </select>
+  </div>
+</div>
+    <div class="stats" *ngIf="networkData">
+      <div class="stat-item">
+        <span class="stat-value">{{ networkData?.statistics?.total_routes }}</span>
+        <span class="stat-label">Routes</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ networkData?.statistics?.total_nodes }}</span>
+        <span class="stat-label">Nodes</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ (networkData?.statistics?.total_distance / 1000).toFixed(1) }} km</span>
+        <span class="stat-label">Total Distance</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="map-container">
+      <google-map 
+        [width]="'100%'" 
+        [height]="'100%'"
+        [center]="center"
+        [zoom]="zoom"
+        [options]="mapOptions">
+        
+        <!-- Node markers -->
+        <map-marker 
+          *ngFor="let marker of markers"
+          [position]="marker.position"
+          [title]="marker.title"
+          [options]="marker.options"
+          (mapClick)="onNodeClick(marker.nodeData)">
+          
+          <map-info-window *ngIf="selectedNode?.id === marker.nodeData.id">
+            <div class="info-window">
+              <h3>{{ marker.nodeData.name }}</h3>
+              <p>Type: {{ marker.nodeData.node_type }}</p>
+              <p>Lat: {{ marker.position.lat | number:'1.4-4' }}</p>
+              <p>Lng: {{ marker.position.lng | number:'1.4-4' }}</p>
+            </div>
+          </map-info-window>
+        </map-marker>
+        
+        <!-- Route polylines -->
+        <map-polyline 
+          *ngFor="let polyline of polylines"
+          [path]="polyline.path"
+          [options]="{
+            strokeColor: polyline.strokeColor,
+            strokeOpacity: polyline.strokeOpacity,
+            strokeWeight: polyline.strokeWeight,
+            clickable: true,
+            zIndex: 1,
+            title: polyline.name,
+            routeData: polyline.routeData,
+            name: polyline.name,
+            draggable: true
+
+
+
+          }"
+          (mapClick)="onRouteClick(polyline.routeData)">
+        </map-polyline>
+      </google-map>
+    </div>
+    
+    <div class="sidebar">
+      <div class="nodes-list">
+        <h3>Nodes</h3>
+        <div class="node-item" 
+             *ngFor="let node of networkData?.nodes"
+             [class.active]="selectedNode?.id === node.id"
+             (click)="onNodeClick(node)">
+          <div class="node-color" [style.background]="getNodeColor(node.node_type)"></div>
+          <div class="node-info">
+            <span class="node-name">{{ node.name }}</span>
+            <span class="node-type">{{ node.node_type }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" *ngIf="loading">
+  <mat-spinner diameter="50"></mat-spinner>
+</div>
+
+<div class="error-message" *ngIf="error">
+  {{ error }}
+  <button mat-button (click)="loadNetworkData()">Retry</button>
+</div>

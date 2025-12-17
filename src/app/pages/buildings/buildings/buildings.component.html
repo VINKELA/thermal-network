@@ -1,1 +1,38 @@
-<p>buildings works!</p>
+<div class="map-wrapper">
+  
+  <div class="search-overlay">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Search by name, type, or area..." 
+        (input)="onSearch($event)">
+      
+      <div class="spinner" *ngIf="isLoading"></div>
+    </div>
+
+    <div class="results-badge" *ngIf="!isLoading && buildings.length > 0">
+      Found {{ buildings.length }} buildings
+    </div>
+    
+    <div class="results-badge error" *ngIf="!isLoading && buildings.length === 0">
+      No buildings found
+    </div>
+  </div>
+
+  <google-map 
+    [center]="center" 
+    [zoom]="zoom" 
+    [options]="mapOptions"
+    height="600px" 
+    width="100%">
+    
+    <map-marker 
+      *ngFor="let building of buildings"
+      [position]="{ lat: building.latitude, lng: building.longitude }"
+      [title]="building.name"
+      (mapClick)="openBuildingDetails(building.id)">
+    </map-marker>
+
+  </google-map>
+</div>
