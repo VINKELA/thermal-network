@@ -1,0 +1,145 @@
+// Container that holds everything
+.marker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(1);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  &:hover {
+    transform: scale(1.2);
+    z-index: 999; // Pop to front
+    .label { opacity: 1; transform: translateY(0); }
+  }
+}
+
+// The Visual Circle
+.icon-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  
+  i {
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
+
+// Color coding based on type
+.producer .icon-badge {
+  background: #00d68f;
+  border-color: #ffffff;
+  color: white;
+}
+
+.consumer .icon-badge {
+  background: #ff3d71;
+  border-color: #ffffff;
+  color: white;
+}
+
+.storage .icon-badge {
+  background: #aa00ff;
+  border-color: #ffffff;
+  color: white;
+}
+
+// The Floating Label (Tooltip)
+.label {
+  position: absolute;
+  top: -25px;
+  background: rgba(34, 43, 69, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0; // Hidden by default
+  transform: translateY(5px);
+  transition: all 0.2s ease;
+}
+
+// Status Dot (e.g., Gold rim equivalent)
+.status-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background: #ffd700; // Gold
+  border: 2px solid white;
+  border-radius: 50%;
+}
+/* Ensure the host element itself has no layout impact but is positioned */
+:host {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.marker-wrapper {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  /* Hover Effect */
+  transition: transform 0.2s;
+  &:hover {
+    transform: scale(1.2);
+    z-index: 1000;
+    .marker-label { opacity: 1; top: -28px; }
+  }
+}
+
+.marker-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+
+  i { font-size: 18px; font-weight: bold; }
+}
+
+/* Colors based on Node Type (added via [class]="node.node_type") */
+.producer .marker-badge { background: #00d68f; border-color: #fff; color: white; }
+.consumer .marker-badge { background: #ff3d71; border-color: #fff; color: white; }
+.storage  .marker-badge { background: #aa00ff; border-color: #fff; color: white; }
+.cluster  .marker-badge { background: #3366ff; border-color: #fff; color: white; }
+
+.marker-label {
+  position: absolute;
+  top: -15px;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 10px; height: 10px;
+  background: #ffd700;
+  border: 2px solid white;
+  border-radius: 50%;
+}

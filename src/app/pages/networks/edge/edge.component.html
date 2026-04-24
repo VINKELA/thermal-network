@@ -71,13 +71,15 @@
       <map-marker 
         *ngIf="polylinePath[0]"
         [position]="polylinePath[0]" 
-        title="Start Node">
+        title="Start Node"
+        [options]="edge.start_node | thermalMarker">
       </map-marker>
 
       <map-marker 
         *ngIf="polylinePath[1]"
         [position]="polylinePath[1]" 
-        title="End Node">
+        title="End Node"
+        [options]="edge.end_node | thermalMarker">
       </map-marker>
 
     </google-map>

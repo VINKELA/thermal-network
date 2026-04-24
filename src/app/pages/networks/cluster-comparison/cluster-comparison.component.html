@@ -1,0 +1,100 @@
+<div class="row h-100">
+  
+  <div class="col-md-3 h-100">
+    <nb-card class="h-100 d-flex flex-column">
+      <nb-card-header>
+        <div class="subtitle-2">Compare Clusters</div>
+        <nb-form-field class="mt-2">
+          <nb-icon nbPrefix icon="search-outline" pack="eva"></nb-icon>
+          <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchText" (keyup)="onSearchInput()">
+        </nb-form-field>
+      </nb-card-header>
+      
+      <nb-list class="scrollable-list flex-grow-1" [nbSpinner]="isLoadingList">
+        <nb-list-item *ngFor="let cluster of allClusters">
+          <div class="d-flex align-items-center w-100">
+            <nb-checkbox 
+              class="mr-3"
+              [checked]="selectedIds.includes(cluster.id)"
+              (checkedChange)="toggleSelection(cluster.id)"
+              [disabled]="!selectedIds.includes(cluster.id) && selectedIds.length >= 5">
+            </nb-checkbox>
+            <div>
+              <div class="subtitle-2">{{ cluster.name }}</div>
+              <div class="caption text-hint">Buildings: {{ cluster.no_of_buildings || 0 }}</div>
+            </div>
+          </div>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
+  </div>
+
+  <div class="col-md-9 h-100 d-flex flex-column">
+    
+    <nb-card class="flex-grow-1 mb-3" style="min-height: 50%;">
+      <nb-card-header class="d-flex justify-content-between align-items-center">
+        <div>
+          <nb-icon icon="map-outline" class="mr-2"></nb-icon> Cluster Geography
+        </div>
+        
+        <div class="d-flex align-items-center" style="font-size: 0.75rem;">
+          <div *ngFor="let c of comparisonData" class="mr-3 d-flex align-items-center">
+            <span class="dot" [style.background-color]="c.uiColor"></span> 
+            <b>{{ c.name }}</b>
+          </div>
+          <div class="border-left pl-3 ml-2 text-hint">
+            <span class="mr-2">▲ Arrow = Center</span>
+            <span>• Circle = Building</span>
+          </div>
+        </div>
+      </nb-card-header>
+      
+      <nb-card-body class="p-0 position-relative">
+        <google-map 
+          *ngIf="isApiLoaded"
+          height="100%" width="100%" 
+          [center]="center" [zoom]="10" [options]="mapOptions">
+          
+          <ng-container *ngFor="let c of comparisonData">
+            <map-marker 
+              *ngIf="c.latitude && c.longitude"
+              [position]="{ lat: c.latitude, lng: c.longitude }"
+              [options]="getMarkerOptions(c.uiColor, true)">
+            </map-marker>
+
+            <map-marker 
+              *ngFor="let b of c.buildings"
+              [position]="{ lat: b.latitude, lng: b.longitude }"
+              [options]="getMarkerOptions(c.uiColor, false)">
+            </map-marker>
+          </ng-container>
+        </google-map>
+      </nb-card-body>
+    </nb-card>
+
+    <div class="row" style="height: 40%;">
+      
+      <div class="col-md-8 h-100">
+        <nb-card class="h-100">
+          <nb-card-header>Demand Profile (Heating vs Cooling)</nb-card-header>
+          <nb-card-body>
+             <div *ngIf="comparisonData.length > 0" echarts [options]="demandChartOption" class="h-100 w-100"></div>
+             <div *ngIf="comparisonData.length === 0" class="empty-state">Select clusters to compare</div>
+          </nb-card-body>
+        </nb-card>
+      </div>
+
+      <div class="col-md-4 h-100">
+        <nb-card class="h-100">
+          <nb-card-header>Cluster Density</nb-card-header>
+          <nb-card-body>
+             <div *ngIf="comparisonData.length > 0" echarts [options]="buildingCountChartOption" class="h-100 w-100"></div>
+             <div *ngIf="comparisonData.length === 0" class="empty-state">No Data</div>
+          </nb-card-body>
+        </nb-card>
+      </div>
+
+    </div>
+
+  </div>
+</div>

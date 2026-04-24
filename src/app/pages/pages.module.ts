@@ -19,6 +19,8 @@ import { BuildingsModule } from './buildings/buildings.module';
 import { DataUploadComponent } from './data-upload/data-upload.component';
 import { MapImporterComponent } from './map-importer/map-importer.component';
 import { FormsModule } from '@angular/forms';
+import { BuildingUploadComponent } from './building-upload/building-upload.component';
+import { NodeMarkerComponent } from './node-marker/node-marker.component';
 @NgModule({
   imports: [
     PagesRoutingModule,
@@ -54,8 +56,9 @@ import { FormsModule } from '@angular/forms';
     CountriesComponent,
     ProvinceComponent,
     DataUploadComponent,
-    MapImporterComponent
-
+    MapImporterComponent,
+    BuildingUploadComponent,
+    NodeMarkerComponent
   ],
 })
 export class PagesModule {

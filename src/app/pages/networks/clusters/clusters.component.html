@@ -1,7 +1,14 @@
 <nb-card>
-  <nb-card-header>
-   ClusterList
+  <nb-card-header class="d-flex justify-content-between align-items-center">
+    <h3>Clusters</h3>
+    
+    <div class="header-actions">
+      <button nbButton size="small" status="info" (click)="goToComparison()">
+        <nb-icon icon="bar-chart-2-outline"></nb-icon> Compare Clusters
+      </button>
+    </div>
   </nb-card-header>
+
   <nb-card-body>
     <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)" (editConfirm)="onEditConfirm($event)" (createConfirm)="onCreateConfirm($event)">>
     </ng2-smart-table>

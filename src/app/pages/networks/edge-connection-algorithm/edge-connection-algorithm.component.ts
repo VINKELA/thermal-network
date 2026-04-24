@@ -28,7 +28,7 @@ export class EdgeConnectionAlgorithmComponent {
   selectedType: 'node' | 'edge' | null = null;
 
   mapOptions: google.maps.MapOptions = {
-    disableDefaultUI: true,
+    disableDefaultUI: false,
     zoomControl: true,
     styles: [{ featureType: 'poi', stylers: [{ visibility: 'off' }] }]
   };
@@ -36,7 +36,7 @@ export class EdgeConnectionAlgorithmComponent {
   // STYLES
   // We use Teal/Green for connection lines to distinguish from main network
   edgeOptions: google.maps.PolylineOptions = {
-    strokeColor: '#00d68f', 
+    strokeColor: '#d6000eff', 
     strokeOpacity: 0.8,
     strokeWeight: 2,
     clickable: true

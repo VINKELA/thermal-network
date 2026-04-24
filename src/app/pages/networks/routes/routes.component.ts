@@ -1,6 +1,9 @@
 import { Component, Inject } from '@angular/core';
-import { LocalDataSource } from 'ng2-smart-table';
+import { Router, ActivatedRoute } from '@angular/router';
+import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { RestApiService } from '../../../@core/utils/rest-api.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ngx-routes',
@@ -47,16 +50,31 @@ settings = {
 
   source: LocalDataSource = new LocalDataSource();
 
-  constructor(@Inject(RestApiService) private api: RestApiService) {
-    this.api.get(this.url)
-    .subscribe((data: any) => 
-      {
-        const flattened = data.results.map(item => ({
-        ...item,
-      }));            
-      this.source.load(flattened);
-      })
-  }
+    constructor(
+      @Inject(RestApiService) private api: RestApiService, 
+      private http: HttpClient, // ServerDataSource needs raw HttpClient usually
+      private router: Router,
+      private route: ActivatedRoute
+    ) {
+    }
+  
+    ngOnInit() {
+      // 2. Initialize the ServerDataSource with configuration
+      this.source = new ServerDataSource(this.http, {
+        endPoint: environment.appUrl + '/' + this.url, // Full URL required here
+        
+        // Map the "page" query parameter
+        pagerPageKey: 'page', 
+        
+        // If you want sorting/filtering to trigger server calls:
+        sortFieldKey: 'ordering', 
+        pagerLimitKey: 'limit', // Only if your API supports dynamic page size
+  
+        // 3. Map the response: 'results' is your data array, 'count' is total
+        dataKey: 'results', 
+        totalKey: 'count',
+      });
+    }
 
   onDeleteConfirm(event): void {
     if (window.confirm('Are you sure you want to delete?')) {
@@ -99,4 +117,8 @@ onCreateConfirm(event: any): void {
     event.confirm.reject();
   }
 }
+goToComparison() {
+      this.router.navigate(['compare'], { relativeTo: this.route });
+
+  }
 }

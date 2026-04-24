@@ -1,6 +1,12 @@
 <nb-card>
-  <nb-card-header>
-   Translation List
+  <nb-card-header class="d-flex justify-content-between align-items-center">
+    <h3>Edge Algorithms</h3>
+    
+    <div class="header-actions">
+      <button nbButton size="small" status="info" (click)="goToComparison()">
+        <nb-icon icon="bar-chart-2-outline"></nb-icon> Compare Edge Algorithms
+      </button>
+    </div>
   </nb-card-header>
   <nb-card-body>
     <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)" (editConfirm)="onEditConfirm($event)" (createConfirm)="onCreateConfirm($event)">>

@@ -1,8 +1,10 @@
 import { Component, Inject, ViewChild } from '@angular/core';
-import { LocalDataSource } from 'ng2-smart-table';
+import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { RestApiService } from '../../../@core/utils/rest-api.service';
 import { GoogleMap } from '@angular/google-maps';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 
 @Component({
@@ -40,28 +42,64 @@ settings = {
         return `<a href="pages/${this.link}/${row.id}">${name}</a>`;
       }
       },
-      node_type: {
+      type: {
         title: 'Type',
         type: 'string',
         
       },
+      no_of_buildings: {
+        title: 'No. of Buildings',
+        type: 'number',
+        
+      },
+      heating_demand: {
+        title: 'Heating Demand (kWh)',
+        type: 'number',
+        
+      },
+      cooling_demand: {
+        title: 'Cooling Demand (kWh)',
+        type: 'number',
+        
+      },
+      network_name: {
+        title: 'Network',
+        type: 'html',
+          valuePrepareFunction: (network_name: string, row: any) => {
+        return `<a href="pages/networks/${row.network_id}">${network_name}</a>`;
+      }
+      },  
       
     },
   };
 
   source: LocalDataSource = new LocalDataSource();
 
-  constructor(@Inject(RestApiService) private api: RestApiService) {
-    this.api.get(this.url)
-    .subscribe((data: any) => 
-      {
-        const flattened = data.results.map(item => ({
-        ...item,
-      }));            
-      this.source.load(flattened);
-      })
-  }
-
+  constructor(
+      @Inject(RestApiService) private api: RestApiService, 
+      private http: HttpClient, // ServerDataSource needs raw HttpClient usually
+      private router: Router,
+      private route: ActivatedRoute
+    ) {
+    }
+  
+    ngOnInit() {
+      // 2. Initialize the ServerDataSource with configuration
+      this.source = new ServerDataSource(this.http, {
+        endPoint: environment.appUrl + '/' + this.url, // Full URL required here
+        
+        // Map the "page" query parameter
+        pagerPageKey: 'page', 
+        
+        // If you want sorting/filtering to trigger server calls:
+        sortFieldKey: 'ordering', 
+        pagerLimitKey: 'limit', // Only if your API supports dynamic page size
+  
+        // 3. Map the response: 'results' is your data array, 'count' is total
+        dataKey: 'results', 
+        totalKey: 'count',
+      });
+    }
   onDeleteConfirm(event): void {
     if (window.confirm('Are you sure you want to delete?')) {
       console.log("Deleting Network with ID:", event.data.id);
@@ -102,4 +140,10 @@ onCreateConfirm(event: any): void {
   } else {
     event.confirm.reject();
   }
-}}
+}
+goToComparison() {
+    // Navigate relative to the current route
+    this.router.navigate(['compare'], { relativeTo: this.route });
+  }
+
+}

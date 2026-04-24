@@ -1,0 +1,136 @@
+<div class="row h-100">
+  
+  <div class="col-md-3 h-100">
+    <nb-card class="h-100 d-flex flex-column">
+      <nb-card-header>
+        <div class="subtitle-2">Select Edges</div>
+        <div class="caption text-hint mt-1">Select up to 6 items</div>
+        <nb-form-field class="mt-2">
+          <nb-icon nbPrefix icon="search-outline" pack="eva"></nb-icon>
+          <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchText" (keyup)="onSearchInput()">
+        </nb-form-field>
+      </nb-card-header>
+      
+      <nb-list class="scrollable-list flex-grow-1" [nbSpinner]="isLoadingList">
+        <nb-list-item *ngFor="let edge of edgeList">
+          <div class="d-flex align-items-center w-100 clickable" (click)="toggleSelection(edge.id!)">
+            <nb-checkbox 
+              class="mr-3"
+              [checked]="selectedIds.includes(edge.id!)"
+              (checkedChange)="toggleSelection(edge.id!)"
+              [disabled]="!selectedIds.includes(edge.id!) && selectedIds.length >= 6">
+            </nb-checkbox>
+            <div class="overflow-hidden">
+              <div class="subtitle-2 text-truncate">{{ edge.name || 'Unnamed Edge' }}</div>
+              <div class="caption text-hint">ID: {{ edge.id }}</div>
+            </div>
+            <ng-container *ngFor="let sel of comparisonData">
+               <div *ngIf="sel.id === edge.id" class="ml-auto dot-badge" [style.background]="sel.uiColor"></div>
+            </ng-container>
+          </div>
+        </nb-list-item>
+        <nb-list-item *ngIf="edgeList.length === 0 && !isLoadingList">
+            <span class="text-hint">No edges found.</span>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
+  </div>
+
+  <div class="col-md-9 h-100 d-flex flex-column" [nbSpinner]="isLoadingCompare">
+    
+    <ng-container *ngIf="comparisonData.length > 0">
+      
+      <div class="row mb-3" style="min-height: 450px;">
+        
+        <div class="col-md-8 h-100">
+          <nb-card class="h-100">
+            <nb-card-header class="d-flex justify-content-between align-items-center py-2" style="height: 50px;">
+              <span><nb-icon icon="map-outline" class="mr-2"></nb-icon> Spatial View</span>
+              <div class="d-flex flex-wrap justify-content-end" style="font-size: 0.75rem;">
+                <div *ngFor="let item of comparisonData" class="ml-3 d-flex align-items-center">
+                  <span class="dot mr-1" [style.background-color]="item.uiColor"></span> 
+                  <span class="text-truncate" style="max-width: 80px;">{{ item.name }}</span>
+                </div>
+              </div>
+            </nb-card-header>
+            
+            <nb-card-body class="p-0" style="overflow: hidden;">
+               
+               <div *ngIf="!isApiLoaded" class="p-4 text-center text-danger">
+                 Google Maps API not loaded.
+               </div>
+
+               <google-map 
+                *ngIf="isApiLoaded"
+                height="450px"
+                width="100%"
+                [center]="center" 
+                [zoom]="12" 
+                [options]="mapOptions">
+                
+                <ng-container *ngFor="let item of comparisonData">
+                  <map-polyline 
+                    *ngIf="item.start_node?.latitude && item.end_node?.latitude"
+                    [options]="getPolylineOptions(item.uiColor!)"
+                    [path]="[
+                      { lat: item.start_node.latitude, lng: item.start_node.longitude }, 
+                      { lat: item.end_node.latitude, lng: item.end_node.longitude }
+                    ]">
+                  </map-polyline>
+                </ng-container>
+               </google-map>
+
+            </nb-card-body>
+          </nb-card>
+        </div>
+  
+        <div class="col-md-4 h-100">
+          <nb-card class="h-100">
+            <nb-card-header class="py-2" style="height: 50px;">Length Analysis</nb-card-header>
+            <nb-card-body class="p-2">
+               <div echarts [options]="lengthChartOption" class="h-100 w-100" style="min-height: 300px;"></div>
+            </nb-card-body>
+          </nb-card>
+        </div>
+      </div>
+  
+      <nb-card class="flex-grow-1">
+        <nb-card-header class="py-2 border-bottom">Attribute Details</nb-card-header>
+        <nb-card-body class="p-0 table-responsive">
+          <table class="table table-bordered mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th style="min-width: 120px;">Attribute</th>
+                <th *ngFor="let item of comparisonData" [style.color]="item.uiColor" style="min-width: 150px;">
+                  {{ item.name || 'Unnamed' }} <small class="text-dark">({{ item.id }})</small>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr [class.diff-row]="hasVariation('length')">
+                <td class="font-weight-bold text-hint">Length</td>
+                <td *ngFor="let item of comparisonData">{{ item.length | number:'1.1-2' }} m</td>
+              </tr>
+               <tr [class.diff-row]="hasVariation('start_node.id')">
+                <td class="font-weight-bold text-hint">Start Node</td>
+                <td *ngFor="let item of comparisonData">{{ item.start_node?.name || '-' }}</td>
+              </tr>
+              <tr [class.diff-row]="hasVariation('end_node.id')">
+                <td class="font-weight-bold text-hint">End Node</td>
+                <td *ngFor="let item of comparisonData">{{ item.end_node?.name || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </nb-card-body>
+      </nb-card>
+
+    </ng-container>
+
+    <div *ngIf="comparisonData.length === 0" class="h-100 d-flex flex-column align-items-center justify-content-center text-hint">
+      <nb-icon icon="copy-outline" style="font-size: 5rem; opacity: 0.5;"></nb-icon>
+      <h5 class="mt-3">Compare Edges</h5>
+      <p>Search and select up to 6 edges from the left panel.</p>
+    </div>
+
+  </div>
+</div>

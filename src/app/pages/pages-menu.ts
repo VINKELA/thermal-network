@@ -7,21 +7,28 @@ export const MENU_ITEMS: NbMenuItem[] = [
     link: '/pages/projects',
     home: true,
   },
+  {
+    title: 'File Importer',
+    icon: 'file-text-outline',
+    link: '/pages/building-upload'
+  },
    {
     title: 'Buildings',
     icon: 'home-outline',
     link: '/pages/buildings'
   },
   {
+    title: 'Generate Data',
+    icon: 'cloud-upload-outline',
+    link: '/pages/data-upload'
+  },
+  
+  {
     title: 'LoadProfiles',
     icon: 'thermometer-outline',
     link: '/pages/load-profiles'
   },
-   {
-    title: 'Data',
-    icon: 'cloud-upload-outline',
-    link: '/pages/data-upload'
-  },
+   
    {
     title: 'NETWORKS',
     group: true,
@@ -71,15 +78,16 @@ export const MENU_ITEMS: NbMenuItem[] = [
     icon: 'map-outline',
     link: '/pages/routes',
     },
+    {
+    title: 'Pipe Sizes',
+    icon: 'droplet-outline',
+    link: '/pages/pipes',
+  },
   {
     title: 'NETWORK FEATURES',
     group: true,
   },
-    {
-    title: 'Pipes',
-    icon: 'droplet-outline',
-    link: '/pages/pipes',
-  },
+    
   {
     title: 'Control Center',
     icon: 'settings-2-outline',

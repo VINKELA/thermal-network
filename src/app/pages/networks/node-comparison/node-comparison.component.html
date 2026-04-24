@@ -1,0 +1,138 @@
+<div class="row h-100">
+  
+  <div class="col-md-3 h-100">
+    <nb-card class="h-100 d-flex flex-column">
+      <nb-card-header>
+        <div class="subtitle-2">Compare Nodes</div>
+        <nb-form-field class="mt-2">
+          <nb-icon nbPrefix icon="search-outline" pack="eva"></nb-icon>
+          <input nbInput fullWidth placeholder="Search nodes..." [(ngModel)]="searchText" (keyup)="onSearchInput()">
+        </nb-form-field>
+      </nb-card-header>
+      
+      <nb-list class="scrollable-list flex-grow-1" [nbSpinner]="isLoadingList">
+        <nb-list-item *ngFor="let node of allNodes">
+          <div class="d-flex align-items-center w-100">
+            <nb-checkbox 
+              class="mr-3"
+              [checked]="selectedIds.includes(node.id)"
+              (checkedChange)="toggleSelection(node.id)"
+              [disabled]="!selectedIds.includes(node.id) && selectedIds.length >= 5">
+            </nb-checkbox>
+            <div>
+              <div class="subtitle-2">{{ node.name || 'Node ' + node.id }}</div>
+              <div class="caption text-hint capitalize">{{ node.node_type }}</div>
+            </div>
+          </div>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
+  </div>
+
+  <div class="col-md-9 h-100 d-flex flex-column">
+    
+    <div class="row flex-grow-1 mb-3" style="min-height: 400px;">
+      
+   <div class="col-md-8 h-100">
+  <nb-card class="h-100" style="min-height: 500px;"> <nb-card-header>
+      <nb-icon icon="map-outline" class="mr-2"></nb-icon> Locations
+    </nb-card-header>
+    
+    <nb-card-body style="padding: 0; position: relative; height: 100%; min-height: 400px; display: block;">
+      
+      <google-map 
+        *ngIf="isApiLoaded"
+        height="100%" 
+        width="100%" 
+        [center]="center" 
+        [zoom]="10" 
+        [options]="mapOptions">
+        
+        <map-marker 
+          *ngFor="let node of comparisonData"
+          [position]="{ lat: node.latitude, lng: node.longitude }"
+          [options]="getMarkerOptions(node)">
+        </map-marker>
+      </google-map>
+
+      <div *ngIf="!isApiLoaded" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        Loading Maps API...
+      </div>
+
+      <div *ngIf="isApiLoaded && comparisonData.length === 0" style="position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.8); padding: 5px; z-index: 100;">
+        No nodes selected (or no coordinates found)
+      </div>
+
+    </nb-card-body>
+  </nb-card>
+</div>
+
+      <div class="col-md-4 h-100">
+        <nb-card class="h-100">
+          <nb-card-header>Type Mix</nb-card-header>
+          <nb-card-body class="d-flex align-items-center justify-content-center">
+            <ngx-charts-pie-chart
+              *ngIf="typePieData.length > 0"
+              [scheme]="colorScheme"
+              [results]="typePieData"
+              [doughnut]="true"
+              [legend]="false"
+              [labels]="true">
+            </ngx-charts-pie-chart>
+            <div *ngIf="comparisonData.length === 0" class="text-hint">Select nodes</div>
+          </nb-card-body>
+        </nb-card>
+      </div>
+    </div>
+
+    <nb-card class="flex-grow-0" style="height: auto;">
+      <nb-card-header>Attribute Comparison</nb-card-header>
+      <nb-card-body class="p-0 table-responsive">
+        
+        <table class="table table-striped" *ngIf="comparisonData.length > 0">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th *ngFor="let node of comparisonData">{{ node.name || 'Node ' + node.id }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Type</strong></td>
+              <td *ngFor="let node of comparisonData" class="capitalize">
+                <span [class]="'status-badge ' + node.node_type">{{ node.node_type }}</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Network ID</strong></td>
+              <td *ngFor="let node of comparisonData">{{ node.network }}</td>
+            </tr>
+            <tr>
+              <td><strong>Connected Asset</strong></td>
+              <td *ngFor="let node of comparisonData">{{ getConnectedAsset(node) }}</td>
+            </tr>
+            <tr>
+              <td><strong>Coordinates</strong></td>
+              <td *ngFor="let node of comparisonData">
+                <small>{{ node.latitude | number:'1.4-4' }}, {{ node.longitude | number:'1.4-4' }}</small>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Default</strong></td>
+              <td *ngFor="let node of comparisonData">
+                <nb-icon *ngIf="node.is_default" icon="checkmark-circle-2" status="success"></nb-icon>
+                <nb-icon *ngIf="!node.is_default" icon="minus-outline" class="text-hint"></nb-icon>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="comparisonData.length === 0" class="p-3 text-center text-hint">
+          Select nodes from the list to see comparison details.
+        </div>
+
+      </nb-card-body>
+    </nb-card>
+
+  </div>
+</div>

@@ -1,0 +1,25 @@
+// Layout
+.scrollable-list { overflow-y: auto; max-height: 100%; }
+.clickable { cursor: pointer; &:hover { background-color: #f7f9fc; } }
+
+// Force map to be a block with explicit dimensions
+google-map {
+  display: block; 
+  width: 100%;
+  height: 100%; /* logic handles the pixel height in HTML */
+}
+
+// Table
+.table { margin-bottom: 0; th { border-top: none; } td, th { vertical-align: middle; } }
+
+// Diff Highlight
+.diff-row {
+  background-color: #fff9c4; 
+  td { border-top: 1px solid #ffe57f; color: #222b45; }
+}
+
+// Badges
+.dot-badge {
+  width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
+}
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }

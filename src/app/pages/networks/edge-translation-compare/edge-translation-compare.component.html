@@ -1,0 +1,120 @@
+<div class="row h-100">
+  
+  <div class="col-md-3 h-100">
+    <nb-card class="h-100 d-flex flex-column" size="large">
+      <nb-card-header>
+        <div class="subtitle-2">Translation Models</div>
+        <div class="caption text-hint mt-1">Select up to 3</div>
+      </nb-card-header>
+      
+      <nb-list class="scrollable-list flex-grow-1" [nbSpinner]="isLoadingList">
+        <nb-list-item *ngFor="let item of summaryList" class="p-3">
+          <div class="d-flex align-items-center w-100 clickable" (click)="toggleSelection(item.id)">
+            
+            <nb-checkbox 
+              class="mr-3"
+              [checked]="selectedIds.includes(item.id)"
+              (checkedChange)="toggleSelection(item.id)"
+              [disabled]="!selectedIds.includes(item.id) && selectedIds.length >= 4">
+            </nb-checkbox>
+            
+            <div class="overflow-hidden w-100">
+              <div class="subtitle-2 text-truncate">{{ item.name }}</div>
+              <div class="caption text-hint d-flex align-items-center">
+                 <nb-icon *ngIf="item.translation === 'walking'" icon="person-outline" pack="eva" class="mr-1"></nb-icon>
+                 <nb-icon *ngIf="item.translation === 'driving'" icon="car-outline" pack="eva" class="mr-1"></nb-icon>
+                 <nb-icon *ngIf="item.translation === 'bicycling'" icon="navigation-2-outline" pack="eva" class="mr-1"></nb-icon>
+                 {{ item.translation | titlecase }}
+              </div>
+            </div>
+
+            <ng-container *ngFor="let sel of comparisonData">
+               <div *ngIf="sel.id === item.id" class="ml-auto color-pill" 
+                    [style.background]="sel.uiColor">
+               </div>
+            </ng-container>
+
+          </div>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
+  </div>
+
+  <div class="col-md-9 h-100" [nbSpinner]="isLoadingCompare">
+    
+    <ng-container *ngIf="comparisonData.length > 0; else emptyState">
+
+      <div class="row mb-3">
+        <div class="col-12 d-flex flex-wrap">
+           <div *ngFor="let item of comparisonData" class="legend-chip mr-3" [style.border-color]="item.uiColor">
+              <span class="dot" [style.background]="item.uiColor"></span> 
+              <span class="font-weight-bold mr-2">{{ item.name }}</span>
+              <span class="text-hint small">
+                  {{ (item.total_edge_length / 1000) | number:'1.1-1' }}km • 
+                  {{ (item.totalDuration! / 60) | number:'1.0-0' }}min
+              </span>
+           </div>
+        </div>
+      </div>
+
+      <nb-card class="flex-grow-1">
+        <nb-tabset fullWidth>
+            
+            <nb-tab tabTitle="Route Map" icon="map-outline" responsive>
+                <div class="map-wrapper h-100 w-100 position-relative">
+                    <div *ngIf="!isApiLoaded" class="api-error">Google Maps API Missing</div>
+                    
+                    <google-map 
+                        *ngIf="isApiLoaded"
+                        height="550px"
+                        width="100%"
+                        [center]="center" 
+                        [zoom]="12" 
+                        [options]="mapOptions">
+                        
+                        <ng-container *ngFor="let config of comparisonData; let i = index">
+                            <map-polyline 
+                                *ngFor="let path of config.decodedPaths"
+                                [path]="path"
+                                [options]="{
+                                    strokeColor: config.uiColor,
+                                    strokeOpacity: 0.7,
+                                    strokeWeight: 4,
+                                    zIndex: 100 - i
+                                }">
+                            </map-polyline>
+                        </ng-container>
+
+                    </google-map>
+                    
+                    <div class="map-overlay-info">
+                        <span class="caption text-hint">Visualizing {{ comparisonData[0]?.routes?.length }} route segments</span>
+                    </div>
+                </div>
+            </nb-tab>
+
+            <nb-tab tabTitle="Efficiency Analysis" icon="bar-chart-2-outline" responsive>
+                <div class="row h-100 p-3">
+                    <div class="col-md-6 d-flex flex-column">
+                        <h6 class="subtitle-2 text-hint mb-3">Total Network Distance</h6>
+                        <div echarts [options]="efficiencyChartOption" class="chart-box flex-grow-1"></div>
+                    </div>
+                </div>
+            </nb-tab>
+            
+ 
+        </nb-tabset>
+      </nb-card>
+
+    </ng-container>
+
+    <ng-template #emptyState>
+      <div class="h-100 d-flex flex-column align-items-center justify-content-center text-hint">
+        <nb-icon icon="navigation-2-outline" style="font-size: 5rem; opacity: 0.5;"></nb-icon>
+        <h4 class="mt-4">Translation Analysis</h4>
+        <p>Compare how different transport modes (Walking, Driving) affect route paths.</p>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

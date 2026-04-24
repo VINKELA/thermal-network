@@ -254,9 +254,6 @@ export class MapImporterComponent implements OnInit, AfterViewInit {
         nameLower.includes('arena') || nameLower.includes('rink')) {
       return 'ice_arena';
     }
-
-    if (types.includes('restaurant') || types.includes('meal_takeaway')) return 'restaurant';
-
     if (types.includes('shopping_mall') || types.includes('department_store') || types.includes('hospital')) {
       return 'space_cooling';
     }

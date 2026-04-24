@@ -1,0 +1,86 @@
+<div class="row h-100">
+  
+  <div class="col-md-3 h-100">
+    <nb-card class="h-100 d-flex flex-column" size="large">
+      <nb-card-header class="border-bottom">
+        <div class="subtitle-2">Configurations</div>
+        <div class="caption text-hint mt-1">Select multiple to compare</div>
+      </nb-card-header>
+      
+      <nb-list class="scrollable-list flex-grow-1" [nbSpinner]="isLoadingList">
+        <nb-list-item *ngFor="let config of configList" class="p-3">
+          <div class="d-flex align-items-center w-100 clickable" (click)="toggleSelection(config.id)">
+            
+            <nb-checkbox 
+              class="mr-3"
+              [checked]="selectedIds.includes(config.id)"
+              (checkedChange)="toggleSelection(config.id)">
+            </nb-checkbox>
+            
+            <div class="overflow-hidden w-100">
+              <div class="subtitle-2 text-truncate">{{ config.name }}</div>
+              <div class="caption text-hint text-truncate" style="font-size: 0.7rem;">
+                ID: {{ config.id }} • {{ config.created_at | date:'shortDate' }}
+              </div>
+            </div>
+
+            <ng-container *ngFor="let sel of comparisonData">
+               <div *ngIf="sel.id === config.id" class="ml-auto color-pill" 
+                   [style.background]="sel.uiColor">
+               </div>
+            </ng-container>
+
+          </div>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
+  </div>
+
+  <div class="col-md-9 h-100" [nbSpinner]="isLoadingCompare">
+    
+    <ng-container *ngIf="comparisonData.length > 0; else emptyState">
+      
+      <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-hint">Comparing {{ comparisonData.length }} Configurations</h6>
+            </div>
+        </div>
+      </div>
+
+      <nb-card class="flex-grow-1" style="min-height: 600px;">
+        <nb-tabset fullWidth>
+            
+            <nb-tab tabTitle="Mean Size vs Weights" icon="bar-chart-outline" responsive>
+                <div class="h-100 d-flex flex-column">
+                    <div class="chart-header p-3">
+                        <span class="subtitle-2">Optimization Driver Analysis</span>
+                    </div>
+                    <div echarts [options]="barChartOption" class="chart-box flex-grow-1"></div>
+                </div>
+            </nb-tab>
+
+            <nb-tab tabTitle="Variance (Boxplot)" icon="bar-chart-2-outline" responsive>
+                <div class="h-100 d-flex flex-column">
+                    <div class="chart-header p-3">
+                        <span class="subtitle-2">Building Distribution per Cluster</span>
+                    </div>
+                    <div echarts [options]="boxPlotOption" class="chart-box flex-grow-1"></div>
+                </div>
+            </nb-tab>
+
+        </nb-tabset>
+      </nb-card>
+
+    </ng-container>
+
+    <ng-template #emptyState>
+      <div class="h-100 d-flex flex-column align-items-center justify-content-center text-hint empty-placeholder">
+        <nb-icon icon="activity-outline" class="placeholder-icon"></nb-icon>
+        <h4 class="mt-4">Analytics Dashboard</h4>
+        <p>Select configurations from the left to begin.</p>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

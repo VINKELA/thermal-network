@@ -56,7 +56,8 @@
       <map-marker 
         *ngIf="node.latitude && node.longitude"
         [position]="center"
-        [title]="node.name">
+        [title]="node.name"
+        [options]="node | thermalMarker">
       </map-marker>
 
     </google-map>

@@ -12,27 +12,26 @@
     </div>
 
     <div class="results-badge" *ngIf="!isLoading && buildings.length > 0">
-      Found {{ buildings.length }} buildings
+      Showing first {{ buildings.length }} buildings
     </div>
     
     <div class="results-badge error" *ngIf="!isLoading && buildings.length === 0">
       No buildings found
     </div>
   </div>
+<google-map 
+  [center]="center" 
+  [zoom]="zoom" 
+  [options]="mapOptions"
+  height="600px" 
+  width="100%">
 
-  <google-map 
-    [center]="center" 
-    [zoom]="zoom" 
-    [options]="mapOptions"
-    height="600px" 
-    width="100%">
-    
-    <map-marker 
-      *ngFor="let building of buildings"
-      [position]="{ lat: building.latitude, lng: building.longitude }"
-      [title]="building.name"
-      (mapClick)="openBuildingDetails(building.id)">
-    </map-marker>
+  <map-marker
+    *ngFor="let b of buildings"
+    [position]="{ lat: b.latitude, lng: b.longitude }"
+    [options]="b | thermalMarker"
+    (mapClick)="openBuildingDetails(b.id)">
+  </map-marker>
 
-  </google-map>
+</google-map>
 </div>

@@ -17,7 +17,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
 
   // Map Settings (Default: Toronto)
   center: google.maps.LatLngLiteral = { lat: 43.6532, lng: -79.3832 };
-  zoom = 12;
+  zoom = 20;
   mapOptions: google.maps.MapOptions = {
     disableDefaultUI: false,
     zoomControl: true,
@@ -57,7 +57,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
   // This now matches your Django setup
   const url = searchQuery 
     ? `${this.api}?search=${encodeURIComponent(searchQuery)}` 
-    : this.api;
+    : this.api + '?limit=500';
 
   this.apiService.get(url).subscribe((data: any) => {
     this.buildings = data['results'] ? data['results'] : data;

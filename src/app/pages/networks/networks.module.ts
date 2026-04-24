@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NetworksComponent } from './networks/networks.component';
 import { NetworkComponent } from './network/network.component';
-import { NbMenuModule, NbCardModule, NbButtonModule, NbFormFieldModule, NbIconModule, NbInputModule, NbListModule, NbSelectModule, NbSpinnerModule } from '@nebular/theme';
+import { NbMenuModule, NbCardModule, NbButtonModule, NbFormFieldModule, NbIconModule, NbInputModule, NbListModule, NbSelectModule, NbSpinnerModule, NbCheckboxModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { ThemeModule } from '../../@theme/theme.module';
 import { NetworkAlgorithmComponent } from './network-algorithm/network-algorithm.component';
@@ -39,8 +39,19 @@ import { EdgeConnectionAlgorithmsComponent } from './edge-connection-algorithms/
 import { EdgeConnectionAlgorithmComponent } from './edge-connection-algorithm/edge-connection-algorithm.component';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { LoadProfileComponent } from './load-profile/load-profile.component';
-
-
+import { NetworkComparisonComponent } from './network-comparison/network-comparison.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { ClusterComparisonComponent } from './cluster-comparison/cluster-comparison.component';
+import { NodeComparisonComponent } from './node-comparison/node-comparison.component';
+import { EdgeComparisonComponent } from './edge-comparison/edge-comparison.component';
+import { ClusterConfigCompareComponent } from './cluster-config-compare/cluster-config-compare.component';
+import { EdgeAlgoCompareComponent } from './edge-algo-compare/edge-algo-compare.component';
+import { EdgeConnectionComparisonComponent } from './edge-connection-comparison/edge-connection-comparison.component';
+import { EdgeTranslationCompareComponent } from './edge-translation-compare/edge-translation-compare.component';
+import { RoutesCompareComponent } from './routes-compare/routes-compare.component';
+import { PipeSizesComponent } from './pipe-sizes/pipe-sizes.component';
+import { PipeSizeComponent } from './pipe-size/pipe-size.component';
+import { PipeSizesCompareComponent } from './pipe-sizes-compare/pipe-sizes-compare.component'; // <--- NgxCharts
 
 @NgModule({
   declarations: [
@@ -75,7 +86,19 @@ import { LoadProfileComponent } from './load-profile/load-profile.component';
     EdgeAlgorithmsComponent,
     EdgeConnectionAlgorithmsComponent,
     EdgeConnectionAlgorithmComponent,
-    LoadProfileComponent
+    LoadProfileComponent,
+    NetworkComparisonComponent,
+    ClusterComparisonComponent,
+    NodeComparisonComponent,
+    EdgeComparisonComponent,
+    ClusterConfigCompareComponent,
+    EdgeAlgoCompareComponent,
+    EdgeConnectionComparisonComponent,
+    EdgeTranslationCompareComponent,
+    RoutesCompareComponent,
+    PipeSizesComponent,
+    PipeSizeComponent,
+    PipeSizesCompareComponent
   ],
   imports: [
     CommonModule,
@@ -94,9 +117,10 @@ import { LoadProfileComponent } from './load-profile/load-profile.component';
     NbButtonModule,
     NbSpinnerModule,
     NbFormFieldModule,
-    
-    // ADD ECHARTS MODULE:
+    NbCheckboxModule,
     NgxEchartsModule,
+    NgxChartsModule,
+    
   ]
 })
 export class NetworksModule { }

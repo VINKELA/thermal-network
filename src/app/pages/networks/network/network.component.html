@@ -1,20 +1,18 @@
 <div class="network-wrapper" *ngIf="network; else loading">
 
-  <!-- Header Section -->
   <div class="header-bar">
     <div>
       <h1>{{ network.name }}</h1>
-      <span class="subtitle">{{ network.network_type | titlecase }} Network • {{ nodes.length }} Nodes</span>
+      <span class="subtitle">{{ network.network_type | titlecase }} Network • {{ nodes.length }} Nodes • {{ edges.length }} Edges</span>
     </div>
     <div class="stats">
       <div class="stat-pill">
         <span class="label">Total Length</span>
-        <span class="val">{{ network.total_length || 0 | number }}m</span>
+        <span class="val">{{ network.total_length || 0 | number:'1.0-0' }}m</span>
       </div>
     </div>
   </div>
 
-  <!-- Map Container -->
   <div class="map-container">
     <google-map 
       height="600px" 
@@ -23,17 +21,23 @@
       [zoom]="zoom"
       [options]="mapOptions">
       
-      <!-- Loop through Nodes -->
+      <map-polyline 
+        *ngFor="let edge of edges"
+        [path]="getEdgePath(edge)"
+        [options]="getEdgeOptions(edge)"
+        (polylineClick)="openEdgeInfo(edge, $event)">
+      </map-polyline>
+
       <map-marker 
         *ngFor="let node of nodes"
         [position]="{ lat: node.latitude || 0, lng: node.longitude || 0 }"
-        [options]="getMarkerOptions(node)"
+        [options]="node | thermalMarker"
         (mapClick)="openNodeInfo(markerRef, node)"
         #markerRef="mapMarker">
       </map-marker>
 
-      <!-- Info Window (Popup) -->
       <map-info-window>
+        
         <div class="info-popup" *ngIf="selectedNode">
           <h3>{{ selectedNode.name }}</h3>
           <span class="badge" [class]="selectedNode?.node_type">{{ selectedNode.node_type }}</span>
@@ -41,29 +45,27 @@
           <div class="details" *ngIf="selectedNode?.building">
             <p><strong>Connected:</strong> {{ selectedNode.building.name }}</p>
           </div>
-          
-          <button (click)="navigateToNode(selectedNode.id)">View Node Details</button>
+          <div class="details" *ngIf="selectedNode?.cluster">
+            <p><strong>Cluster ID:</strong> {{ selectedNode.cluster }}</p>
+          </div>
         </div>
+
+        <div class="info-popup" *ngIf="selectedEdge">
+          <h3>Pipe Segment</h3>
+          <p class="edge-name">{{ selectedEdge.name }}</p>
+          <div class="details">
+            <p><strong>Length:</strong> {{ selectedEdge.length | number:'1.0-1' }} m</p>
+            <p *ngIf="selectedEdge.other_information?.capacity">
+              <strong>Capacity:</strong> {{ selectedEdge.other_information.capacity | number:'1.0-0' }} kW
+            </p>
+          </div>
+        </div>
+
       </map-info-window>
 
     </google-map>
 
-    <!-- FLOATING LEGEND -->
-    <div class="legend-card">
-      <h4>Map Legend</h4>
-      <div class="legend-item">
-        <span class="symbol producer">▲</span> 
-        <span>Producer (Plant)</span>
-      </div>
-      <div class="legend-item">
-        <span class="symbol consumer">●</span> 
-        <span>Consumer (Building)</span>
-      </div>
-      <div class="legend-item">
-        <span class="symbol storage">►</span> 
-        <span>Storage</span>
-      </div>
-    </div>
+    
 
   </div>
 

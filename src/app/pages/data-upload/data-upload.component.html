@@ -9,14 +9,14 @@
       <nb-card-body>
         <nb-tabset fullWidth>
           
-          <nb-tab tabTitle="Buildings">
+          <nb-tab tabTitle="Quick Import">
             <div class="upload-container">
               <div class="instructions">
                 <h6><nb-icon icon="info-outline"></nb-icon> Instructions</h6>
                 <p>Upload a file with columns: <code>latitude</code>, <code>longitude</code>, <code>name</code> (optional).</p>
               </div>
 
-              <div class="form-group">
+              <div class="form-group mt-3">
                 <label class="label">Assign to Project</label>
                 <nb-select placeholder="Select Project" fullWidth [(selected)]="selectedProjectId">
                   <nb-option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</nb-option>
@@ -27,7 +27,7 @@
                 <label class="label">Select File</label>
                 <div class="file-drop-area">
                   <input type="file" (change)="onFileChange($event, 'building')" accept=".csv, .xlsx">
-                  <span *ngIf="buildingFile" class="file-msg">{{ buildingFile.name }}</span>
+                  <span *ngIf="buildingFile" class="file-msg success">{{ buildingFile.name }}</span>
                   <span *ngIf="!buildingFile" class="file-msg">Drag file here or click</span>
                 </div>
               </div>
@@ -38,19 +38,97 @@
             </div>
           </nb-tab>
 
+          <nb-tab tabTitle="Detailed Import" badgeText="New" badgeStatus="success">
+            <div class="upload-container">
+              
+              <div class="instructions mb-4">
+                <h6><nb-icon icon="book-open-outline"></nb-icon> Engineering Data Format</h6>
+                <p>Use this tab to upload buildings with complete energy and physical characteristics.</p>
+              </div>
+
+              <div class="table-responsive mb-4">
+                <table class="table table-bordered table-sm mapping-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%">Column Header</th>
+                      <th style="width: 15%">Required</th>
+                      <th>Description & Options</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>latitude</code></td>
+                      <td><span class="badge badge-primary">Yes</span></td>
+                      <td>Decimal coordinate</td>
+                    </tr>
+                    <tr>
+                      <td><code>longitude</code></td>
+                      <td><span class="badge badge-primary">Yes</span></td>
+                      <td>Decimal coordinate</td>
+                    </tr>
+                    <tr>
+                      <td><code>waste_heat_source_type</code></td>
+                      <td>No</td>
+                      <td>
+                        Options: <code>data_centre</code>, <code>grocery_store</code>, <code>ice_arena</code>, 
+                        <code>wastewater</code>, <code>industrial</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>heating_demand</code></td>
+                      <td>No</td>
+                      <td>Peak heating load in <strong>kW</strong></td>
+                    </tr>
+                    <tr>
+                      <td><code>floor_area</code></td>
+                      <td>No</td>
+                      <td>Total floor area in <strong>m²</strong></td>
+                    </tr>
+                    <tr>
+                      <td><code>is_year_round_operation</code></td>
+                      <td>No</td>
+                      <td><code>TRUE</code> for 12-month op, <code>FALSE</code> for seasonal</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="form-group">
+                <label class="label">Assign to Project</label>
+                <nb-select placeholder="Select Project" fullWidth [(selected)]="selectedProjectId">
+                  <nb-option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</nb-option>
+                </nb-select>
+              </div>
+
+              <div class="form-group">
+                <label class="label">Select Detailed File</label>
+                <div class="file-drop-area">
+                  <input type="file" (change)="onFileChange($event, 'detailed')" accept=".csv, .xlsx">
+                  <span *ngIf="detailedFile" class="file-msg success">{{ detailedFile.name }}</span>
+                  <span *ngIf="!detailedFile" class="file-msg">Drag detailed dataset here</span>
+                </div>
+              </div>
+
+              <button nbButton status="primary" hero (click)="uploadDetailedBuildings()" [disabled]="!detailedFile || !selectedProjectId">
+                <nb-icon icon="layers-outline"></nb-icon> Import Detailed Data
+              </button>
+
+            </div>
+          </nb-tab>
+
           <nb-tab tabTitle="Load Profiles">
             <div class="upload-container">
               <div class="instructions">
                 <h6><nb-icon icon="info-outline"></nb-icon> Instructions</h6>
-                <p>Upload a file with columns: <code>start_date</code>, <code>end_date</code>, <code>building_name</code>, <code>heating</code> (optional), <code>cooling</code> (optional).</p>
+                <p>Upload a file with columns: <code>start_date</code>, <code>end_date</code>, <code>building_name</code>.</p>
                 <small class="text-hint">Ensure 'building_name' matches an existing building exactly.</small>
               </div>
 
-              <div class="form-group">
+              <div class="form-group mt-3">
                 <label class="label">Select File</label>
                 <div class="file-drop-area">
                   <input type="file" (change)="onFileChange($event, 'profile')" accept=".csv, .xlsx">
-                  <span *ngIf="profileFile" class="file-msg">{{ profileFile.name }}</span>
+                  <span *ngIf="profileFile" class="file-msg success">{{ profileFile.name }}</span>
                   <span *ngIf="!profileFile" class="file-msg">Drag file here or click</span>
                 </div>
               </div>

@@ -69,14 +69,14 @@
       <map-marker 
         *ngIf="startNode"
         [position]="{ lat: startNode.latitude, lng: startNode.longitude }"
-        [options]="nodeOptions"
+        [options]="startNode | thermalMarker"
         [title]="'Start: ' + startNode.name">
       </map-marker>
 
       <map-marker 
         *ngIf="endNode"
         [position]="{ lat: endNode.latitude, lng: endNode.longitude }"
-        [options]="nodeOptions"
+        [options]="endNode | thermalMarker"
         [title]="'End: ' + endNode.name">
       </map-marker>
 

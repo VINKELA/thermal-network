@@ -26,7 +26,7 @@ export class ClusterComponent implements OnInit {
   center: google.maps.LatLngLiteral = { lat: 0, lng: 0 };
   zoom = 15;
   mapOptions: google.maps.MapOptions = {
-    disableDefaultUI: true,
+    disableDefaultUI: false,
     zoomControl: true,
     mapTypeId: 'roadmap',
     styles: [

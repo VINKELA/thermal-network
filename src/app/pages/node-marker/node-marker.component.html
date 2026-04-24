@@ -1,0 +1,9 @@
+<p>node-marker works!</p>
+<div class="marker-container" [ngClass]="node.node_type" (click)="handleClick()">
+      <div class="icon-badge">
+        <i [class]="getIcon()"></i>
+      </div>
+      <div class="label" *ngIf="showLabel">{{ node.name }}</div>
+      
+      <div class="status-dot" *ngIf="node.boiler || node.pv"></div>
+    </div>

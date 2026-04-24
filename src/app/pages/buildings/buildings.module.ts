@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { BuildingsComponent } from './buildings/buildings.component';
 import { BuildingComponent } from './building/building.component';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { ThemeModule } from '../../@theme/theme.module';
 
 
 
@@ -13,7 +14,8 @@ import { GoogleMapsModule } from '@angular/google-maps';
   ],
   imports: [
     CommonModule,
-    GoogleMapsModule
+    GoogleMapsModule,
+    ThemeModule
   ]
 })
 export class BuildingsModule { }

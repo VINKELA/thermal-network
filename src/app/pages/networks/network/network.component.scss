@@ -99,3 +99,19 @@
     &:hover { background: #274bdb; }
   }
 }
+// Add to your existing SCSS
+.symbol.pipe-line {
+  display: inline-block;
+  width: 20px;
+  height: 4px;
+  background-color: #2f3542;
+  border-radius: 2px;
+}
+
+.edge-name {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 8px;
+  max-width: 200px;
+  word-wrap: break-word;
+}

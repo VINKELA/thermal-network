@@ -1,0 +1,143 @@
+<nb-card class="h-100" [nbSpinner]="isUploading" nbSpinnerStatus="primary">
+  <nb-card-header>
+    <div class="d-flex align-items-center">
+      <nb-icon icon="cloud-upload-outline" class="mr-2" style="font-size: 1.5rem;"></nb-icon>
+      <div>
+        <h6 class="m-0">Bulk Building Import</h6>
+        <span class="caption text-hint">Upload Excel (.xlsx) or CSV data</span>
+      </div>
+    </div>
+  </nb-card-header>
+
+  <nb-card-body>
+    <div class="row">
+      
+      <div class="col-md-5 border-right">
+        
+        <div class="form-group">
+          <label class="label">Target Project</label>
+          <nb-select fullWidth placeholder="Select Project" [(selected)]="selectedProjectId">
+            <nb-option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</nb-option>
+          </nb-select>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Data Format</label>
+          <button nbButton size="small" status="info" outline fullWidth (click)="downloadTemplate()">
+            <nb-icon icon="download-outline"></nb-icon> Download CSV Template
+          </button>
+          <p class="caption text-hint mt-2">
+            Download this template to ensure your headers match our database requirements.
+          </p>
+        </div>
+
+        <div class="form-group mt-4">
+          <label class="label">Upload File</label>
+          <div class="file-drop-area">
+            <input type="file" (change)="onFileSelected($event)" accept=".csv, .xlsx">
+            
+            <div class="text-center" *ngIf="!selectedFile">
+              <nb-icon icon="folder-add-outline" style="font-size: 3rem; color: #8f9bb3; opacity: 0.5;"></nb-icon>
+              <div class="font-weight-bold mt-2 text-hint">Drag & Drop or Click</div>
+            </div>
+
+            <div class="text-center" *ngIf="selectedFile">
+              <nb-icon icon="file-text-outline" style="font-size: 3rem; color: #00d68f;"></nb-icon>
+              <div class="font-weight-bold mt-2 text-success">{{ selectedFile.name }}</div>
+              <div class="caption">{{ (selectedFile.size / 1024) | number:'1.0-1' }} KB</div>
+            </div>
+
+          </div>
+        </div>
+
+        <button nbButton fullWidth status="primary" hero size="large" 
+                [disabled]="!selectedFile || !selectedProjectId" 
+                (click)="upload()">
+          Start Import
+        </button>
+
+      </div>
+
+      <div class="col-md-7 pl-4">
+        <h6 class="subtitle-2 mb-3">Column Reference Guide</h6>
+        
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm mapping-table">
+            <thead>
+              <tr>
+                <th width="35%">Header Name</th>
+                <th width="15%">Req.</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>latitude</code></td>
+                <td><span class="badge badge-primary">Yes</span></td>
+                <td>Decimal (e.g., 43.65)</td>
+              </tr>
+              <tr>
+                <td><code>longitude</code></td>
+                <td><span class="badge badge-primary">Yes</span></td>
+                <td>Decimal (e.g., -79.38)</td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td>No</td>
+                <td>Building Label</td>
+              </tr>
+              <tr>
+                <td><code>waste_heat_source_type</code></td>
+                <td>No</td>
+                <td>
+                  <div class="d-flex flex-wrap gap-1">
+                    <span class="badge badge-basic">data_centre</span>
+                    <span class="badge badge-basic">ice_arena</span>
+                    <span class="badge badge-basic">grocery_store</span>
+                    <span class="badge badge-basic">wastewater</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><code>heating_demand</code></td>
+                <td>No</td>
+                <td>Peak Load (kW)</td>
+              </tr>
+              <tr>
+                <td><code>fsa</code></td>
+                <td>No</td>
+                <td>L7L</td>
+              </tr>
+              <tr>
+                <td><code>area(km^2)</code></td>
+                <td>No</td>
+                <td>0.009</td>
+              </tr>
+              <tr>
+                <td><code>type</code></td>
+                <td>No</td>
+                <td>residential</td>
+              </tr>
+              <tr>
+                <td><code>load_type</code></td>
+                <td>No</td>
+                <td>heating_dominant</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="alert alert-hint mt-3">
+          <div class="d-flex">
+            <nb-icon icon="bulb-outline" class="mr-2"></nb-icon>
+            <div class="caption">
+              <strong>Tip:</strong> Headers are case-insensitive. You can use 'Lat', 'LAT', or 'latitude'.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </nb-card-body>
+</nb-card>

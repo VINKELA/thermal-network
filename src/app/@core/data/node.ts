@@ -1,4 +1,4 @@
-export type NodeType = 'consumer' | 'producer' | 'storage';
+export type NodeType = 'consumer' | 'producer' | 'storage' | 'cluster';
 
 // Minimal interfaces for the related assets (expand as needed)
 export interface LinkedAsset { id: number; name: string; [key: string]: any; }

@@ -59,7 +59,7 @@
       <map-marker 
         *ngFor="let node of nodes"
         [position]="{ lat: node.latitude, lng: node.longitude }"
-        [options]="nodeOptions"
+        [options]="node | thermalMarker"
         (mapClick)="selectNode(node, markerRef)"
         #markerRef="mapMarker">
       </map-marker>
@@ -86,10 +86,6 @@
 
     </google-map>
 
-    <div class="legend">
-      <div class="item"><span class="line edge"></span> Edge</div>
-      <div class="item"><span class="dot node"></span> Node</div>
-    </div>
   </div>
 
 </div>

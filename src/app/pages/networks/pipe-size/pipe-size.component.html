@@ -1,0 +1,125 @@
+<div class="page-wrapper" *ngIf="algorithm; else loading">
+  
+  <div class="top-section">
+ 
+
+    <div class="map-panel">
+     <google-map height="100%" width="100%" [center]="center" [zoom]="zoom" [options]="mapOptions" (zoomChanged)="onMapZoom()">
+        
+        <map-polyline *ngFor="let edge of edges" [path]="edge.path" [options]="edge.options" (polylineClick)="selectEdge(edge, null)"></map-polyline>
+        
+        <map-marker 
+          *ngFor="let node of nodes" 
+          [position]="{ lat: node.latitude, lng: node.longitude }" 
+          [options]="node | thermalMarker"
+          (mapClick)="selectNode(node, markerRef)" 
+          #markerRef="mapMarker">
+        </map-marker>
+        
+        <map-info-window>
+          <div class="popup" *ngIf="selectedItem">
+            
+            <div *ngIf="selectedType === 'node'">
+              <span class="tag node">Node</span>
+              <h4>{{ selectedItem.name || 'Unnamed Node' }}</h4>
+              <div class="sub">{{ selectedItem.node_type | titlecase }}</div>
+              <div class="meta">Lat: {{selectedItem.latitude | number:'1.4-4'}}</div>
+            </div>
+
+            <div *ngIf="selectedType === 'edge'" class="edge-details">
+              <header>
+                <span class="tag edge">Branch Segment</span>
+                <h4 class="segment-name">{{ selectedItem.edge?.name || 'Unnamed Pipe' }}</h4>
+              </header>
+              <div class="highlight-box">
+                <span class="value">DN{{ selectedItem.diameter_m * 1000 | number:'1.0-0' }}</span>
+                <span class="label">Commercial Size</span>
+              </div>
+              <div class="data-grid">
+                <div class="data-row">
+                  <label>Calculated Dia.</label>
+                  <strong>{{ selectedItem.diameter_m | number:'1.3-3' }} m</strong>
+                </div>
+                <div class="data-row">
+                  <label>Peak Demand</label>
+                  <strong>{{ selectedItem.peak_load_kw | number:'1.1-1' }} kW</strong>
+                </div>
+                <div class="data-row">
+                  <label>Flow Rate</label>
+                  <strong>{{ selectedItem.mass_flow_kg_s | number:'1.2-2' }} kg/s</strong>
+                </div>
+                <div class="data-row">
+                  <label>Velocity</label>
+                  <strong [ngClass]="getVelocityStatus(selectedItem.velocity_m_s)">
+                    {{ selectedItem.velocity_m_s | number:'1.2-2' }} m/s
+                  </strong>
+                </div>
+                <div class="data-row">
+                  <label>Pressure Drop</label>
+                  <strong>{{ (selectedItem.pressure_drop_pa / 1000) | number:'1.2-2' }} kPa</strong>
+                </div>
+                <div class="data-row">
+                  <label>Length</label>
+                  <span>{{ selectedItem.edge?.length | number:'1.0-0' }} m</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </map-info-window>
+
+      </google-map>
+    </div>
+  </div>
+
+<div class="bottom-section" [class.expanded]="isTableExpanded">
+    
+    <div class="table-toolbar">
+      <h3 class="table-title">Hydraulic Edge Data</h3>
+      <div class="actions">
+        <button class="btn-action" (click)="copyTableToClipboard()">
+          <i class="eva eva-copy-outline"></i> Copy Data
+        </button>
+        <button class="btn-action" (click)="toggleTableSize()">
+          <i class="eva" [ngClass]="isTableExpanded ? 'eva-collapse-outline' : 'eva-expand-outline'"></i> 
+          {{ isTableExpanded ? 'Collapse' : 'Expand' }} Table
+        </button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="engineering-table">
+        <thead>
+          <tr>
+            <th>Color</th>
+            <th>Segment Name</th>
+            <th>Comm. Size (DN)</th>
+            <th>Exact Dia. (mm)</th> <th>Peak Demand (kW)</th>
+            <th>Mass Flow (kg/s)</th>
+            <th>Velocity (m/s)</th>
+            <th>Pressure Drop (kPa)</th>
+            <th>Length (m)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let edge of edges" (click)="selectEdge(edge, null)" [class.selected]="selectedItem === edge">
+            <td><div class="color-swatch" [style.backgroundColor]="edge.displayColor"></div></td>
+            <td class="fw-bold">{{ edge.edge?.name || 'Unnamed' }}</td>
+            <td>DN{{ edge.diameter_m * 1000 | number:'1.0-0' }}</td>
+            <td>{{ edge.diameter_m * 1000 | number:'1.1-2' }}</td> 
+            <td>{{ edge.peak_load_kw | number:'1.1-1' }}</td>
+            <td>{{ edge.mass_flow_kg_s | number:'1.2-2' }}</td>
+            <td [ngClass]="getVelocityStatus(edge.velocity_m_s)"><b>{{ edge.velocity_m_s | number:'1.2-2' }}</b></td>
+            <td>{{ (edge.pressure_drop_pa / 1000) | number:'1.2-2' }}</td>
+            <td class="text-muted">{{ edge.edge?.length | number:'1.0-0' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<ng-template #loading>
+  <div class="loading">Loading Hydraulic Data...</div>
+</ng-template>

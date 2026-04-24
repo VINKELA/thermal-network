@@ -1,0 +1,121 @@
+<div class="row h-100">
+  
+  <div class="col-md-3 h-100 d-flex flex-column">
+    <nb-card class="flex-grow-1" size="large">
+      <nb-card-header>
+        <div class="subtitle-2">Route Segments</div>
+        <div class="caption text-hint">Select Supply & Return pairs</div>
+      </nb-card-header>
+      
+      <nb-list class="scrollable-list" [nbSpinner]="isLoadingList">
+        <nb-list-item *ngFor="let route of routeList" class="clickable p-3" (click)="toggleSelection(route.id)">
+          <div class="d-flex w-100 align-items-center">
+            
+            <div class="mr-3 text-center" style="width: 40px;">
+              <nb-icon *ngIf="route.route_type === 'supply'" icon="arrow-up-circle-outline" [style.color]="'#ff3d71'"></nb-icon>
+              <nb-icon *ngIf="route.route_type === 'return'" icon="arrow-down-circle-outline" [style.color]="'#3366ff'"></nb-icon>
+              <div class="caption font-weight-bold" style="font-size: 0.6rem; color: #aaa">{{ route.route_type | slice:0:3 | uppercase }}</div>
+            </div>
+
+            <div class="overflow-hidden flex-grow-1">
+              <div class="subtitle-2">Route #{{ route.id }}</div>
+              <div class="caption text-hint">Edge: {{ route.edge }}</div>
+            </div>
+
+            <nb-checkbox 
+              [checked]="selectedIds.includes(route.id)" 
+              (checkedChange)="toggleSelection(route.id)"
+              [disabled]="!selectedIds.includes(route.id) && selectedIds.length >= 4">
+            </nb-checkbox>
+
+          </div>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
+  </div>
+
+  <div class="col-md-9 h-100" [nbSpinner]="isLoadingCompare">
+    <ng-container *ngIf="comparisonData.length > 0; else emptyState">
+
+      <div class="row h-100">
+        
+        <div class="col-lg-7 h-100 d-flex flex-column">
+          <nb-card class="flex-grow-1 border-0">
+            <nb-card-header class="py-2 d-flex justify-content-between align-items-center bg-white border-bottom">
+              <span class="subtitle-2">Trench Geometry</span>
+              <div class="legend d-flex caption">
+                <div class="mr-3 d-flex align-items-center"><span class="dot bg-danger mr-1"></span> Supply</div>
+                <div class="d-flex align-items-center"><span class="dot bg-primary mr-1"></span> Return</div>
+              </div>
+            </nb-card-header>
+            
+            <nb-card-body class="p-0 position-relative" style="min-height: 500px; overflow: hidden;">
+              
+              <div *ngIf="!isLoaded" class="w-100 h-100 d-flex justify-content-center align-items-center bg-light">
+                 <div class="text-danger font-weight-bold">Google Maps API Missing</div>
+              </div>
+
+              <google-map 
+                *ngIf="isLoaded"
+                height="500px" 
+                width="100%" 
+                [center]="center" 
+                [zoom]="zoom" 
+                [options]="mapOptions">
+                
+                <ng-container *ngFor="let r of comparisonData">
+                  <map-polyline 
+                    *ngIf="r.decodedPath && r.decodedPath.length > 0"
+                    [path]="r.decodedPath" 
+                    [options]="{ 
+                      strokeColor: r.uiColor, 
+                      strokeWeight: r.route_type === 'supply' ? 8 : 4, 
+                      strokeOpacity: 0.8,
+                      zIndex: r.route_type === 'supply' ? 10 : 20 
+                    }">
+                  </map-polyline>
+                </ng-container>
+
+              </google-map>
+
+              <div class="warning-overlay" *ngIf="comparisonData.length > 1">
+                 <nb-icon icon="layers-outline"></nb-icon>
+                 <span class="caption ml-2">Check for overlap. Supply (Red) should be under Return (Blue).</span>
+              </div>
+            </nb-card-body>
+          </nb-card>
+        </div>
+
+        <div class="col-lg-5 h-100 d-flex flex-column">
+          
+          <nb-card class="mb-3" size="small">
+            <nb-card-header class="py-2 subtitle-2">Hydraulic Balance</nb-card-header>
+            <nb-card-body class="p-2">
+              <div echarts [options]="profileChartOption" class="h-100 w-100"></div>
+            </nb-card-body>
+          </nb-card>
+
+          <nb-card class="flex-grow-1" size="small">
+            <nb-card-header class="py-2 subtitle-2">Traffic Friction Analysis</nb-card-header>
+            <nb-card-body class="p-2">
+               <div echarts [options]="symmetryChartOption" class="h-100 w-100"></div>
+               <div class="text-center caption text-hint mt-1 font-italic">
+                 (Implied Speed based on duration)
+               </div>
+            </nb-card-body>
+          </nb-card>
+
+        </div>
+      </div>
+
+    </ng-container>
+
+    <ng-template #emptyState>
+      <div class="h-100 d-flex flex-column justify-content-center align-items-center opacity-50 text-hint">
+        <nb-icon icon="swap-outline" style="font-size: 5rem;"></nb-icon>
+        <h4 class="mt-3">Symmetry Analysis</h4>
+        <p>Select routes to verify if Supply and Return paths share the same trench.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

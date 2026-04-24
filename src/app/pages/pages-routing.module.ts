@@ -40,15 +40,33 @@ import { RouteComponent } from './networks/route/route.component';
 import { LoadProfileComponent } from './networks/load-profile/load-profile.component';
 import { DataUploadComponent } from './data-upload/data-upload.component';
 import { MapImporterComponent } from './map-importer/map-importer.component';
+import { NetworkComparisonComponent } from './networks/network-comparison/network-comparison.component';
+import { ClusterComparisonComponent } from './networks/cluster-comparison/cluster-comparison.component';
+import { NodeComparisonComponent } from './networks/node-comparison/node-comparison.component';
+import { EdgeComparisonComponent } from './networks/edge-comparison/edge-comparison.component';
+import { ClusterConfigCompareComponent } from './networks/cluster-config-compare/cluster-config-compare.component';
+import { EdgeAlgoCompareComponent } from './networks/edge-algo-compare/edge-algo-compare.component';
+import { EdgeConnectionComparisonComponent } from './networks/edge-connection-comparison/edge-connection-comparison.component';
+import { EdgeTranslationCompareComponent } from './networks/edge-translation-compare/edge-translation-compare.component';
+import { RoutesCompareComponent } from './networks/routes-compare/routes-compare.component';
+import { PipeSizesCompareComponent } from './networks/pipe-sizes-compare/pipe-sizes-compare.component';
+import { PipeSizeComponent } from './networks/pipe-size/pipe-size.component';
+import { PipeSizesComponent } from './networks/pipe-sizes/pipe-sizes.component';
+import { BuildingUploadComponent } from './building-upload/building-upload.component';
 
 const routes: Routes = [{
   path: '',
   component: PagesComponent,
   children: [ 
+     {
+      path: 'networks/compare',
+      component: NetworkComparisonComponent,
+    },
     {
       path: 'networks/:id',
       component: NetworkComponent,
     },
+    
     {
       path: 'projects',
       component: ProjectsComponent,
@@ -74,12 +92,20 @@ const routes: Routes = [{
       component: MapImporterComponent,
     },
     {
+      path: 'building-upload',
+      component: BuildingUploadComponent,
+    },
+    {
       path: 'networks',
       component: NetworksComponent,
     },
     {
       path: 'clusters',
       component: ClustersComponent,
+    },
+     {
+      path: 'clusters/compare',
+      component: ClusterComparisonComponent,
     },
     {
       path: 'clusters/:id',
@@ -89,6 +115,10 @@ const routes: Routes = [{
       path: 'edge-algorithms',
       component: EdgeAlgorithmsComponent,
     },
+    {
+      path: 'edge-algorithms/compare',
+      component: EdgeAlgoCompareComponent,
+    },
      {
       path: 'edge_algorithms/:id',
       component: EdgeAlgorithmComponent,
@@ -97,9 +127,17 @@ const routes: Routes = [{
       path: 'edge-connection-algorithms',
       component: EdgeConnectionAlgorithmsComponent,
     },
+    {
+      path: 'edge-connection-algorithms/compare',
+      component: EdgeConnectionComparisonComponent,
+    },
      {
       path: 'edge_connection_algorithms/:id',
       component: EdgeConnectionAlgorithmComponent,
+    },
+    {
+      path: 'cluster-configurations/comparison',
+      component: ClusterConfigCompareComponent,
     },
     {
       path: 'cluster-configurations/:id',
@@ -117,6 +155,10 @@ const routes: Routes = [{
       path: 'nodes',
       component: NodesComponent,
     },
+    {
+      path: 'nodes/compare',
+      component: NodeComparisonComponent,
+    },
      {
       path: 'nodes/:id',
       component: NodeComponent,
@@ -124,6 +166,10 @@ const routes: Routes = [{
     {
       path: 'edges',
       component: EdgesComponent,
+    },
+    {
+      path: 'edges/comparison',
+      component: EdgeComparisonComponent,
     },
     {
       path: 'edges/:id',
@@ -138,12 +184,20 @@ const routes: Routes = [{
       component: TranslationsComponent,
     },
     {
+      path: 'edge_translations/compare',
+      component: EdgeTranslationCompareComponent,
+    },
+    {
       path: 'edge_translations/:id',
       component: TranslationComponent,
     },
     {
       path: 'routes',
       component: RoutesComponent,
+    },
+    {
+      path: 'routes/compare',
+      component: RoutesCompareComponent,
     },
      {
       path: 'routes/:id',
@@ -161,12 +215,17 @@ const routes: Routes = [{
     
      {
       path: 'pipes',
-      component: PipesComponent,
+      component: PipeSizesComponent,
     },
     {
-      path: 'pipes/:id',
-      component: PipeComponent,
+      path: 'pipes/compare',
+      component: PipeSizesCompareComponent,
     },
+    {
+      path: 'pipe-sizes/:id',
+      component: PipeSizeComponent,
+    },
+
     {
       path: 'layout',
       loadChildren: () => import('./layout/layout.module')

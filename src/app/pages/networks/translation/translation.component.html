@@ -33,13 +33,7 @@
         <span class="val">{{ visualRoutes.length }}</span>
       </div>
     </div>
-    
-    <div class="legend-box">
-      <h4>Map Legend</h4>
-      <div class="l-item"><span class="line supply"></span> Supply Route</div>
-      <div class="l-item"><span class="line return"></span> Return Route</div>
-      <div class="l-item"><span class="dot node"></span> Node</div>
-    </div>
+  
 
     <div class="footer">
       <button class="btn-back" (click)="goBack()">
@@ -67,7 +61,7 @@
       <map-marker 
         *ngFor="let node of nodes"
         [position]="{ lat: node.latitude, lng: node.longitude }"
-        [options]="nodeOptions"
+        [options]="node | thermalMarker"
         [title]="node.name || 'Node'">
       </map-marker>
 

@@ -26,7 +26,7 @@ export class EdgeAlgorithmComponent {
   selectedType: 'node' | 'edge' | null = null;
 
   mapOptions: google.maps.MapOptions = {
-    disableDefaultUI: true,
+    disableDefaultUI: false,
     zoomControl: true,
     styles: [{ featureType: 'poi', stylers: [{ visibility: 'off' }] }]
   };
@@ -44,6 +44,7 @@ export class EdgeAlgorithmComponent {
     strokeOpacity: 1,
     strokeWeight: 4,
     zIndex: 100
+    
   };
 
   nodeOptions: google.maps.MarkerOptions = {

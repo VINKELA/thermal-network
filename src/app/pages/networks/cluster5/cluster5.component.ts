@@ -31,7 +31,7 @@ export class Cluster5Component {
   zoom = 15;
 
   mapOptions: google.maps.MapOptions = {
-    disableDefaultUI: true,
+    disableDefaultUI: false,
     zoomControl: true,
     mapTypeId: 'roadmap',
     styles: [{ featureType: 'poi', stylers: [{ visibility: 'off' }] }]

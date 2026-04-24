@@ -1,0 +1,50 @@
+.scrollable-list { overflow-y: auto; max-height: 100%; }
+.empty-state { height: 100%; display: flex; align-items: center; justify-content: center; color: #8f9bb3; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+
+div[echarts] { height: 100%; width: 100%; min-height: 200px; }
+
+nb-card-body {
+  display: flex; flex-direction: column; min-height: 300px;
+  google-map { display: block; width: 100%; height: 100%; }
+}
+
+// 1. Ensure the right column takes full height
+.col-md-9 {
+  height: 100%;
+  min-height: 80vh; // Fallback: Ensure it takes up viewport height
+  display: flex;
+  flex-direction: column;
+}
+
+// 2. Map Card specific styles
+nb-card.flex-grow-1 {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; // Ensure card is never too small
+  
+  nb-card-body {
+    flex: 1;           // Grow to fill card
+    position: relative; // Anchor for absolute map
+    padding: 0 !important; // Remove padding so map hits edges
+    overflow: hidden;
+
+    // 3. Force Google Map to fill the container
+    google-map {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute; // Force it to fit the parent exactly
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+  }
+}
+
+// 4. Chart Heights
+div[echarts] {
+  height: 100%;
+  min-height: 250px;
+}

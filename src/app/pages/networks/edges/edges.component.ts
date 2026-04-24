@@ -1,6 +1,9 @@
 import { Component, Inject } from '@angular/core';
-import { LocalDataSource } from 'ng2-smart-table';
+import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { RestApiService } from '../../../@core/utils/rest-api.service';
+import { start } from 'repl';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ngx-edges',
@@ -9,13 +12,21 @@ import { RestApiService } from '../../../@core/utils/rest-api.service';
 })
 export class EdgesComponent {
 url: string =  'edges/';
-settings = {
+// Use ServerDataSource instead of LocalDataSource
+  source: ServerDataSource;
+
+  settings = {
+    // 1. Important: Disable client-side pagination since server handles it
+    pager: {
+      display: true,
+      perPage: 10, // Must match your Django pagination size
+    },
+    
     add: {
       addButtonContent: '<i class="nb-plus"></i>',
       createButtonContent: '<i class="nb-checkmark"></i>',
       cancelButtonContent: '<i class="nb-close"></i>',
-      confirmCreate: true, // Requires confirmation
-
+      confirmCreate: true,
     },
     edit: {
       editButtonContent: '<i class="nb-edit"></i>',
@@ -28,34 +39,42 @@ settings = {
       confirmDelete: true,
     },
     columns: {
-    
       name: {
-       title: 'Name',
-      type: 'html',
-          valuePrepareFunction: (name: string, row: any) => {
-        return `<a href="pages/edges/${row.id}">${name}</a>`;
-      }
+        title: 'Name',
+        type: 'html',
+        valuePrepareFunction: (name: string, row: any) => {
+          return `<a href="pages/edges/${row.id}">${name}</a>`;
+        }
       },
-      description: {
-        title: 'Description',
-        type: 'string',
-        
+      length: {
+        title: 'Length',
+        type: 'number',
       },
-      
     },
   };
 
-  source: LocalDataSource = new LocalDataSource();
+  constructor(
+    @Inject(RestApiService) private api: RestApiService, 
+    private http: HttpClient // ServerDataSource needs raw HttpClient usually
+  ) {
+  }
 
-  constructor(@Inject(RestApiService) private api: RestApiService) {
-    this.api.get(this.url)
-    .subscribe((data: any) => 
-      {
-        const flattened = data.results.map(item => ({
-        ...item,
-      }));            
-      this.source.load(flattened);
-      })
+  ngOnInit() {
+    // 2. Initialize the ServerDataSource with configuration
+    this.source = new ServerDataSource(this.http, {
+      endPoint: environment.appUrl + '/' + this.url, // Full URL required here
+      
+      // Map the "page" query parameter
+      pagerPageKey: 'page', 
+      
+      // If you want sorting/filtering to trigger server calls:
+      sortFieldKey: 'ordering', 
+      pagerLimitKey: 'limit', // Only if your API supports dynamic page size
+
+      // 3. Map the response: 'results' is your data array, 'count' is total
+      dataKey: 'results', 
+      totalKey: 'count',
+    });
   }
 
   onDeleteConfirm(event): void {
@@ -99,4 +118,8 @@ onCreateConfirm(event: any): void {
     event.confirm.reject();
   }
 }
+goToComparison(): void {
+    // Navigate to the edge comparison page
+    window.location.href = '/pages/edges/comparison';
+  }
 }

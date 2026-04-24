@@ -52,7 +52,7 @@
       <map-marker 
         *ngFor="let node of nodes"
         [position]="{ lat: node.latitude, lng: node.longitude }"
-        [options]="nodeOptions"
+        [options]="node | thermalMarker"
         (mapClick)="selectNode(node, markerRef)"
         #markerRef="mapMarker">
       </map-marker>

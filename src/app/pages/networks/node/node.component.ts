@@ -20,11 +20,12 @@ export class NodeComponent implements OnInit {
     //mapTypeId: 'satellite' // Satellite is best for physical nodes/manholes/equipment
   };
 
-  // UX: Theme & Icon Config
+  // UX: Theme & Icon ConfigW
   typeConfig: Record<NodeType, { label: string; icon: string; class: string }> = {
     consumer: { label: 'Consumer', icon: 'home-outline', class: 'type-consumer' },     // Blue
     producer: { label: 'Producer', icon: 'flash-outline', class: 'type-producer' },   // Green
-    storage:  { label: 'Storage',  icon: 'cube-outline', class: 'type-storage' }      // Purple
+    storage:  { label: 'Storage',  icon: 'cube-outline', class: 'type-storage' },      // Purple
+    cluster:  { label: 'Cluster',  icon: 'layers-outline', class: 'type-cluster' }    // Green
   };
 
   constructor(

@@ -6,33 +6,33 @@
       <h1>{{ configuration.name || 'Unnamed Configuration' }}</h1>
       <p class="desc">{{ configuration.description }}</p>
       
-      <div class="params" *ngIf="configuration.parameters">
-        <code>{{ configuration.parameters | json }}</code>
+      <div class="visual-toggle">
+        <label>
+          <input type="checkbox" [(ngModel)]="useCircleRepresentation" (ngModelChange)="triggerVisualUpdate()">
+          Use Enclosing Circle View
+        </label>
       </div>
     </header>
 
-    <hr class="divider">
-
     <div class="cluster-list">
-      <h3>Generated Clusters ({{ configuration.clusters.length }})</h3>
+      <h3>Clusters ({{ configuration.clusters.length }})</h3>
       
       <div class="cluster-card" 
-           *ngFor="let c of configuration.clusters"
+           *ngFor="let c of configuration.clusters; trackBy: trackByClusterId"
            (click)="selectClusterFromList(c)">
         <div class="card-top">
           <span class="c-name">{{ c.name || 'Cluster ' + c.id }}</span>
           <span class="c-bldgs">{{ c.no_of_buildings }} Bldgs</span>
         </div>
         <div class="card-btm">
-          <span><i class="eva eva-thermometer-outline"></i> {{ c.heating_demand | number:'1.0-0' }} kW</span>
-          <span><i class="eva eva-radio-button-on-outline"></i> {{ c.effective_radius | number:'1.0-0' }} m</span>
+          <span><i class="eva eva-radio-button-on-outline"></i> Radius: {{ c.effective_radius | number:'1.0-0' }}m</span>
         </div>
       </div>
     </div>
 
     <div class="action-footer">
       <button class="btn-back" (click)="goBack()">
-        <i class="eva eva-arrow-back-outline"></i> Back to Dashboard
+        <i class="eva eva-arrow-back-outline"></i> Back
       </button>
     </div>
   </div>
@@ -44,81 +44,114 @@
       [center]="center" 
       [zoom]="zoom"
       [options]="mapOptions"
-      (zoomChanged)="onZoomChanged()"
-      >
+      (zoomChanged)="onZoomChanged()">
 
-      <ng-container *ngFor="let c of configuration.clusters">
+      <ng-container *ngIf="!showBuildings">
+        <ng-container *ngFor="let c of configuration.clusters; trackBy: trackByClusterId">
+          
+          <map-marker 
+             [position]="{ lat: c.latitude, lng: c.longitude }"
+             [options]="getClusterMarkerOptions(c)"
+             (mapClick)="openInfo(markerRef, c, 'cluster')"
+             #markerRef="mapMarker">
+          </map-marker>
 
-        <ng-container *ngIf="!showBuildings">
           <map-circle 
-            *ngIf="c.effective_radius"
+            *ngIf="useCircleRepresentation"
             [center]="{ lat: c.latitude, lng: c.longitude }"
             [radius]="c.effective_radius"
-            [options]="circleOptions"
+            [options]="getDynamicCircleOptions(c)" 
             (circleClick)="selectClusterFromList(c)">
           </map-circle>
 
-          <map-marker
-            [position]="{ lat: c.latitude, lng: c.longitude }"
-            [title]="c.name"
-            [options]="centerMarkerOptions"
-            (mapClick)="openInfo(markerRef, c, 'cluster')"
-            #markerRef="mapMarker">
-          </map-marker>
         </ng-container>
+      </ng-container>
 
-        <ng-container *ngIf="showBuildings">
+      <ng-container *ngIf="showBuildings">
+        <ng-container *ngFor="let c of configuration.clusters; trackBy: trackByClusterId">
           
           <map-polygon 
             *ngIf="c.boundaryPath && c.boundaryPath.length >= 3"
-            [paths]="c.boundaryPath"
-            [options]="polygonOptions">
+            [paths]="c.boundaryPath" 
+            [options]="c.dynamicPolygonOptions">
           </map-polygon>
-
-          <map-circle 
-            *ngIf="!c.boundaryPath || c.boundaryPath.length < 3"
-            [center]="{ lat: c.latitude, lng: c.longitude }"
-            [radius]="c.effective_radius"
-            [options]="circleOptions">
-          </map-circle>
+          
+          <map-polyline
+            *ngIf="c.polylinePath"
+            [path]="c.polylinePath" 
+            [options]="c.dynamicPolylineOptions">
+          </map-polyline>
 
           <map-marker 
-            *ngFor="let b of c.buildings"
+            *ngFor="let b of c.buildings; trackBy: trackByBuildingId"
             [position]="{ lat: b.latitude, lng: b.longitude }"
-            [title]="b.name"
-            [options]="buildingMarkerOptions"
+            [options]="b | thermalMarker"
             (mapClick)="openInfo(bMarker, b, 'building')"
             #bMarker="mapMarker">
           </map-marker>
-        </ng-container>
 
+        </ng-container>
       </ng-container>
 
       <map-info-window>
         <div class="popup" *ngIf="selectedItem">
           <span class="tag" [class]="selectedItem._type">{{ selectedItem._type | titlecase }}</span>
-          <h4>{{ selectedItem.name }}</h4>
+          <h4>{{ selectedItem.name || 'Unknown' }}</h4>
           
           <div *ngIf="selectedItem._type === 'cluster'" class="popup-meta">
             <div>Buildings: <strong>{{ selectedItem.no_of_buildings }}</strong></div>
-            <div>Radius: <strong>{{ selectedItem.effective_radius | number:'1.0-0' }} m</strong></div>
+            <div>Status: <strong [style.color]="selectedItem.energy_balance_status === 'excess_heat' ? '#00d68f' : '#ff3d71'">
+              {{ selectedItem.energy_balance_status }}
+            </strong></div>
+            <div>Radius: {{ selectedItem.effective_radius | number:'1.0-0' }} m</div>
           </div>
-          
+
           <div *ngIf="selectedItem._type === 'building'" class="popup-meta">
-            <div>Type: {{ selectedItem.building_type }}</div>
+             <div>Type: {{ selectedItem.building_type }}</div>
+             <div>Load: <strong>{{ selectedItem.load_type }}</strong></div>
+             <div *ngIf="selectedItem.waste_heat_source_type">Source: {{ selectedItem.waste_heat_source_type }}</div>
           </div>
         </div>
       </map-info-window>
 
     </google-map>
 
-    <div class="zoom-hint" *ngIf="!showBuildings">
-      <i class="eva eva-search-outline"></i> Zoom in to see details
+    <div class="zoom-hint" [class.hidden]="showBuildings">
+      <i class="eva eva-search-outline"></i> Zoom in to see buildings
     </div>
   </div>
+</div>
 
+<div class="legend-box" style="padding: 10px; background: white; border-radius: 4px; margin-top: 10px;">
+  <div style="font-weight: bold; margin-bottom: 5px;">Legend</div>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+    <div>
+      <div style="font-size: 0.8rem; color: #888; margin-bottom: 3px;">Cluster Balance</div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span style="width: 12px; height: 12px; background: #00d68f; opacity: 0.5; border: 2px solid #00d68f;"></span>
+        <span>Excess Heat</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span style="width: 12px; height: 12px; background: #ff3d71; opacity: 0.5; border: 2px solid #ff3d71;"></span>
+        <span>Heat Deficit</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size: 0.8rem; color: #888; margin-bottom: 3px;">Buildings</div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span style="width: 10px; height: 10px; background: #00d68f; border-radius: 50%;"></span>
+        <span>Source</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span style="width: 10px; height: 10px; background: #ff3d71; border-radius: 50%;"></span>
+        <span>Sink</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <ng-template #loading>
-  <div class="skeleton-loader">Loading Configuration Data...</div>
+  <div class="loading-state">Loading Data...</div>
 </ng-template>

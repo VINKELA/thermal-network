@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RestApiService } from '../../../@core/utils/rest-api.service';
 import { NbThemeService } from '@nebular/theme';
+import { takeWhile } from 'rxjs/operators';
 
 @Component({
   selector: 'ngx-load-profile',
@@ -9,6 +10,8 @@ import { NbThemeService } from '@nebular/theme';
 })
 export class LoadProfileComponent implements OnInit, OnDestroy {
   
+  private alive = true;
+
   // --- SELECTION STATE ---
   selectedType: string = 'building';
   selectedYear: number = new Date().getFullYear() - 1; 
@@ -20,20 +23,18 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
   searchText: string = '';
   isListLoading = false;
   isChartLoading = false;
-  
-  // Timer for search debounce
   searchTimeout: any; 
 
   // --- DATA STATE ---
   entities: any[] = [];
   filteredEntities: any[] = [];
   
-  // Cache Structure: { 'heating': [[ts, val], ...], 'waste_heat': [[ts, val], ...] }
+  // Cache Structure
   cachedSeriesData: { [key: string]: any[] } = {};
 
   // --- ECHARTS CONFIG ---
-  echartsOptions: any = {};
-  themeSubscription: any;
+  // Initialize with empty object to prevent HTML errors
+  echartsOptions: any = {}; 
   currentTheme: any;
 
   constructor(
@@ -47,30 +48,31 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.themeSubscription = this.theme.getJsTheme().subscribe(config => {
-      this.currentTheme = config;
-      if (Object.keys(this.cachedSeriesData).length > 0) {
-        this.updateChartOptions();
-      }
-    });
+    // 1. Theme Subscription
+    this.theme.getJsTheme()
+      .pipe(takeWhile(() => this.alive))
+      .subscribe(config => {
+        this.currentTheme = config;
+        // Re-render chart if theme changes
+        if (this.selectedEntity) {
+          this.updateChartOptions();
+        }
+      });
 
-    this.fetchEntities(); // Load initial list
+    // 2. Initial Data Load
+    this.fetchEntities(); 
   }
 
   ngOnDestroy(): void {
-    if (this.themeSubscription) this.themeSubscription.unsubscribe();
+    this.alive = false;
   }
 
-  // --- 1. SERVER-SIDE SEARCH (Fixes "Search not getting all buildings") ---
+  // --- SEARCH & FILTERING ---
 
   fetchEntities(searchTerm: string = '') {
     this.isListLoading = true;
-    this.selectedEntity = null;
-    this.echartsOptions = {}; 
     
     const endpoint = this.selectedType === 'building' ? 'buildings/' : 'boilers/';
-    
-    // Use limit=100 and search param
     let params = `?limit=100`; 
     if (searchTerm) {
       params += `&search=${encodeURIComponent(searchTerm)}`;
@@ -78,16 +80,14 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
 
     this.api.get<any>(`${endpoint}${params}`).subscribe({
       next: (data) => {
-        let results = [];
-        if (data && data.results && Array.isArray(data.results)) results = data.results;
-        else if (Array.isArray(data)) results = data;
-
+        // Handle both paginated results and raw arrays
+        const results = (data && data.results) ? data.results : (Array.isArray(data) ? data : []);
         this.entities = results;
-        this.filteredEntities = results; 
+        this.filteredEntities = results;
         this.isListLoading = false;
       },
       error: (err) => {
-        console.error('Failed to fetch entities', err);
+        console.error('Fetch error:', err);
         this.entities = [];
         this.filteredEntities = [];
         this.isListLoading = false;
@@ -96,19 +96,18 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
   }
 
   filterEntities() {
-    // Debounce search to avoid spamming API
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       this.fetchEntities(this.searchText);
-    }, 300);
+    }, 400); 
   }
 
   onTypeChange(type: string) {
     this.selectedType = type;
-    if (type === 'building') this.searchPlaceholder = 'Search Building...';
-    else this.searchPlaceholder = 'Search Boiler...';
-    
+    this.searchPlaceholder = type === 'building' ? 'Search Building...' : 'Search Boiler...';
     this.searchText = ''; 
+    this.selectedEntity = null;
+    this.filteredEntities = [];
     this.fetchEntities();
   }
 
@@ -117,7 +116,7 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
     this.fetchLoadProfile();
   }
 
-  // --- 2. DATA FETCHING (Gets Heating AND Waste Heat) ---
+  // --- CHART DATA FETCHING ---
 
   fetchLoadProfile() {
     if (!this.selectedEntity) return;
@@ -140,7 +139,9 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
         this.isChartLoading = false;
       },
       error: (err) => {
-        console.error('Failed to fetch profiles', err);
+        console.error('Profile fetch error:', err);
+        this.cachedSeriesData = {};
+        this.updateChartOptions(); // Clear chart on error
         this.isChartLoading = false;
       }
     });
@@ -149,144 +150,124 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
   processChartData(data: any[]) {
     this.cachedSeriesData = {};
 
+    if (!data || data.length === 0) {
+      this.updateChartOptions(); 
+      return;
+    }
+
     data.forEach(item => {
-      // Group by 'heating', 'waste_heat', 'cooling', etc.
       const type = item.profile_type || 'Unknown';
       if (!this.cachedSeriesData[type]) {
         this.cachedSeriesData[type] = [];
       }
       
-      const timestamp = new Date(item.start_date).getTime();
-      const val = item.value;
-      this.cachedSeriesData[type].push([timestamp, val]);
+      const dateObj = new Date(item.start_date);
+      if (!isNaN(dateObj.getTime())) {
+        this.cachedSeriesData[type].push([dateObj.getTime(), item.value]);
+      }
     });
 
     this.updateChartOptions();
   }
 
-  // --- 3. CHART CONFIG (Colors & Overlays) ---
+  // --- CHART RENDERING ---
 
   updateChartOptions() {
-    if (!this.currentTheme || Object.keys(this.cachedSeriesData).length === 0) return;
+    if (!this.currentTheme) return;
 
-    const themeVars: any = this.currentTheme.variables;
-    const echartsVars: any = this.currentTheme.variables.echarts;
-
-    // A. Define Distinct Colors & Names
-    const STYLE_MAP: any = {
-      'heating': { color: themeVars.danger, name: 'Heating Demand' },       // Red
-      'waste_heat': { color: themeVars.success, name: 'Waste Heat Supply' }, // Green
-      'cooling': { color: themeVars.info, name: 'Cooling Demand' },         // Blue
-      'electricity': { color: themeVars.warning, name: 'Electricity' }      // Orange
+    // Safety: Fallback colors if theme vars are missing
+    const vars = this.currentTheme.variables;
+    const colors = {
+      danger: vars.danger || '#ff3d71',
+      success: vars.success || '#00d68f',
+      info: vars.info || '#0095ff',
+      warning: vars.warning || '#ffaa00',
+      primary: vars.primary || '#3366ff',
+      textColor: vars.fgText || '#000000',
+      axisLine: vars.separator || '#cccccc',
+      bg: 'transparent'
     };
 
-    // B. Build Series
+    // 1. Empty Data State
+    if (Object.keys(this.cachedSeriesData).length === 0) {
+      this.echartsOptions = {
+        title: { 
+          text: 'No Data Available for Selected Year', 
+          left: 'center', top: 'center',
+          textStyle: { color: colors.textColor } 
+        }
+      };
+      return;
+    }
+
+    // 2. Define Series Styles
+    const STYLE_MAP: any = {
+      'heating': { color: colors.danger, name: 'Heating' },
+      'waste_heat': { color: colors.success, name: 'Waste Heat' },
+      'cooling': { color: colors.info, name: 'Cooling' },
+      'electricity': { color: colors.warning, name: 'Electricity' }
+    };
+
+    // 3. Build Series Data
     const seriesList = Object.keys(this.cachedSeriesData).map(key => {
-      const style = STYLE_MAP[key] || { color: themeVars.primary, name: key };
-      
+      const style = STYLE_MAP[key] || { color: colors.primary, name: key };
       return {
         name: style.name,
         type: 'line',
-        sampling: 'lttb', 
+        sampling: 'lttb',
         symbol: 'none',
         smooth: false,
         data: this.cachedSeriesData[key],
         lineStyle: { width: 2, color: style.color },
-        itemStyle: { color: style.color, opacity: 0.8 },
-        // Add areaStyle if you want them filled (optional)
-        // areaStyle: { opacity: 0.1 } 
+        itemStyle: { color: style.color },
+        areaStyle: { opacity: 0.1, color: style.color }
       };
     });
 
-    const startOfYear = new Date(this.selectedYear, 0, 1).getTime();
-    const endOfYear = new Date(this.selectedYear, 11, 31, 23, 59).getTime();
-
+    // 4. Construct ECharts Option
     this.echartsOptions = {
-      backgroundColor: echartsVars.bg,
-      
-      // Auto-assign colors based on our series order logic
+      backgroundColor: colors.bg,
       color: seriesList.map(s => s.itemStyle.color),
-      
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'cross' },
         formatter: (params: any) => {
-          if (!params || params.length === 0) return '';
+          if (!params.length) return '';
           const date = new Date(params[0].value[0]);
-          let tip = `<div style="margin-bottom:5px; font-weight:bold;">${date.toLocaleString()}</div>`;
-          
+          let tip = `<div style="font-weight:bold; margin-bottom:5px;">${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>`;
           params.forEach((p: any) => {
-             const val = p.value[1] !== undefined ? p.value[1].toFixed(2) : '0.00';
-             // Use the specific series color dot
-             tip += `<div style="display:flex; justify-content:space-between; align-items:center;">
-                      <span>${p.marker} ${p.seriesName}: </span>
-                      <span style="font-weight:bold; margin-left:10px;">${val} kW</span>
-                    </div>`;
+            const val = p.value[1]?.toFixed(2) || '0.00';
+            tip += `<div><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${val} kW</b></div>`;
           });
           return tip;
         }
       },
-      
       legend: {
         data: seriesList.map(s => s.name),
-        textStyle: { color: echartsVars.textColor },
-        bottom: 0 
+        textStyle: { color: colors.textColor },
+        bottom: 0
       },
-      
       grid: {
-        top: 40,
-        left: 60,
-        right: 40,
-        bottom: 90, 
-        containLabel: true
+        top: 40, left: 60, right: 40, bottom: 80, containLabel: true
       },
-
       dataZoom: [
-        {
-          type: 'slider',
-          show: true,
-          xAxisIndex: [0],
-          start: 0,
-          end: 100,
-          bottom: 35,
-          borderColor: echartsVars.axisLineColor,
-          textStyle: { color: echartsVars.textColor }
-        },
-        {
-          type: 'inside',
-          xAxisIndex: [0],
-          start: 0,
-          end: 100
-        }
+        { type: 'slider', show: true, bottom: 30, xAxisIndex: [0] },
+        { type: 'inside', xAxisIndex: [0] }
       ],
-
       xAxis: {
         type: 'time',
-        min: startOfYear,
-        max: endOfYear,
         boundaryGap: false,
-        axisLine: { lineStyle: { color: echartsVars.axisLineColor } },
-        splitLine: { show: false },
-        axisLabel: { 
-          textStyle: { color: echartsVars.textColor },
-          formatter: (value: number) => {
-            const date = new Date(value);
-            if (date.getDate() === 1 && date.getHours() === 0) {
-              return date.toLocaleString('en-US', { month: 'short' });
-            }
-            return date.toLocaleString('en-US', { month: 'short', day: 'numeric' });
-          }
-        }
+        axisLine: { lineStyle: { color: colors.axisLine } },
+        axisLabel: { textStyle: { color: colors.textColor } },
+        splitLine: { show: false }
       },
-      
       yAxis: {
         type: 'value',
         name: 'Load (kW)',
-        axisLine: { lineStyle: { color: echartsVars.axisLineColor } },
-        splitLine: { lineStyle: { color: echartsVars.splitLineColor } },
-        axisLabel: { textStyle: { color: echartsVars.textColor } }
+        axisLine: { lineStyle: { color: colors.axisLine } },
+        axisLabel: { textStyle: { color: colors.textColor } },
+        splitLine: { lineStyle: { color: colors.axisLine, type: 'dashed', opacity: 0.5 } }
       },
-      
       series: seriesList
     };
   }

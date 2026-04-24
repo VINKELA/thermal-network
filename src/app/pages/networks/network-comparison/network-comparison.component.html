@@ -1,0 +1,107 @@
+<div class="row h-100">
+  
+  <div class="col-md-3 h-100">
+    <nb-card class="h-100 d-flex flex-column">
+      <nb-card-header>
+        <div class="subtitle-2">Compare Networks</div>
+        <nb-form-field class="mt-2">
+          <nb-icon nbPrefix icon="search-outline" pack="eva"></nb-icon>
+          <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchText" (keyup)="onSearchInput()">
+        </nb-form-field>
+      </nb-card-header>
+      
+      <nb-list class="scrollable-list flex-grow-1" [nbSpinner]="isLoadingList">
+        <nb-list-item *ngFor="let net of allNetworks">
+          <div class="d-flex align-items-center w-100">
+            <nb-checkbox 
+              class="mr-3"
+              [checked]="selectedIds.includes(net.id)"
+              (checkedChange)="toggleSelection(net.id)"
+              [disabled]="!selectedIds.includes(net.id) && selectedIds.length >= 5">
+            </nb-checkbox>
+            <div>
+              <div class="subtitle-2">{{ net.name }}</div>
+              <div class="caption text-hint">{{ net.project_name || 'No Project' }}</div>
+            </div>
+          </div>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
+  </div>
+
+  <div class="col-md-9 h-100 d-flex flex-column">
+    
+    <nb-card class="flex-grow-1 mb-3" style="min-height: 50%;">
+      <nb-card-header class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <nb-icon icon="map-outline" class="mr-2"></nb-icon> 
+          <span>Spatial Analysis</span>
+        </div>
+        
+        <div class="d-flex align-items-center" style="font-size: 0.75rem;">
+          <div *ngFor="let net of comparisonData" class="mr-3 d-flex align-items-center">
+            <span class="dot" [style.background-color]="net.uiColor"></span> 
+            <b>{{ net.name }}</b>
+          </div>
+          <div class="border-left pl-3 ml-2 text-hint d-flex">
+            <span class="mr-3">● Big = Producer</span>
+            <span class="mr-3">▼ Triangle = Cluster</span>
+            <span>• Small = Consumer</span>
+          </div>
+        </div>
+      </nb-card-header>
+      
+      <nb-card-body class="p-0 position-relative">
+        <google-map 
+          *ngIf="isApiLoaded"
+          height="100%" width="100%" 
+          [center]="center" [zoom]="10" [options]="mapOptions">
+          
+          <ng-container *ngFor="let net of comparisonData">
+            <map-marker 
+              *ngFor="let node of net.nodes"
+              [position]="{ lat: node.latitude, lng: node.longitude }"
+              [options]="getMarkerOptions(net.uiColor, node)">
+            </map-marker>
+          </ng-container>
+        </google-map>
+        
+        <div *ngIf="!isApiLoaded" class="loading-overlay">Loading Map API...</div>
+      </nb-card-body>
+    </nb-card>
+
+    <div class="row" style="height: 40%;">
+      
+      <div class="col-md-8 h-100">
+        <nb-card class="h-100">
+          <nb-card-header>Composition</nb-card-header>
+          <nb-card-body>
+             <div *ngIf="comparisonData.length > 0" echarts [options]="nodeTypeChartOption" class="h-100 w-100"></div>
+             <div *ngIf="comparisonData.length === 0" class="empty-state">Select networks to compare</div>
+          </nb-card-body>
+        </nb-card>
+      </div>
+
+      <div class="col-md-4 h-100">
+        <nb-card class="h-100">
+          <nb-card-header>Total Mix</nb-card-header>
+          <nb-card-body class="d-flex align-items-center justify-content-center p-2">
+            
+            <ngx-charts-pie-chart
+              *ngIf="summaryPieData.length > 0 && comparisonData.length > 0"
+              [scheme]="typeColorScheme"
+              [results]="summaryPieData"
+              [doughnut]="true"
+              [legend]="false"
+              [labels]="true"
+              [trimLabels]="false">
+            </ngx-charts-pie-chart>
+
+             <div *ngIf="comparisonData.length === 0" class="empty-state">No Data</div>
+          </nb-card-body>
+        </nb-card>
+      </div>
+    </div>
+
+  </div>
+</div>
