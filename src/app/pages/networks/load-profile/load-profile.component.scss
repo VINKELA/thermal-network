@@ -81,6 +81,143 @@ nb-card-body {
   min-height: 0; // CRUCIAL: Keeps chart restricted
 }
 
+.copy-visual-button {
+  white-space: nowrap;
+
+  nb-icon {
+    margin-right: 0.25rem;
+  }
+}
+
+.utilization-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--divider-color, #edf1f7);
+  background: var(--card-background-color, #ffffff);
+
+  .summary-item {
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--divider-color, #edf1f7);
+    border-radius: 6px;
+    background: var(--layout-background-color, #f7f9fc);
+
+    span {
+      display: block;
+      color: var(--text-hint-color, #8f9bb3);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    strong {
+      display: block;
+      color: var(--text-basic-color, #222b45);
+      font-size: 0.95rem;
+      margin-top: 0.15rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+}
+
+.copy-feedback {
+  color: var(--color-success-600, #00a86b);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chart-legend-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--divider-color, #edf1f7);
+  background: var(--card-background-color, #ffffff);
+}
+
+.legend-chip {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--divider-color, #edf1f7);
+  border-radius: 6px;
+  background: var(--layout-background-color, #f7f9fc);
+}
+
+.legend-swatch {
+  flex: 0 0 auto;
+  width: 0.8rem;
+  height: 0.8rem;
+  margin: 0.14rem 0.5rem 0 0;
+  border-radius: 3px;
+}
+
+.legend-copy {
+  min-width: 0;
+
+  strong,
+  em {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  strong {
+    color: var(--text-basic-color, #222b45);
+    font-size: 0.78rem;
+    line-height: 1.15rem;
+  }
+
+  em {
+    color: var(--text-hint-color, #8f9bb3);
+    font-size: 0.68rem;
+    font-style: normal;
+    line-height: 1rem;
+  }
+}
+
+.presentation-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--divider-color, #edf1f7);
+  background: var(--card-background-color, #ffffff);
+
+  .readout-item {
+    min-width: 0;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--divider-color, #edf1f7);
+    border-radius: 6px;
+    background: var(--layout-background-color, #f7f9fc);
+
+    span {
+      display: block;
+      color: var(--text-hint-color, #8f9bb3);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    strong {
+      display: block;
+      color: var(--text-basic-color, #222b45);
+      font-size: 0.9rem;
+      margin-top: 0.15rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
 .echarts-container {
   flex: 1; 
   min-height: 0; // Removing explicit pixel limits allows dynamic fluid sizing
@@ -89,6 +226,18 @@ nb-card-body {
   .echart {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
+  }
+}
+
+@media (max-width: 992px) {
+  .utilization-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .utilization-summary {
+    grid-template-columns: 1fr;
   }
 }
 

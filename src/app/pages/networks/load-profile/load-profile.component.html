@@ -65,7 +65,7 @@
             <div class="d-flex align-items-center justify-content-between w-100">
               <div class="d-flex align-items-center overflow-hidden">
                 <div class="icon-container mr-3">
-                   <nb-icon [icon]="item.node_type === 'building' ? 'home-outline' : 'layers-outline'" status="basic"></nb-icon>
+                   <nb-icon [icon]="item.boiler ? 'layers-outline' : 'home-outline'" status="basic"></nb-icon>
                 </div>
                 <div class="text-overflow-hidden">
                   <div class="subtitle-2 text-truncate">{{ item.name || 'Node ' + item.id }}</div>
@@ -92,13 +92,13 @@
       <nb-card-header class="d-flex justify-content-between align-items-center flex-wrap py-2">
         <div class="mb-1 mb-sm-0 d-flex align-items-center">
           <nb-radio-group [(value)]="analysisScope" (valueChange)="renderChart()" class="d-flex mr-3">
-            <nb-radio value="system" [disabled]="aggregateSystemData.length === 0">Macro (System)</nb-radio>
+            <nb-radio value="system" [disabled]="aggregateSystemData.length === 0 && systemUtilizationData.length === 0">Macro (System)</nb-radio>
             <nb-radio value="selection" [disabled]="selectedNodes.size === 0">Micro (Drill-Down)</nb-radio>
           </nb-radio-group>
         </div>
         
         <div class="d-flex align-items-center">
-          <nb-select [(selected)]="selectedYear" (selectedChange)="fetchSystemAggregate()" size="small" class="mr-2" style="width: 100px;">
+          <nb-select [(selected)]="selectedYear" (selectedChange)="onYearChange($event)" size="small" class="mr-2" style="width: 100px;">
             <nb-option *ngFor="let y of availableYears" [value]="y">{{ y }}</nb-option>
           </nb-select>
           
@@ -109,20 +109,68 @@
             <button nbButtonToggle [pressed]="selectedChartView === 'sankey'" (click)="setChartView('sankey')">
               <nb-icon icon="shuffle-2-outline"></nb-icon> Flow
             </button>
+            <button nbButtonToggle [pressed]="selectedChartView === 'utilization'" (click)="setChartView('utilization')">
+              <nb-icon icon="percent-outline"></nb-icon> Utilization
+            </button>
+            <button nbButtonToggle [pressed]="selectedChartView === 'summary'" (click)="setChartView('summary')">
+              <nb-icon icon="bar-chart-2-outline"></nb-icon> Summary
+            </button>
           </nb-button-group>
+
+          <button nbButton size="small" status="primary" class="ml-2 copy-visual-button" (click)="copyCurrentVisualization()" [disabled]="!chartInstance">
+            <nb-icon icon="copy-outline"></nb-icon>
+            Copy visual
+          </button>
+          <span *ngIf="copyFeedback" class="copy-feedback ml-2">{{ copyFeedback }}</span>
         </div>
       </nb-card-header>
 
       <nb-card-body class="chart-body p-0 position-relative">
-        <div *ngIf="(analysisScope === 'system' && aggregateSystemData.length === 0 && !isChartLoading) || (analysisScope === 'selection' && selectedNodes.size === 0)" class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
+        <div *ngIf="(analysisScope === 'system' && !isChartLoading && ((isUtilizationBackedView() && systemUtilizationData.length === 0) || (!isUtilizationBackedView() && aggregateSystemData.length === 0))) || (analysisScope === 'selection' && selectedNodes.size === 0)" class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
           <nb-icon icon="bar-chart-outline" style="font-size: 3rem; color: #e4e9f2;"></nb-icon>
           <h6 class="text-hint mt-3">
-             {{ analysisScope === 'system' ? 'Select a Project to view macro system balance.' : 'Select assets from the directory to perform isolated drill-down.' }}
+             {{ analysisScope === 'system' ? (isUtilizationBackedView() ? 'Select a Project to view producer/consumer utilization.' : 'Select a Project to view macro system balance.') : 'Select assets from the directory to perform isolated drill-down.' }}
           </h6>
         </div>
 
-        <div *ngIf="(analysisScope === 'system' && aggregateSystemData.length > 0) || (analysisScope === 'selection' && selectedNodes.size > 0)" class="echarts-container h-100 w-100">
-          <div echarts [options]="echartsOptions" class="echart h-100 w-100"></div>
+        <div *ngIf="isUtilizationBackedView() && displayUtilizationSummary" class="utilization-summary">
+          <div class="summary-item">
+            <span>Producer heat used</span>
+            <strong>{{ displayUtilizationSummary.producer_annual_utilization_pct | number:'1.0-1' }}%</strong>
+          </div>
+          <div class="summary-item">
+            <span>Demand served</span>
+            <strong>{{ displayUtilizationSummary.consumer_annual_utilization_pct | number:'1.0-1' }}%</strong>
+          </div>
+          <div class="summary-item">
+            <span>Unused heat</span>
+            <strong>{{ displayUtilizationSummary.annual_unused_producer_heat_kwh | number:'1.0-0' }} kWh</strong>
+          </div>
+          <div class="summary-item">
+            <span>Unserved demand</span>
+            <strong>{{ displayUtilizationSummary.annual_unserved_consumer_heat_kwh | number:'1.0-0' }} kWh</strong>
+          </div>
+        </div>
+
+        <div *ngIf="chartLegendItems.length > 0" class="chart-legend-strip">
+          <div *ngFor="let item of chartLegendItems" class="legend-chip">
+            <span class="legend-swatch" [style.background]="item.color"></span>
+            <span class="legend-copy">
+              <strong>{{ item.label }}</strong>
+              <em>{{ item.detail }}</em>
+            </span>
+          </div>
+        </div>
+
+        <div *ngIf="selectedChartView === 'summary' && presentationRows.length > 0" class="presentation-readout">
+          <div *ngFor="let row of presentationRows" class="readout-item">
+            <span>{{ row.label }}</span>
+            <strong>{{ row.value | number:'1.0-1' }} {{ row.unit }}</strong>
+          </div>
+        </div>
+
+        <div *ngIf="(analysisScope === 'system' && (aggregateSystemData.length > 0 || systemUtilizationData.length > 0)) || (analysisScope === 'selection' && selectedNodes.size > 0)" class="echarts-container h-100 w-100" [class.with-summary]="isUtilizationBackedView() && displayUtilizationSummary">
+          <div echarts [options]="echartsOptions" (chartInit)="onChartInit($event)" class="echart h-100 w-100"></div>
         </div>
       </nb-card-body>
     </nb-card>

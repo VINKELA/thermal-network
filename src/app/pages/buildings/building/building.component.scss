@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 150px);
+}
+
 .building-container {
   display: grid;
   grid-template-columns: 450px 1fr; /* Fixed width for info, rest for map */
@@ -5,7 +10,7 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  min-height: 550px;
+  min-height: calc(100vh - 150px);
   font-family: 'Inter', sans-serif;
   border: 1px solid #edf1f7;
 
@@ -128,6 +133,13 @@
 .map-panel {
   position: relative;
   background: #eee;
+  min-height: 100%;
+
+  google-map {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
 
   .fsa-card {
     position: absolute;
