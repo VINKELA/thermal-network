@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NetworksComponent } from './networks/networks.component';
 import { NetworkComponent } from './network/network.component';
-import { NbMenuModule, NbCardModule, NbButtonModule, NbFormFieldModule, NbIconModule, NbInputModule, NbListModule, NbSelectModule, NbSpinnerModule, NbCheckboxModule } from '@nebular/theme';
+import { NbMenuModule, NbCardModule, NbButtonModule, NbFormFieldModule, NbIconModule, NbInputModule, NbListModule, NbSelectModule, NbSpinnerModule, NbCheckboxModule, NbRadioModule, NbButtonGroupModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { ThemeModule } from '../../@theme/theme.module';
 import { NetworkAlgorithmComponent } from './network-algorithm/network-algorithm.component';
@@ -120,6 +120,8 @@ import { PipeSizesCompareComponent } from './pipe-sizes-compare/pipe-sizes-compa
     NbCheckboxModule,
     NgxEchartsModule,
     NgxChartsModule,
+    NbRadioModule,
+    NbButtonGroupModule,
     
   ]
 })

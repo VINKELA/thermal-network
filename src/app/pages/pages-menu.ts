@@ -64,7 +64,7 @@ export const MENU_ITEMS: NbMenuItem[] = [
     link: '/pages/edge-algorithms',
     },
     {
-    title: 'Edge Connection Algorithms',
+    title: 'Edge Optimization Algorithms',
     icon: 'settings-2-outline',
     link: '/pages/edge-connection-algorithms',
     },

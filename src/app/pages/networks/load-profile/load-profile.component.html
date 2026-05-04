@@ -1,89 +1,129 @@
-<div class="row h-100">
+<div class="row h-100 m-0">
   
-  <div class="col-md-4 col-lg-3 d-flex flex-column h-100">
-    <nb-card class="flex-grow-1" [nbSpinner]="isListLoading" nbSpinnerStatus="primary">
-      <nb-card-header>
-        <div class="subtitle-2">Load Analytics</div>
+  <div class="col-md-4 col-lg-3 d-flex flex-column h-100 p-0 pr-md-2">
+    <nb-card class="flex-grow-1 h-100" [nbSpinner]="isListLoading" nbSpinnerStatus="primary">
+      <nb-card-header class="d-flex justify-content-between align-items-center">
+        <div class="subtitle-2">System Analytics</div>
       </nb-card-header>
       
       <nb-card-body class="p-3 d-flex flex-column">
         
-        <div class="mb-3">
-          <label class="label">Entity Type</label>
-          <nb-select fullWidth [(selected)]="selectedType" (selectedChange)="onTypeChange($event)">
-            <nb-option value="building">Building</nb-option>
-            <nb-option value="boiler">Boiler</nb-option>
+        <div class="mb-2">
+          <label class="label">Project Filter (Optional)</label>
+          <nb-select fullWidth [(selected)]="filterState$.value.project" (selectedChange)="onProjectChange($event)" size="small">
+            <nb-option [value]="null">Search All Projects</nb-option>
+            <nb-option *ngFor="let proj of projects" [value]="proj.id">{{ proj.name }}</nb-option>
           </nb-select>
         </div>
 
-        <div class="mb-3">
-          <label class="label">Target Year</label>
-          <nb-select fullWidth [(selected)]="selectedYear" (selectedChange)="fetchLoadProfile()">
-            <nb-option *ngFor="let y of availableYears" [value]="y">{{ y }}</nb-option>
-          </nb-select>
+        <div class="row mb-2" *ngIf="filterState$.value.project">
+          <div class="col-12">
+            <label class="label">Network Filter</label>
+            <nb-select fullWidth [(selected)]="filterState$.value.network" (selectedChange)="onNetworkChange($event)" size="small" [disabled]="networks.length === 0">
+              <nb-option value="all">All Networks</nb-option>
+              <nb-option *ngFor="let net of networks" [value]="net.id">{{ net.name }}</nb-option>
+            </nb-select>
+          </div>
         </div>
 
-        <nb-form-field class="mb-3">
-          <nb-icon nbPrefix icon="search-outline" pack="eva"></nb-icon>
-          <input 
-            nbInput 
-            fullWidth 
-            [placeholder]="searchPlaceholder" 
-            [(ngModel)]="searchText" 
-            (keyup)="filterEntities()">
-        </nb-form-field>
+        <div class="mb-2" *ngIf="selectedNodes.size > 0">
+          <label class="label">Active Selections</label>
+          <div class="d-flex flex-wrap">
+            <span *ngFor="let node of selectedNodes | keyvalue" 
+                  class="badge badge-pill mr-1 mb-1 p-2 d-flex align-items-center"
+                  [ngClass]="node.value.isProducer ? 'badge-producer' : 'badge-consumer'">
+              {{ node.value.name || 'Node ' + node.value.id }}
+              <nb-icon icon="close-outline" class="ml-1 cursor-pointer" (click)="removeNodeSelection(node.key)"></nb-icon>
+            </span>
+          </div>
+        </div>
+
+        <div class="row mb-2 mt-2">
+          <div class="col-4 pr-1">
+            <nb-select fullWidth [(selected)]="filterState$.value.type" (selectedChange)="onTypeChange($event)" size="small">
+              <nb-option value="building">Buildings</nb-option>
+              <nb-option value="boiler">Boilers</nb-option>
+            </nb-select>
+          </div>
+          <div class="col-8 pl-1">
+            <nb-form-field>
+              <nb-icon nbPrefix icon="search-outline" pack="eva"></nb-icon>
+              <input nbInput fullWidth placeholder="Search..." [ngModel]="filterState$.value.search" (ngModelChange)="onSearchChange($event)" fieldSize="small">
+            </nb-form-field>
+          </div>
+        </div>
 
         <nb-list class="entity-list flex-grow-1">
-          <nb-list-item *ngIf="filteredEntities.length === 0" class="text-center">
-            <span class="text-hint">No results found.</span>
+          <nb-list-item *ngIf="directoryNodes.length === 0 && !isListLoading" class="text-center">
+            <span class="text-hint">No nodes found.</span>
           </nb-list-item>
 
-          <nb-list-item 
-            *ngFor="let item of filteredEntities" 
-            (click)="selectEntity(item)"
-            [class.selected]="selectedEntity?.id === item.id"
-            class="cursor-pointer entity-item">
-            
-            <div class="d-flex align-items-center w-100">
-              <div class="icon-container mr-3">
-                 <nb-icon [icon]="selectedType === 'building' ? 'home-outline' : 'layers-outline'" status="basic"></nb-icon>
+          <nb-list-item *ngFor="let item of directoryNodes" 
+                        (click)="toggleNodeSelection(item)" 
+                        [class.selected]="selectedNodes.has(item.id)" 
+                        class="cursor-pointer entity-item">
+            <div class="d-flex align-items-center justify-content-between w-100">
+              <div class="d-flex align-items-center overflow-hidden">
+                <div class="icon-container mr-3">
+                   <nb-icon [icon]="item.node_type === 'building' ? 'home-outline' : 'layers-outline'" status="basic"></nb-icon>
+                </div>
+                <div class="text-overflow-hidden">
+                  <div class="subtitle-2 text-truncate">{{ item.name || 'Node ' + item.id }}</div>
+                  <div class="caption text-hint">ID: {{ item.id }} <span *ngIf="item.building_type">| {{ item.building_type }}</span></div>
+                </div>
               </div>
-              <div class="text-overflow-hidden">
-                <div class="subtitle-2 text-truncate">{{ item.name }}</div>
-                <div class="caption text-hint">ID: {{ item.id }}</div>
+              <div class="selection-indicator">
+                <nb-icon *ngIf="selectedNodes.has(item.id)" icon="checkmark-circle-2" status="primary"></nb-icon>
+                <div *ngIf="!selectedNodes.has(item.id)" class="empty-circle"></div>
               </div>
             </div>
           </nb-list-item>
+
+          <nb-list-item *ngIf="hasMoreData" class="d-flex justify-content-center p-2">
+            <button nbButton size="small" status="basic" (click)="loadNextPage()" [disabled]="isListLoading">Load More</button>
+          </nb-list-item>
         </nb-list>
-
-        <div class="text-center mt-2 caption text-hint" *ngIf="entities.length > filteredEntities.length">
-          Showing top {{ filteredEntities.length }} results
-        </div>
-
       </nb-card-body>
     </nb-card>
   </div>
 
-  <div class="col-md-8 col-lg-9 h-100">
+  <div class="col-md-8 col-lg-9 h-100 p-0 pl-md-2 mt-3 mt-md-0">
     <nb-card class="h-100" [nbSpinner]="isChartLoading" nbSpinnerStatus="info" nbSpinnerSize="large">
-      <nb-card-header class="d-flex justify-content-between align-items-center">
-        <div>
-          {{ selectedEntity ? selectedEntity.name : 'Select an Entity' }}
-          <span *ngIf="selectedEntity" class="caption status-primary ml-2">({{ selectedYear }})</span>
+      <nb-card-header class="d-flex justify-content-between align-items-center flex-wrap py-2">
+        <div class="mb-1 mb-sm-0 d-flex align-items-center">
+          <nb-radio-group [(value)]="analysisScope" (valueChange)="renderChart()" class="d-flex mr-3">
+            <nb-radio value="system" [disabled]="aggregateSystemData.length === 0">Macro (System)</nb-radio>
+            <nb-radio value="selection" [disabled]="selectedNodes.size === 0">Micro (Drill-Down)</nb-radio>
+          </nb-radio-group>
         </div>
-        </nb-card-header>
+        
+        <div class="d-flex align-items-center">
+          <nb-select [(selected)]="selectedYear" (selectedChange)="fetchSystemAggregate()" size="small" class="mr-2" style="width: 100px;">
+            <nb-option *ngFor="let y of availableYears" [value]="y">{{ y }}</nb-option>
+          </nb-select>
+          
+          <nb-button-group size="small" status="basic">
+            <button nbButtonToggle [pressed]="selectedChartView === 'trend'" (click)="setChartView('trend')">
+              <nb-icon icon="activity-outline"></nb-icon> Trends
+            </button>
+            <button nbButtonToggle [pressed]="selectedChartView === 'sankey'" (click)="setChartView('sankey')">
+              <nb-icon icon="shuffle-2-outline"></nb-icon> Flow
+            </button>
+          </nb-button-group>
+        </div>
+      </nb-card-header>
 
       <nb-card-body class="chart-body p-0 position-relative">
-        
-        <div *ngIf="!selectedEntity" class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
-          <nb-icon icon="bar-chart-outline" style="font-size: 4rem; color: #e4e9f2;"></nb-icon>
-          <h6 class="text-hint mt-3">Select a building to view load profile</h6>
+        <div *ngIf="(analysisScope === 'system' && aggregateSystemData.length === 0 && !isChartLoading) || (analysisScope === 'selection' && selectedNodes.size === 0)" class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
+          <nb-icon icon="bar-chart-outline" style="font-size: 3rem; color: #e4e9f2;"></nb-icon>
+          <h6 class="text-hint mt-3">
+             {{ analysisScope === 'system' ? 'Select a Project to view macro system balance.' : 'Select assets from the directory to perform isolated drill-down.' }}
+          </h6>
         </div>
 
-        <div *ngIf="selectedEntity" class="echarts-container h-100 w-100">
+        <div *ngIf="(analysisScope === 'system' && aggregateSystemData.length > 0) || (analysisScope === 'selection' && selectedNodes.size > 0)" class="echarts-container h-100 w-100">
           <div echarts [options]="echartsOptions" class="echart h-100 w-100"></div>
         </div>
-
       </nb-card-body>
     </nb-card>
   </div>

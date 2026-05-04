@@ -1,6 +1,6 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
+import { ServerDataSource } from 'ng2-smart-table';
 import { RestApiService } from '../../../@core/utils/rest-api.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
@@ -10,16 +10,16 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './edge-algorithms.component.html',
   styleUrls: ['./edge-algorithms.component.scss']
 })
-export class EdgeAlgorithmsComponent {
-url: string =  'edge_algorithms/';
-link: string = 'edge_algorithms';
-settings = {
+export class EdgeAlgorithmsComponent implements OnInit {
+  url: string = 'edge_algorithms/';
+  link: string = 'edge_algorithms';
+  
+  settings: any = {
     add: {
       addButtonContent: '<i class="nb-plus"></i>',
       createButtonContent: '<i class="nb-checkmark"></i>',
       cancelButtonContent: '<i class="nb-close"></i>',
-      confirmCreate: true, // Requires confirmation
-
+      confirmCreate: true,
     },
     edit: {
       editButtonContent: '<i class="nb-edit"></i>',
@@ -32,99 +32,173 @@ settings = {
       confirmDelete: true,
     },
     columns: {
-    
       name: {
-       title: 'Name',
-      type: 'html',
-          valuePrepareFunction: (name: string, row: any) => {
-        return `<a href="pages/${this.link}/${row.id}">${name}</a>`;
-      }
+        title: 'Name',
+        type: 'html',
+        valuePrepareFunction: (name: string, row: any) => {
+          return `<a href="pages/${this.link}/${row.id}">${name || 'Unnamed Calculation'}</a>`;
+        }
       },
       algorithm: {
         title: 'Algorithm',
         type: 'string',
-        
+        editor: {
+          type: 'list',
+          config: {
+            // Predefined algorithm methods for network routing
+            list: [
+              { value: 'mst', title: 'Minimum Spanning Tree (MST)' },
+              { value: 'steiner', title: 'Steiner Tree' },
+              { value: 'dijkstra', title: 'Shortest Path (Dijkstra)' }
+            ]
+          }
+        },
       },
-      total_edge_length: {
-        title: 'Length',
-        type: 'number',
-        
+      network: {
+        title: 'Network',
+        type: 'html',
+        editor: {
+          type: 'list',
+          config: {
+            list: [] // Populated dynamically in loadNetworks()
+          }
+        },
+        valuePrepareFunction: (network: any, row: any) => {
+          if (!row.network) return 'No Network';
+          if (row.network.name) {
+            return `<a href="pages/networks/${row.network.id}">${row.network.name}</a>`;
+          }
+          return `Network ID: ${row.network}`;
+        }
       },
-      
     },
   };
 
-  source: LocalDataSource = new LocalDataSource();
+  source!: ServerDataSource;
 
-   constructor(
-      @Inject(RestApiService) private api: RestApiService, 
-      private http: HttpClient, // ServerDataSource needs raw HttpClient usually
-      private router: Router,
-      private route: ActivatedRoute
-    ) {
-    }
-  
-    ngOnInit() {
-      // 2. Initialize the ServerDataSource with configuration
-      this.source = new ServerDataSource(this.http, {
-        endPoint: environment.appUrl + '/' + this.url, // Full URL required here
+  constructor(
+    @Inject(RestApiService) private api: RestApiService,
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
+
+ngOnInit() {
+    this.source = new ServerDataSource(this.http, {
+      endPoint: environment.appUrl + '/' + this.url,
+      pagerPageKey: 'page',
+      sortFieldKey: 'ordering',
+      pagerLimitKey: 'limit',
+      dataKey: 'results',
+      totalKey: 'count',
+    });
+
+    this.loadNetworksForDropdown();
+    this.loadAlgorithmsForDropdown(); // Call the new method
+  }
+
+  loadAlgorithmsForDropdown() {
+    // Call the new Django endpoint
+    this.http.get<any[]>(`${environment.appUrl}/algorithms/choices/`).subscribe({
+      next: (choices) => {
+        // Clone settings to trigger Angular change detection
+        const newSettings = Object.assign({}, this.settings);
         
-        // Map the "page" query parameter
-        pagerPageKey: 'page', 
+        // Inject the fetched choices into the algorithm column editor
+        newSettings.columns.algorithm.editor.config.list = choices;
         
-        // If you want sorting/filtering to trigger server calls:
-        sortFieldKey: 'ordering', 
-        pagerLimitKey: 'limit', // Only if your API supports dynamic page size
-  
-        // 3. Map the response: 'results' is your data array, 'count' is total
-        dataKey: 'results', 
-        totalKey: 'count',
+        this.settings = newSettings;
+      },
+      error: (err) => console.error('Failed to load algorithm choices', err)
+    });
+  }
+
+  loadNetworksForDropdown() {
+    this.http.get<any>(`${environment.appUrl}/networks/`).subscribe({
+      next: (res) => {
+        const networks = res.results || res || [];
+        const networkOptions = networks.map((n: any) => ({
+          value: n.id,
+          title: n.name
+        }));
+
+        // Clone settings to trigger Angular change detection
+        const newSettings = Object.assign({}, this.settings);
+        newSettings.columns.network.editor.config.list = networkOptions;
+        this.settings = newSettings;
+      },
+      error: (err) => console.error('Failed to load networks for dropdown', err)
+    });
+  }
+
+  onDeleteConfirm(event: any): void {
+    if (window.confirm('Are you sure you want to delete this edge algorithm record?')) {
+      this.api.delete(this.url, event.data.id).subscribe({
+        next: () => {
+          event.confirm.resolve();
+          this.source.remove(event.data);
+        },
+        error: () => event.confirm.reject()
       });
-    }
-
-  onDeleteConfirm(event): void {
-    if (window.confirm('Are you sure you want to delete?')) {
-      console.log("Deleting Network with ID:", event.data.id);
-      event.confirm.resolve();
-      this.api.delete(this.url, event.data.id)
-    .subscribe((data: any) => 
-      {
-        console.log("Network deleted successfully:", data);
-        this.source.remove(event.data);             
-      })
     } else {
       event.confirm.reject();
     }
   }
-onEditConfirm(event: any): void {
-    if (window.confirm('Are you sure you want to update?')) {
+
+  onEditConfirm(event: any): void {
+    if (window.confirm('Are you sure you want to update this record?')) {
       const data = {
-          name: event.newData.name,
-          longitude: event.newData.longitude,
-          latitude: event.newData.latitude
+        name: event.newData.name,
+        algorithm: event.newData.algorithm,
+        network: event.newData.network
+      };
+      this.api.update(event.data.id, data, this.url).subscribe({
+        next: (res) => {
+          event.confirm.resolve(res);
+          this.source.refresh();
+        },
+        error: () => event.confirm.reject()
+      });
+    } else {
+      event.confirm.reject();
+    }
+  }
+
+  onCreateConfirm(event: any): void {
+    if (window.confirm('Are you sure you want to connect edges using this algorithm?')) {
+      
+      const networkId = event.newData.network;
+      if (!networkId) {
+        alert('Please select a network first.');
+        event.confirm.reject();
+        return;
       }
-    this.api.update(event.data.id,data, this.url).subscribe({
-      next: (res) => event.confirm.resolve(res),
-      error: (err) => event.confirm.reject()
-    });
-  } else {
-    event.confirm.reject();
+
+      // Construct the specific payload for the routing algorithm
+      const payload = {
+        method: event.newData.algorithm, // e.g., 'mst'
+        algorithm_id: 1, // Defaulting to 1 as per your connection requirement
+        name: event.newData.name
+      };
+
+      const connectUrl = `${environment.appUrl}/networks/${networkId}/connect_edges/`;
+
+      this.http.post(connectUrl, payload).subscribe({
+        next: (res) => {
+          event.confirm.resolve(res);
+          this.source.refresh();
+        },
+        error: (err) => {
+          console.error('Edge connection failed:', err);
+          event.confirm.reject();
+        }
+      });
+    } else {
+      event.confirm.reject();
+    }
   }
-}
-onCreateConfirm(event: any): void {
-  // event.newData - contains the new record data
-  if (window.confirm('Are you sure you want to create this item?')) {
-    console.log("Creating new Network with data:", event.newData);
-    this.api.post(event.newData, this.url).subscribe({
-      next: (res) => event.confirm.resolve(res),
-      error: (err) => event.confirm.reject()
-    });
-  } else {
-    event.confirm.reject();
-  }
-}
-goToComparison() {
-    // Navigate relative to the current route
+
+  goToComparison() {
     this.router.navigate(['compare'], { relativeTo: this.route });
   }
 }

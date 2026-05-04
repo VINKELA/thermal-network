@@ -1,38 +1,116 @@
-// Make the list scrollable while keeping the header fixed
+// Lock the host exactly to the viewport/container to prevent double scrollbars
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden; 
+}
+
+// Ensure the main row respects the 100% height limit
+.row.h-100 {
+  height: 100% !important;
+}
+
+nb-card {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+nb-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0; // CRUCIAL: Stops flex items from breaking the height bounds
+}
+
+// The internal scroll mechanism for your directory list
 .entity-list {
+  flex: 1;
+  min-height: 0; // CRUCIAL: Keeps the list confined so it scrolls internally
   overflow-y: auto;
-  max-height: 400px; // Or utilize flex-grow in parent
-  border-top: 1px solid #edf1f7;
-}
+  overflow-x: hidden;
+  margin: 0 -1rem; 
+  
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: var(--divider-color, #edf1f7); border-radius: 3px; }
 
-.entity-item {
-  transition: background-color 0.2s;
-  &:hover {
-    background-color: #f7f9fc;
+  .entity-item {
+    padding: 0.5rem 1rem; 
+    border-bottom: 1px solid var(--divider-color, #edf1f7);
+    transition: background-color 0.2s ease;
+
+    &:hover { background-color: var(--layout-background-color, #f7f9fc); }
+    &.selected { background-color: var(--color-primary-transparent-100, rgba(51, 102, 255, 0.08)); }
+
+    .icon-container {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 8px;
+      background-color: var(--layout-background-color, #f7f9fc);
+      color: var(--text-hint-color, #8f9bb3);
+    }
   }
-  &.selected {
-    background-color: #e4e9f2; // Highlight color
-    border-left: 4px solid #3366ff;
+}
+
+/* Custom Checkbox Alternative */
+.selection-indicator {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  
+  nb-icon { font-size: 1.5rem; }
+  
+  .empty-circle {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border-basic-color-4, #c5cee0);
   }
 }
 
-.cursor-pointer {
-  cursor: pointer;
+// Semantic Badges for Active Selection
+.badge {
+  font-size: 0.7rem; font-weight: 600; border-radius: 1rem;
+  &.badge-producer { background-color: var(--color-info-500, #0095ff); color: white; }
+  &.badge-consumer { background-color: var(--color-warning-500, #ffaa00); color: white; }
+  nb-icon { font-size: 0.9rem; opacity: 0.7; transition: opacity 0.2s; &:hover { opacity: 1; } }
 }
 
-// Chart container needs explicit height rules to work with ECharts
 .chart-body {
-  min-height: 400px;
-  overflow: hidden; // Prevent scrollbars from popping up during zoom
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0; // CRUCIAL: Keeps chart restricted
 }
 
-// Nebular dark mode overrides (Optional)
-:host-context(.nb-theme-dark) {
-  .entity-item:hover {
-    background-color: #222b45;
-  }
-  .entity-item.selected {
-    background-color: #2f3a56;
-    border-left-color: #3366ff;
+.echarts-container {
+  flex: 1; 
+  min-height: 0; // Removing explicit pixel limits allows dynamic fluid sizing
+  position: relative;
+  
+  .echart {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
   }
 }
+
+.progress-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7); 
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+
+  nb-card {
+    background-color: var(--card-background-color);
+    border: 1px solid var(--border-basic-color-3);
+  }
+}
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+/* Utilities */
+.cursor-pointer { cursor: pointer; }
+.text-overflow-hidden { overflow: hidden; white-space: nowrap; }
+.text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

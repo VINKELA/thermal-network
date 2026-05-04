@@ -57,7 +57,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
   // This now matches your Django setup
   const url = searchQuery 
     ? `${this.api}?search=${encodeURIComponent(searchQuery)}` 
-    : this.api + '?limit=500';
+    : this.api + '?limit=100';
 
   this.apiService.get(url).subscribe((data: any) => {
     this.buildings = data['results'] ? data['results'] : data;

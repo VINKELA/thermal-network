@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { NetworkApiService } from '../../../@core/data-services/networks/network-api.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,17 +11,16 @@ import { RestApiService } from '../../../@core/utils/rest-api.service';
   templateUrl: './networks.component.html',
   styleUrls: ['./networks.component.scss']
 })
-export class NetworksComponent {
-  url: string =  'networks/';
-link: string = 'networks';
+export class NetworksComponent implements OnInit {
+  url: string = 'networks/';
+  link: string = 'networks';
 
-settings = {
+  settings: any = {
     add: {
       addButtonContent: '<i class="nb-plus"></i>',
       createButtonContent: '<i class="nb-checkmark"></i>',
       cancelButtonContent: '<i class="nb-close"></i>',
-      confirmCreate: true, // Requires confirmation
-
+      confirmCreate: true, 
     },
     edit: {
       editButtonContent: '<i class="nb-edit"></i>',
@@ -34,101 +33,156 @@ settings = {
       confirmDelete: true,
     },
     columns: {
-    
       name: {
-       title: 'Name',
-      type: 'html',
-          valuePrepareFunction: (name: string, row: any) => {
-        return `<a href="pages/networks/${row.id}">${name}</a>`;
-      }
+        title: 'Name',
+        type: 'html',
+        valuePrepareFunction: (name: string, row: any) => {
+          return `<a href="pages/networks/${row.id}">${name || 'Unnamed Network'}</a>`;
+        }
       },
       network_type: {
         title: 'Type',
         type: 'string',
-        
       },
       project: {
         title: 'Project',
         type: 'html',
+        editor: {
+          type: 'list',
+          config: {
+            list: [] // Populated dynamically in ngOnInit
+          }
+        },
         valuePrepareFunction: (project: any, row: any) => {
-          return `<a href="pages/projects/${row.project.id}">${project.name}</a>`;
+          if (!row.project) return 'No Project';
+          if (row.project.name) {
+            return `<a href="pages/projects/${row.project.id}">${row.project.name}</a>`;
+          }
+          return `Project ID: ${row.project}`;
         }
       },
-      
     },
   };
 
-  source: LocalDataSource = new LocalDataSource();
+  source!: ServerDataSource;
 
-   constructor(
-       @Inject(RestApiService) private api: NetworkApiService, 
-       private http: HttpClient, // ServerDataSource needs raw HttpClient usually
-       private router: Router,
-       private route: ActivatedRoute
-     ) {
-     }
-   
-     ngOnInit() {
-       // 2. Initialize the ServerDataSource with configuration
-       this.source = new ServerDataSource(this.http, {
-         endPoint: environment.appUrl + '/' + this.url, // Full URL required here
-         
-         // Map the "page" query parameter
-         pagerPageKey: 'page', 
-         
-         // If you want sorting/filtering to trigger server calls:
-         sortFieldKey: 'ordering', 
-         pagerLimitKey: 'limit', // Only if your API supports dynamic page size
-   
-         // 3. Map the response: 'results' is your data array, 'count' is total
-         dataKey: 'results', 
-         totalKey: 'count',
-       });
-     }
+  constructor(
+      @Inject(RestApiService) private api: NetworkApiService, 
+      private http: HttpClient, 
+      private router: Router,
+      private route: ActivatedRoute
+  ) {}
 
-  onDeleteConfirm(event): void {
+  ngOnInit() {
+    this.source = new ServerDataSource(this.http, {
+      endPoint: environment.appUrl + '/' + this.url, 
+      pagerPageKey: 'page', 
+      sortFieldKey: 'ordering', 
+      pagerLimitKey: 'limit', 
+      dataKey: 'results', 
+      totalKey: 'count',
+    });
+
+    this.loadProjectsForDropdown();
+  }
+
+  loadProjectsForDropdown() {
+    this.http.get<any>(`${environment.appUrl}/projects/`).subscribe({
+      next: (res) => {
+        const projects = res.results || res || [];
+        const projectOptions = projects.map((p: any) => ({
+          value: p.id,
+          title: p.name
+        }));
+
+        // Deep clone the settings object to trigger Angular change detection
+        const newSettings = Object.assign({}, this.settings);
+        newSettings.columns.project.editor.config.list = projectOptions;
+        this.settings = newSettings;
+      },
+      error: (err) => console.error('Failed to load projects for dropdown', err)
+    });
+  }
+
+  onDeleteConfirm(event: any): void {
     if (window.confirm('Are you sure you want to delete?')) {
-      console.log("Deleting Network with ID:", event.data.id);
-      event.confirm.resolve();
-      this.api.delete(event.data.id)
-    .subscribe((data: any) => 
-      {
-        console.log("Network deleted successfully:", data);
-        this.source.remove(event.data);             
-      })
+      this.api.delete(event.data.id).subscribe({
+        next: () => {
+          event.confirm.resolve();
+          this.source.remove(event.data);
+        },
+        error: (err) => {
+          console.error('Delete failed', err);
+          event.confirm.reject();
+        }
+      });
     } else {
       event.confirm.reject();
     }
   }
-onEditConfirm(event: any): void {
+
+  onEditConfirm(event: any): void {
     if (window.confirm('Are you sure you want to update?')) {
       const data = {
           name: event.newData.name,
+          network_type: event.newData.network_type,
           longitude: event.newData.longitude,
-          latitude: event.newData.latitude
+          latitude: event.newData.latitude,
+          project: event.newData.project 
+      };
+
+      this.api.update(event.data.id, data).subscribe({
+        next: (res) => {
+          event.confirm.resolve(res);
+          this.source.refresh(); // Fetch the fully serialized object to update the UI
+        },
+        error: (err) => {
+          console.error('Update failed', err);
+          event.confirm.reject();
+        }
+      });
+    } else {
+      event.confirm.reject();
+    }
+  }
+
+  onCreateConfirm(event: any): void {
+    if (window.confirm('Are you sure you want to create this network?')) {
+      
+      const projectId = event.newData.project;
+
+      if (!projectId) {
+        alert('You must select a Project to create a Network.');
+        event.confirm.reject();
+        return;
       }
-    this.api.update(event.data.id,data ).subscribe({
-      next: (res) => event.confirm.resolve(res),
-      error: (err) => event.confirm.reject()
-    });
-  } else {
-    event.confirm.reject();
+
+      const payload = {
+        name: event.newData.name,
+        network_type: event.newData.network_type,
+        longitude: event.newData.longitude,
+        latitude: event.newData.latitude
+      };
+
+      const createUrl = `${environment.appUrl}/projects/${projectId}/create-network/`;
+
+      this.http.post(createUrl, payload).subscribe({
+        next: (res) => {
+          event.confirm.resolve(res);
+          this.source.refresh(); 
+        },
+        error: (err) => {
+          console.error('Failed to create network via custom endpoint:', err);
+          alert('Failed to create network. Check the console for details.');
+          event.confirm.reject();
+        }
+      });
+    } else {
+      event.confirm.reject();
+    }
   }
-}
-onCreateConfirm(event: any): void {
-  // event.newData - contains the new record data
-  if (window.confirm('Are you sure you want to create this item?')) {
-    console.log("Creating new Network with data:", event.newData);
-    this.api.create(event.newData).subscribe({
-      next: (res) => event.confirm.resolve(res),
-      error: (err) => event.confirm.reject()
-    });
-  } else {
-    event.confirm.reject();
-  }
-}
-goToComparison() {
-    // Navigate relative to the current route
+
+  goToComparison() {
     this.router.navigate(['compare'], { relativeTo: this.route });
   }
 }
