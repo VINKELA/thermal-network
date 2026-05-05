@@ -40,22 +40,17 @@ export class EdgeAlgorithmsComponent implements OnInit {
         }
       },
       algorithm: {
-        title: 'Algorithm',
+        title: 'Generation Method',
         type: 'string',
         editor: {
           type: 'list',
           config: {
-            // Predefined algorithm methods for network routing
-            list: [
-              { value: 'mst', title: 'Minimum Spanning Tree (MST)' },
-              { value: 'steiner', title: 'Steiner Tree' },
-              { value: 'dijkstra', title: 'Shortest Path (Dijkstra)' }
-            ]
+            list: []
           }
         },
       },
       network: {
-        title: 'Network',
+        title: 'Output Network',
         type: 'html',
         editor: {
           type: 'list',
@@ -69,6 +64,17 @@ export class EdgeAlgorithmsComponent implements OnInit {
             return `<a href="pages/networks/${row.network.id}">${row.network.name}</a>`;
           }
           return `Network ID: ${row.network}`;
+        }
+      },
+      source_network: {
+        title: 'Parent Network',
+        type: 'html',
+        addable: false,
+        editable: false,
+        valuePrepareFunction: (network: any) => {
+          if (!network) return 'Root';
+          if (network.name) return `<a href="pages/networks/${network.id}">${network.name}</a>`;
+          return `Network ID: ${network}`;
         }
       },
     },
@@ -165,7 +171,7 @@ ngOnInit() {
   }
 
   onCreateConfirm(event: any): void {
-    if (window.confirm('Are you sure you want to connect edges using this algorithm?')) {
+    if (window.confirm('Create a new derived network using this edge generation method?')) {
       
       const networkId = event.newData.network;
       if (!networkId) {
@@ -174,16 +180,13 @@ ngOnInit() {
         return;
       }
 
-      // Construct the specific payload for the routing algorithm
       const payload = {
-        method: event.newData.algorithm, // e.g., 'mst'
-        algorithm_id: 1, // Defaulting to 1 as per your connection requirement
+        network: networkId,
+        algorithm: event.newData.algorithm,
         name: event.newData.name
       };
 
-      const connectUrl = `${environment.appUrl}/networks/${networkId}/connect_edges/`;
-
-      this.http.post(connectUrl, payload).subscribe({
+      this.http.post(`${environment.appUrl}/edge_algorithms/`, payload).subscribe({
         next: (res) => {
           event.confirm.resolve(res);
           this.source.refresh();

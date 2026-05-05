@@ -44,6 +44,28 @@ export class NetworksComponent implements OnInit {
         title: 'Type',
         type: 'string',
       },
+      derivation_stage: {
+        title: 'Stage',
+        type: 'string',
+        editable: false,
+        addable: false,
+      },
+      derivation_method: {
+        title: 'Method',
+        type: 'string',
+        editable: false,
+        addable: false,
+      },
+      parent_network_name: {
+        title: 'Parent Network',
+        type: 'html',
+        editable: false,
+        addable: false,
+        valuePrepareFunction: (_: any, row: any) => {
+          if (!row.parent_network) return 'Root';
+          return `<a href="pages/networks/${row.parent_network}">${row.parent_network_name || 'Network ' + row.parent_network}</a>`;
+        }
+      },
       project: {
         title: 'Project',
         type: 'html',

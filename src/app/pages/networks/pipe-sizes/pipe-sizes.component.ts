@@ -53,6 +53,41 @@ export class PipeSizesComponent implements OnInit {
       method: {
         title: 'Method',
         type: 'string',
+        editor: {
+          type: 'list',
+          config: {
+            list: [
+              { value: 'peak_sizing', title: 'Peak Sizing' },
+              { value: 'diversity', title: 'Diversity' },
+              { value: 'pressure_optimized', title: 'Pressure Optimized' },
+              { value: 'lifecycle_cost', title: 'Lifecycle Cost' },
+              { value: 'return_temp_opt', title: 'Return Temperature Optimized' },
+            ],
+          },
+        },
+      },
+      edge_connection_algorithm_id: {
+        title: 'Source Connection',
+        type: 'string',
+        editor: {
+          type: 'list',
+          config: {
+            list: [],
+          },
+        },
+        valuePrepareFunction: () => 'Derived from connection',
+      },
+      network_name: {
+        title: 'Output Network',
+        type: 'string',
+        editable: false,
+        addable: false,
+      },
+      source_network_name: {
+        title: 'Parent Network',
+        type: 'string',
+        editable: false,
+        addable: false,
       },
     },
   };
@@ -79,6 +114,25 @@ export class PipeSizesComponent implements OnInit {
       // 3. Map the response: 'results' is your data array, 'count' is total
       dataKey: 'results', 
       totalKey: 'count',
+    });
+
+    this.loadConnectionAlgorithmsForDropdown();
+  }
+
+  loadConnectionAlgorithmsForDropdown() {
+    this.http.get<any>(`${environment.appUrl}/edge_connection_algorithms/`).subscribe({
+      next: (res) => {
+        const connections = res.results || res || [];
+        const options = connections.map((conn: any) => ({
+          value: conn.id,
+          title: `${conn.name} (${conn.network?.name || 'Network ' + conn.network?.id})`,
+        }));
+
+        const newSettings: any = Object.assign({}, this.settings);
+        newSettings.columns.edge_connection_algorithm_id.editor.config.list = options;
+        this.settings = newSettings;
+      },
+      error: (err) => console.error('Failed to load connection algorithms for sizing dropdown', err),
     });
   }
 
@@ -119,8 +173,21 @@ export class PipeSizesComponent implements OnInit {
   }
 
   onCreateConfirm(event: any): void {
-    if (window.confirm('Are you sure you want to create this item?')) {
-      this.api.post(event.newData, this.url).subscribe({
+    if (window.confirm('Create a new derived network with pipe sizing results?')) {
+      const connectionId = event.newData.edge_connection_algorithm_id;
+      if (!connectionId) {
+        alert('Please select a source connection algorithm.');
+        event.confirm.reject();
+        return;
+      }
+
+      const payload = {
+        edge_connection_algorithm_id: connectionId,
+        name_prefix: event.newData.name || 'Pipe Sizing',
+        method: event.newData.method || 'peak_sizing',
+      };
+
+      this.http.post(`${environment.appUrl}/${this.url}`, payload).subscribe({
         next: (res) => {
           event.confirm.resolve(res);
           this.source.refresh(); // Refresh to see new item at correct page location

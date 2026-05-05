@@ -3,7 +3,10 @@
   <div class="header-bar">
     <div>
       <h1>{{ network.name }}</h1>
-      <span class="subtitle">{{ network.network_type | titlecase }} Network • {{ nodes.length }} Nodes • {{ edges.length }} Edges</span>
+      <span class="subtitle">
+        {{ network.network_type | titlecase }} Network • {{ nodes.length }} Nodes •
+        {{ hasRoutes ? visualRoutes.length : edges.length }} {{ hasRoutes ? 'Routes' : 'Edges' }}
+      </span>
     </div>
     <div class="stats">
       <div class="stat-pill">
@@ -21,12 +24,21 @@
       [zoom]="zoom"
       [options]="mapOptions">
       
-      <map-polyline 
-        *ngFor="let edge of edges"
-        [path]="getEdgePath(edge)"
-        [options]="getEdgeOptions(edge)"
-        (polylineClick)="openEdgeInfo(edge, $event)">
+      <map-polyline
+        *ngFor="let route of visualRoutes"
+        [path]="route.decodedPath"
+        [options]="getRouteOptions(route)"
+        (polylineClick)="openRouteInfo(route)">
       </map-polyline>
+
+      <ng-container *ngIf="!hasRoutes">
+        <map-polyline
+          *ngFor="let edge of edges"
+          [path]="getEdgePath(edge)"
+          [options]="getEdgeOptions(edge)"
+          (polylineClick)="openEdgeInfo(edge, $event)">
+        </map-polyline>
+      </ng-container>
 
       <map-marker 
         *ngFor="let node of nodes"
@@ -57,6 +69,20 @@
             <p><strong>Length:</strong> {{ selectedEdge.length | number:'1.0-1' }} m</p>
             <p *ngIf="selectedEdge.other_information?.capacity">
               <strong>Capacity:</strong> {{ selectedEdge.other_information.capacity | number:'1.0-0' }} kW
+            </p>
+          </div>
+        </div>
+
+        <div class="info-popup" *ngIf="selectedRoute">
+          <h3>{{ selectedRoute.route_type | titlecase }} Route</h3>
+          <p class="edge-name">{{ selectedRoute.edge?.name || ('Route ' + selectedRoute.id) }}</p>
+          <div class="details">
+            <p><strong>Distance:</strong> {{ selectedRoute.distance_meters | number:'1.0-1' }} m</p>
+            <p *ngIf="selectedRoute.duration_seconds">
+              <strong>Duration:</strong> {{ selectedRoute.duration_seconds / 60 | number:'1.0-0' }} min
+            </p>
+            <p *ngIf="selectedRoute.translation_name">
+              <strong>Trace:</strong> {{ selectedRoute.translation_name }}
             </p>
           </div>
         </div>

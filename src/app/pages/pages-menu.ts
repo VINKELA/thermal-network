@@ -69,7 +69,7 @@ export const MENU_ITEMS: NbMenuItem[] = [
     link: '/pages/edge-connection-algorithms',
     },
     {
-    title: 'Edge Route Traces',
+    title: 'Route Tracing',
     icon: 'map-outline',
     link: '/pages/edge_translations',
     },

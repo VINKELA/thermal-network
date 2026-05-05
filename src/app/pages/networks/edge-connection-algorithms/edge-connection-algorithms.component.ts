@@ -44,7 +44,52 @@ settings = {
       algorithm: {
         title: 'Connection Algorithm',
         type: 'string',
-        
+        editor: {
+          type: 'list',
+          config: {
+            list: [
+              { value: 'mst', title: 'Minimum Spanning Tree (MST)' },
+              { value: 'custom', title: 'Use All Candidate Edges' },
+            ],
+          },
+        },
+      },
+      edge_algorithm: {
+        title: 'Source Edge Generation',
+        type: 'html',
+        editor: {
+          type: 'list',
+          config: {
+            list: [],
+          },
+        },
+        valuePrepareFunction: (_: any, row: any) => {
+          if (row.edge_algorithm_name) return row.edge_algorithm_name;
+          if (row.edge_algorithm) return `Edge Algorithm ${row.edge_algorithm}`;
+          return 'Select source';
+        },
+      },
+      network: {
+        title: 'Output Network',
+        type: 'html',
+        addable: false,
+        editable: false,
+        valuePrepareFunction: (network: any) => {
+          if (!network) return '';
+          if (network.name) return `<a href="pages/networks/${network.id}">${network.name}</a>`;
+          return `Network ID: ${network}`;
+        },
+      },
+      source_network: {
+        title: 'Parent Network',
+        type: 'html',
+        addable: false,
+        editable: false,
+        valuePrepareFunction: (network: any) => {
+          if (!network) return '';
+          if (network.name) return `<a href="pages/networks/${network.id}">${network.name}</a>`;
+          return `Network ID: ${network}`;
+        },
       },
       calculated_total_length:{
         title: "Length",
@@ -80,7 +125,26 @@ settings = {
         dataKey: 'results', 
         totalKey: 'count',
       });
+
+      this.loadEdgeAlgorithmsForDropdown();
     }
+
+  loadEdgeAlgorithmsForDropdown() {
+    this.http.get<any>(`${environment.appUrl}/edge_algorithms/`).subscribe({
+      next: (res) => {
+        const algorithms = res.results || res || [];
+        const options = algorithms.map((alg: any) => ({
+          value: alg.id,
+          title: `${alg.name} (${alg.network?.name || 'Network ' + alg.network?.id})`,
+        }));
+
+        const newSettings: any = Object.assign({}, this.settings);
+        newSettings.columns.edge_algorithm.editor.config.list = options;
+        this.settings = newSettings;
+      },
+      error: (err) => console.error('Failed to load edge algorithms for dropdown', err),
+    });
+  }
 
   onDeleteConfirm(event): void {
     if (window.confirm('Are you sure you want to delete?')) {
@@ -113,11 +177,29 @@ onEditConfirm(event: any): void {
 }
 onCreateConfirm(event: any): void {
   // event.newData - contains the new record data
-  if (window.confirm('Are you sure you want to create this item?')) {
-    console.log("Creating new Network with data:", event.newData);
-    this.api.post(event.newData, this.url).subscribe({
-      next: (res) => event.confirm.resolve(res),
-      error: (err) => event.confirm.reject()
+  if (window.confirm('Create a new derived network using this connection algorithm?')) {
+    const edgeAlgorithmId = event.newData.edge_algorithm;
+    if (!edgeAlgorithmId) {
+      alert('Please select a source edge generation first.');
+      event.confirm.reject();
+      return;
+    }
+
+    const payload = {
+      name: event.newData.name,
+      algorithm: event.newData.algorithm || 'mst',
+      edge_algorithm: edgeAlgorithmId,
+    };
+
+    this.http.post(`${environment.appUrl}/${this.url}`, payload).subscribe({
+      next: (res) => {
+        event.confirm.resolve(res);
+        this.source.refresh();
+      },
+      error: (err) => {
+        console.error('Connection derivation failed:', err);
+        event.confirm.reject();
+      }
     });
   } else {
     event.confirm.reject();

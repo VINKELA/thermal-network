@@ -128,7 +128,7 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
         this.isListLoading = true;
         
 // FIX: Swapped 'limit' for 'page_size'
-        let params = `?node_type=${filters.type}&page=${filters.page}&page_size=100`;
+        let params = `?node_type=${filters.type}&page=${filters.page}&page_size=10`;
         if (filters.project) params += `&network__project=${filters.project}`;
         if (filters.network && filters.network !== 'all') params += `&network=${filters.network}`;
         if (filters.search) params += `&search=${encodeURIComponent(filters.search)}`;
@@ -1092,9 +1092,10 @@ toggleNodeSelection(node: any) {
   private formatCompactNumber(value: number) {
     const numberValue = Number(value || 0);
     if (!Number.isFinite(numberValue)) return '0';
-    return new Intl.NumberFormat(undefined, {
+    const options: Intl.NumberFormatOptions & { notation?: 'standard' | 'compact' } = {
       notation: numberValue >= 100000 ? 'compact' : 'standard',
       maximumFractionDigits: numberValue >= 100000 ? 1 : 0,
-    }).format(numberValue);
+    };
+    return new Intl.NumberFormat(undefined, options).format(numberValue);
   }
 }

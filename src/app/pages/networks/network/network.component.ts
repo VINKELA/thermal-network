@@ -14,14 +14,18 @@ export class NetworkComponent implements OnInit {
   networkId!: number;
   network: Network | undefined;
   nodes: any[] = [];
-  edges: any[] = []; // <--- NEW: Store edges here
+  edges: any[] = [];
+  routes: any[] = [];
+  visualRoutes: any[] = [];
+  hasRoutes = false;
 
   // Map Access
   @ViewChild(GoogleMap) map!: GoogleMap;
   @ViewChild(MapInfoWindow) infoWindow!: MapInfoWindow;
   
   selectedNode: Node | null = null;
-  selectedEdge: any | null = null; // <--- NEW: To show edge info
+  selectedEdge: any | null = null;
+  selectedRoute: any | null = null;
 
   // Map Config
   center: google.maps.LatLngLiteral = { lat: 0, lng: 0 };
@@ -59,7 +63,15 @@ export class NetworkComponent implements OnInit {
     this.api.get<any>(`networks/${this.networkId}/`).subscribe(net => {
       this.network = net;
       this.nodes = net.nodes || [];
-      this.edges = net.edges || []; // <--- NEW: Load edges
+      this.edges = net.edges || [];
+      this.routes = net.routes || [];
+      this.visualRoutes = this.routes
+        .map(route => ({
+          ...route,
+          decodedPath: route.polyline ? this.decodePolyline(route.polyline) : [],
+        }))
+        .filter(route => route.decodedPath.length > 0);
+      this.hasRoutes = this.visualRoutes.length > 0;
 
       // 1. Center logic
       if (net.latitude && net.longitude) {
@@ -74,7 +86,7 @@ export class NetworkComponent implements OnInit {
   }
 
   fitBounds() {
-    if (this.nodes.length === 0) return;
+    if (this.nodes.length === 0 && this.visualRoutes.length === 0) return;
 
     const bounds = new google.maps.LatLngBounds();
     let validPoints = 0;
@@ -84,6 +96,13 @@ export class NetworkComponent implements OnInit {
         bounds.extend({ lat: Number(n.latitude), lng: Number(n.longitude) });
         validPoints++;
       }
+    });
+
+    this.visualRoutes.forEach(route => {
+      route.decodedPath.forEach(point => {
+        bounds.extend(point);
+        validPoints++;
+      });
     });
 
     if (validPoints > 0) {
@@ -181,9 +200,58 @@ export class NetworkComponent implements OnInit {
     return baseOptions;
   }
 
+  getRouteOptions(route: any): google.maps.PolylineOptions {
+    const isSupply = route.route_type === 'supply';
+    return {
+      strokeColor: isSupply ? '#ef4444' : '#2563eb',
+      strokeOpacity: 0.9,
+      strokeWeight: 5,
+      clickable: true,
+      zIndex: 2,
+    };
+  }
+
+  decodePolyline(encoded: string): google.maps.LatLngLiteral[] {
+    const points: google.maps.LatLngLiteral[] = [];
+    let index = 0;
+    let lat = 0;
+    let lng = 0;
+
+    while (index < encoded.length) {
+      const latResult = this.decodePolylineValue(encoded, index);
+      lat += latResult.value;
+      index = latResult.nextIndex;
+
+      const lngResult = this.decodePolylineValue(encoded, index);
+      lng += lngResult.value;
+      index = lngResult.nextIndex;
+
+      points.push({ lat: lat / 1e5, lng: lng / 1e5 });
+    }
+
+    return points;
+  }
+
+  private decodePolylineValue(encoded: string, startIndex: number): { value: number; nextIndex: number } {
+    let result = 0;
+    let shift = 0;
+    let index = startIndex;
+    let byte: number;
+
+    do {
+      byte = encoded.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20 && index < encoded.length);
+
+    const value = (result & 1) ? ~(result >> 1) : (result >> 1);
+    return { value, nextIndex: index };
+  }
+
   openNodeInfo(marker: MapMarker, node: Node) {
     this.selectedNode = node;
-    this.selectedEdge = null; // Clear edge info
+    this.selectedEdge = null;
+    this.selectedRoute = null;
     this.infoWindow.open(marker);
   }
 
@@ -196,10 +264,23 @@ export class NetworkComponent implements OnInit {
     const midLng = (Number(edge.start_node.longitude) + Number(edge.end_node.longitude)) / 2;
     
     this.selectedEdge = edge;
+    this.selectedRoute = null;
     this.selectedNode = null;
     
     // Hack: open info window at midpoint
     this.infoWindow.position = { lat: midLat, lng: midLng };
+    this.infoWindow.open();
+  }
+
+  openRouteInfo(route: any) {
+    const path = route.decodedPath || [];
+    if (path.length === 0) return;
+
+    const midpoint = path[Math.floor(path.length / 2)];
+    this.selectedRoute = route;
+    this.selectedEdge = null;
+    this.selectedNode = null;
+    this.infoWindow.position = midpoint;
     this.infoWindow.open();
   }
 
