@@ -26,6 +26,7 @@ import { Clusters3Component } from './networks/clusters3/clusters3.component';
 import { Clusters4Component } from './networks/clusters4/clusters4.component';
 import { TranslationComponent } from './networks/translation/translation.component';
 import { ProjectComponent } from './projects/project/project.component';
+import { ProjectUsersComponent } from './projects/project-users/project-users.component';
 import { BuildingComponent } from './buildings/building/building.component';
 import { EdgeComponent } from './networks/edge/edge.component';
 import { ClusterAnalysisComponent } from './networks/cluster-analysis/cluster-analysis.component';
@@ -53,14 +54,50 @@ import { PipeSizesCompareComponent } from './networks/pipe-sizes-compare/pipe-si
 import { PipeSizeComponent } from './networks/pipe-size/pipe-size.component';
 import { PipeSizesComponent } from './networks/pipe-sizes/pipe-sizes.component';
 import { BuildingUploadComponent } from './building-upload/building-upload.component';
+import { NetworkCostsComponent } from './networks/network-costs/network-costs.component';
+import { NetworkEmissionsComponent } from './networks/network-emissions/network-emissions.component';
+import { NetworkEmissionsCompareComponent } from './networks/network-emissions-compare/network-emissions-compare.component';
+import { NetworkDemandMapComponent } from './networks/network-demand-map/network-demand-map.component';
+import { NetworkEvolutionComponent } from './networks/network-evolution/network-evolution.component';
+import { PipeSectionAnalysisComponent } from './networks/pipe-section-analysis/pipe-section-analysis.component';
+import { NetworkAnalysisDashboardComponent } from './networks/network-analysis/network-analysis-dashboard.component';
+import { NetworkAnalysisCompareComponent } from './networks/network-analysis/network-analysis-compare.component';
 
 const routes: Routes = [{
   path: '',
   component: PagesComponent,
   children: [ 
-     {
+    {
       path: 'networks/compare',
       component: NetworkComparisonComponent,
+    },
+    {
+      path: 'networks/demand-map',
+      component: NetworkDemandMapComponent,
+    },
+    {
+      path: 'networks/evolution',
+      component: NetworkEvolutionComponent,
+    },
+    {
+      path: 'networks/analysis/compare',
+      component: NetworkAnalysisCompareComponent,
+    },
+    {
+      path: 'networks/analysis',
+      component: NetworkAnalysisDashboardComponent,
+    },
+    {
+      path: 'network-costs',
+      component: NetworkCostsComponent,
+    },
+    {
+      path: 'network-emissions',
+      component: NetworkEmissionsComponent,
+    },
+    {
+      path: 'network-emissions/compare',
+      component: NetworkEmissionsCompareComponent,
     },
     {
       path: 'networks/:id',
@@ -70,6 +107,10 @@ const routes: Routes = [{
     {
       path: 'projects',
       component: ProjectsComponent,
+    },
+    {
+      path: 'project-users',
+      component: ProjectUsersComponent,
     },
     {
       path: 'buildings',
@@ -224,6 +265,10 @@ const routes: Routes = [{
     {
       path: 'pipe-sizes/:id',
       component: PipeSizeComponent,
+    },
+    {
+      path: 'pipe-sections/:id',
+      component: PipeSectionAnalysisComponent,
     },
 
     {

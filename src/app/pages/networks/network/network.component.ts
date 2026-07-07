@@ -17,6 +17,7 @@ export class NetworkComponent implements OnInit {
   edges: any[] = [];
   routes: any[] = [];
   visualRoutes: any[] = [];
+  visualServiceDrops: any[] = [];
   hasRoutes = false;
 
   // Map Access
@@ -26,6 +27,7 @@ export class NetworkComponent implements OnInit {
   selectedNode: Node | null = null;
   selectedEdge: any | null = null;
   selectedRoute: any | null = null;
+  private readonly endpointSnapToleranceMeters = 3;
 
   // Map Config
   center: google.maps.LatLngLiteral = { lat: 0, lng: 0 };
@@ -68,9 +70,10 @@ export class NetworkComponent implements OnInit {
       this.visualRoutes = this.routes
         .map(route => ({
           ...route,
-          decodedPath: route.polyline ? this.decodePolyline(route.polyline) : [],
+          decodedPath: this.getDisplayRoutePath(route),
         }))
         .filter(route => route.decodedPath.length > 0);
+      this.visualServiceDrops = this.buildServiceDrops(this.nodes, this.visualRoutes);
       this.hasRoutes = this.visualRoutes.length > 0;
 
       // 1. Center logic
@@ -100,6 +103,13 @@ export class NetworkComponent implements OnInit {
 
     this.visualRoutes.forEach(route => {
       route.decodedPath.forEach(point => {
+        bounds.extend(point);
+        validPoints++;
+      });
+    });
+
+    this.visualServiceDrops.forEach(drop => {
+      drop.path.forEach(point => {
         bounds.extend(point);
         validPoints++;
       });
@@ -203,11 +213,22 @@ export class NetworkComponent implements OnInit {
   getRouteOptions(route: any): google.maps.PolylineOptions {
     const isSupply = route.route_type === 'supply';
     return {
-      strokeColor: isSupply ? '#ef4444' : '#2563eb',
-      strokeOpacity: 0.9,
-      strokeWeight: 5,
+      strokeColor: isSupply ? '#dc2626' : '#2563eb',
+      strokeOpacity: isSupply ? 0.96 : 0.88,
+      strokeWeight: isSupply ? 5 : 4,
       clickable: true,
-      zIndex: 2,
+      zIndex: isSupply ? 12 : 11,
+    };
+  }
+
+  getRouteHaloOptions(route: any): google.maps.PolylineOptions {
+    const isSupply = route.route_type === 'supply';
+    return {
+      strokeColor: '#111827',
+      strokeOpacity: 0.24,
+      strokeWeight: isSupply ? 9 : 8,
+      clickable: false,
+      zIndex: isSupply ? 10 : 9,
     };
   }
 
@@ -230,6 +251,196 @@ export class NetworkComponent implements OnInit {
     }
 
     return points;
+  }
+
+  private getDisplayRoutePath(route: any): google.maps.LatLngLiteral[] {
+    if (Array.isArray(route.path) && route.path.length > 1) {
+      return route.path
+        .map((point: any) => ({ lat: Number(point.lat), lng: Number(point.lng) }))
+        .filter((point: google.maps.LatLngLiteral) => this.isValidCoordinate(point.lat, point.lng));
+    }
+
+    const endpointPath = this.getRouteEndpointPath(route);
+    const decodedPath = route.polyline ? this.decodePolyline(route.polyline) : [];
+    if (this.isSyntheticOffsetRoute(route, decodedPath)) {
+      return endpointPath;
+    }
+    if (decodedPath.length > 1) {
+      return endpointPath.length === 2
+        ? this.orientPathToEndpoints(decodedPath, endpointPath[0], endpointPath[1])
+        : decodedPath;
+    }
+    return endpointPath;
+  }
+
+  private isSyntheticOffsetRoute(route: any, decodedPath: google.maps.LatLngLiteral[]): boolean {
+    return Number(route.duration_seconds || 0) === 0 &&
+      decodedPath.length > 2 &&
+      this.getRouteEndpointPath(route).length === 2;
+  }
+
+  private getRouteEndpointPath(route: any): google.maps.LatLngLiteral[] {
+    const startNode = route.edge?.start_node;
+    const endNode = route.edge?.end_node;
+    if (!startNode || !endNode) return [];
+    return [
+      { lat: Number(startNode.latitude), lng: Number(startNode.longitude) },
+      { lat: Number(endNode.latitude), lng: Number(endNode.longitude) },
+    ].filter(point => this.isValidCoordinate(point.lat, point.lng));
+  }
+
+  private projectPointOnSegment(
+    point: google.maps.LatLngLiteral,
+    start: google.maps.LatLngLiteral,
+    end: google.maps.LatLngLiteral,
+  ): { point: google.maps.LatLngLiteral; t: number; distance: number } {
+    const metersPerDegreeLat = 111320;
+    const metersPerDegreeLng = metersPerDegreeLat * Math.cos(point.lat * Math.PI / 180);
+    const startX = (start.lng - point.lng) * metersPerDegreeLng;
+    const startY = (start.lat - point.lat) * metersPerDegreeLat;
+    const endX = (end.lng - point.lng) * metersPerDegreeLng;
+    const endY = (end.lat - point.lat) * metersPerDegreeLat;
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+    const lengthSquared = deltaX * deltaX + deltaY * deltaY;
+    const t = lengthSquared === 0
+      ? 0
+      : Math.max(0, Math.min(1, -(startX * deltaX + startY * deltaY) / lengthSquared));
+    const projectedPoint = {
+      lat: start.lat + (end.lat - start.lat) * t,
+      lng: start.lng + (end.lng - start.lng) * t,
+    };
+
+    return {
+      point: projectedPoint,
+      t,
+      distance: this.distanceMeters(point, projectedPoint),
+    };
+  }
+
+  private orientPathToEndpoints(
+    path: google.maps.LatLngLiteral[],
+    start: google.maps.LatLngLiteral,
+    end: google.maps.LatLngLiteral,
+  ): google.maps.LatLngLiteral[] {
+    if (path.length < 2) return [...path];
+
+    const first = path[0];
+    const last = path[path.length - 1];
+    const forwardDistance = this.distanceMeters(start, first) + this.distanceMeters(end, last);
+    const reverseDistance = this.distanceMeters(start, last) + this.distanceMeters(end, first);
+
+    const oriented = reverseDistance < forwardDistance ? [...path].reverse() : [...path];
+    return this.anchorPathToEndpoints(oriented, start, end);
+  }
+
+  private anchorPathToEndpoints(
+    path: google.maps.LatLngLiteral[],
+    start: google.maps.LatLngLiteral,
+    end: google.maps.LatLngLiteral,
+  ): google.maps.LatLngLiteral[] {
+    if (path.length < 2) return [...path];
+    const anchored = [...path];
+    if (this.distanceMeters(start, anchored[0]) > this.endpointSnapToleranceMeters) {
+      anchored.unshift(start);
+    } else {
+      anchored[0] = start;
+    }
+    if (this.distanceMeters(end, anchored[anchored.length - 1]) > this.endpointSnapToleranceMeters) {
+      anchored.push(end);
+    } else {
+      anchored[anchored.length - 1] = end;
+    }
+    return anchored;
+  }
+
+  private distanceMeters(a: google.maps.LatLngLiteral, b: google.maps.LatLngLiteral): number {
+    const radiusMeters = 6371000;
+    const toRadians = (degrees: number) => degrees * Math.PI / 180;
+    const lat1 = toRadians(a.lat);
+    const lat2 = toRadians(b.lat);
+    const deltaLat = toRadians(b.lat - a.lat);
+    const deltaLng = toRadians(b.lng - a.lng);
+    const sinLat = Math.sin(deltaLat / 2);
+    const sinLng = Math.sin(deltaLng / 2);
+    const value = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLng * sinLng;
+
+    return 2 * radiusMeters * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+  }
+
+  private isValidCoordinate(lat: any, lng: any): boolean {
+    return Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
+  }
+
+  private buildServiceDrops(nodes: any[], routes: any[]): any[] {
+    return nodes
+      .map(node => this.buildServiceDropForNode(node, routes))
+      .filter((drop): drop is any => Boolean(drop));
+  }
+
+  private buildServiceDropForNode(node: any, routes: any[]): any | null {
+    const nodePoint = { lat: Number(node.latitude), lng: Number(node.longitude) };
+    if (!this.isValidCoordinate(nodePoint.lat, nodePoint.lng)) return null;
+
+    const connectedRoutes = routes.filter(route => this.routeTouchesNode(route, node.id));
+    let bestSnap: { point: google.maps.LatLngLiteral; distance: number } | null = null;
+
+    connectedRoutes.forEach(route => {
+      const snap = this.findClosestPointOnPath(nodePoint, route.decodedPath || []);
+      if (snap && (!bestSnap || snap.distance < bestSnap.distance)) {
+        bestSnap = snap;
+      }
+    });
+
+    if (!bestSnap || bestSnap.distance <= this.endpointSnapToleranceMeters) return null;
+
+    const isProducer = node.node_type === 'producer';
+    return {
+      nodeId: node.id,
+      path: [nodePoint, bestSnap.point],
+      haloOptions: {
+        strokeColor: '#111827',
+        strokeOpacity: isProducer ? 0.18 : 0.12,
+        strokeWeight: isProducer ? 8 : 6,
+        clickable: false,
+        zIndex: isProducer ? 14 : 13,
+      },
+      lineOptions: {
+        strokeColor: isProducer ? '#dc2626' : '#2563eb',
+        strokeOpacity: isProducer ? 0.95 : 0.82,
+        strokeWeight: isProducer ? 4 : 3,
+        clickable: false,
+        zIndex: isProducer ? 16 : 15,
+      },
+    };
+  }
+
+  private routeTouchesNode(route: any, nodeId: number): boolean {
+    if (Array.isArray(route.source_node_ids) && route.source_node_ids.map(Number).includes(Number(nodeId))) {
+      return true;
+    }
+
+    const startId = Number(route.edge?.start_node?.id);
+    const endId = Number(route.edge?.end_node?.id);
+    return startId === Number(nodeId) || endId === Number(nodeId);
+  }
+
+  private findClosestPointOnPath(
+    point: google.maps.LatLngLiteral,
+    path: google.maps.LatLngLiteral[],
+  ): { point: google.maps.LatLngLiteral; distance: number } | null {
+    if (path.length === 0) return null;
+    if (path.length === 1) return { point: path[0], distance: this.distanceMeters(point, path[0]) };
+
+    let best: { point: google.maps.LatLngLiteral; distance: number } | null = null;
+    for (let index = 0; index < path.length - 1; index++) {
+      const snap = this.projectPointOnSegment(point, path[index], path[index + 1]);
+      if (!best || snap.distance < best.distance) {
+        best = { point: snap.point, distance: snap.distance };
+      }
+    }
+
+    return best;
   }
 
   private decodePolylineValue(encoded: string, startIndex: number): { value: number; nextIndex: number } {

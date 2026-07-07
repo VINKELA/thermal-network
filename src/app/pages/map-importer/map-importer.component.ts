@@ -41,19 +41,26 @@ export class MapImporterComponent implements OnInit, AfterViewInit {
   isClickMode = false;
   
   // DATA STATE
-  selectedYear: number = 2024;
+  selectedYear: number | null = 2024;
+  selectedYearText = '2024';
+  readonly minTargetYear = 1900;
+  readonly maxTargetYear = 2200;
   availableModels: any[] = [];
   selectedModel: string = ''; 
   projects: any[] = [];
   selectedProjectId: number | null = null;
+  networks: any[] = [];
+  selectedNetworkId: number | null = null;
   foundBuildings: any[] = []; 
   
   // OPTIONS
   sourceOptions = WASTE_HEAT_OPTIONS;
 
   // TOOLS
-  drawingManager: google.maps.drawing.DrawingManager;
+  drawingManager: google.maps.drawing.DrawingManager | null = null;
   currentRectangle: google.maps.Rectangle | null = null;
+  private toolsInitialized = false;
+  private drawingToolsAvailable = false;
 
   constructor(
     private api: RestApiService,
@@ -67,15 +74,7 @@ export class MapImporterComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.mapComponent && this.mapComponent.googleMap) {
-      this.initializeTools(this.mapComponent.googleMap);
-    } else {
-      setTimeout(() => {
-        if (this.mapComponent && this.mapComponent.googleMap) {
-          this.initializeTools(this.mapComponent.googleMap);
-        }
-      }, 1000);
-    }
+    this.tryInitializeTools();
   }
 
   async fetchModels() {
@@ -96,11 +95,97 @@ export class MapImporterComponent implements OnInit, AfterViewInit {
     });
   }
 
+  onProjectChange(projectId: number | null) {
+    this.selectedProjectId = projectId ? Number(projectId) : null;
+    this.selectedNetworkId = null;
+    this.networks = [];
+
+    if (this.selectedProjectId) {
+      this.loadNetworksForProject(this.selectedProjectId);
+    }
+  }
+
+  loadNetworksForProject(projectId: number) {
+    this.api.get<any>(`networks/?project_id=${projectId}&limit=500&ordering=-created_at,-id`).subscribe({
+      next: (data) => {
+        this.networks = (data && data.results) ? data.results : (Array.isArray(data) ? data : []);
+        if (this.selectedNetworkId && !this.networks.some(network => Number(network.id) === Number(this.selectedNetworkId))) {
+          this.selectedNetworkId = null;
+        }
+      },
+      error: () => {
+        this.networks = [];
+        this.selectedNetworkId = null;
+        this.toastr.warning('Could not load networks for this project.');
+      },
+    });
+  }
+
+  onYearChange(value: any) {
+    const digits = String(value || '').replace(/\D/g, '').slice(0, 4);
+    this.selectedYearText = digits;
+    this.selectedYear = digits.length === 4 ? Number(digits) : null;
+  }
+
+  get showYearError(): boolean {
+    return !!this.selectedYearText && !this.normalizedTargetYear();
+  }
+
+  get targetYearLabel(): string {
+    return this.selectedYearText || 'YYYY';
+  }
+
+  private normalizedTargetYear(): number | null {
+    if (!this.selectedYear || this.selectedYearText.length !== 4) {
+      return null;
+    }
+    const year = Number(this.selectedYear);
+    return Number.isInteger(year) && year >= this.minTargetYear && year <= this.maxTargetYear ? year : null;
+  }
+
+  private generationPayload(extra: any = {}) {
+    const payload: any = { ...extra };
+    const year = this.normalizedTargetYear();
+    if (year) {
+      payload.year = year;
+    }
+    if (this.selectedNetworkId) {
+      payload.network_id = Number(this.selectedNetworkId);
+    }
+    return payload;
+  }
+
   // --- MAP & TOOLS ---
 
   initializeTools(map: google.maps.Map) {
+    if (this.toolsInitialized) {
+      return;
+    }
+
+    this.toolsInitialized = true;
     this.initAutocomplete(map);
     this.initDrawingManager(map);
+  }
+
+  private tryInitializeTools(attempt = 0) {
+    if (this.toolsInitialized) {
+      return;
+    }
+
+    const map = this.mapComponent && this.mapComponent.googleMap;
+    const mapsReady = typeof google !== 'undefined' && !!google.maps?.places;
+
+    if (map && mapsReady) {
+      this.initializeTools(map);
+      return;
+    }
+
+    if (attempt >= 30) {
+      this.toastr.warning('Map tools are still loading. Please refresh if the map controls do not appear.');
+      return;
+    }
+
+    setTimeout(() => this.tryInitializeTools(attempt + 1), 250);
   }
 
   initAutocomplete(map: google.maps.Map) {
@@ -119,24 +204,46 @@ export class MapImporterComponent implements OnInit, AfterViewInit {
     });
   }
 
-  initDrawingManager(map: google.maps.Map) {
-    this.drawingManager = new google.maps.drawing.DrawingManager({
-      drawingMode: google.maps.drawing.OverlayType.RECTANGLE,
-      drawingControl: true,
-      drawingControlOptions: {
-        position: google.maps.ControlPosition.TOP_RIGHT,
-        drawingModes: [google.maps.drawing.OverlayType.RECTANGLE],
-      },
-      rectangleOptions: {
-        fillColor: '#3366ff',
-        fillOpacity: 0.2,
-        strokeWeight: 2,
-        clickable: false,
-        editable: true,
-        zIndex: 1,
-      },
+  private activateClickFallback(message: string) {
+    this.drawingToolsAvailable = false;
+    setTimeout(() => {
+      this.ngZone.run(() => {
+        this.isClickMode = true;
+        this.toastr.warning(message);
+      });
     });
+  }
 
+  initDrawingManager(map: google.maps.Map) {
+    if (!google.maps.drawing?.DrawingManager || !google.maps.drawing?.OverlayType?.RECTANGLE) {
+      this.activateClickFallback('Box scan is unavailable in this map version. Click mode is active.');
+      return;
+    }
+
+    try {
+      this.drawingManager = new google.maps.drawing.DrawingManager({
+        drawingMode: google.maps.drawing.OverlayType.RECTANGLE,
+        drawingControl: true,
+        drawingControlOptions: {
+          position: google.maps.ControlPosition.TOP_RIGHT,
+          drawingModes: [google.maps.drawing.OverlayType.RECTANGLE],
+        },
+        rectangleOptions: {
+          fillColor: '#3366ff',
+          fillOpacity: 0.2,
+          strokeWeight: 2,
+          clickable: false,
+          editable: true,
+          zIndex: 1,
+        },
+      });
+    } catch (error) {
+      this.drawingManager = null;
+      this.activateClickFallback('Box scan is unavailable in this map version. Click mode is active.');
+      return;
+    }
+
+    this.drawingToolsAvailable = true;
     this.drawingManager.setMap(map);
 
     google.maps.event.addListener(this.drawingManager, 'rectanglecomplete', (rectangle: any) => {
@@ -157,13 +264,19 @@ export class MapImporterComponent implements OnInit, AfterViewInit {
   }
 
   toggleMode() {
+    if (!this.drawingManager || !this.drawingToolsAvailable) {
+      this.isClickMode = true;
+      this.toastr.info('Box scan is unavailable in this map version. Click mode is active.');
+      return;
+    }
+
     this.isClickMode = !this.isClickMode;
     if (this.isClickMode) {
       this.toastr.info('Click Mode: Click any house on the map.');
-      if (this.drawingManager) this.drawingManager.setDrawingMode(null);
+      this.drawingManager.setDrawingMode(null);
     } else {
       this.toastr.info('Scan Mode: Draw a box.');
-      if (this.drawingManager) this.drawingManager.setDrawingMode(google.maps.drawing.OverlayType.RECTANGLE);
+      this.drawingManager.setDrawingMode(google.maps.drawing.OverlayType.RECTANGLE);
     }
   }
 
@@ -328,13 +441,18 @@ export class MapImporterComponent implements OnInit, AfterViewInit {
 
   async generateProfiles() {
     if (!this.selectedProjectId) return;
+    const targetYear = this.normalizedTargetYear();
+    if (!targetYear) {
+      this.toastr.warning('Enter a valid four-digit target year.', 'Invalid Year');
+      return;
+    }
     this.isCalculating = true;
     try {
       await this.api.post(
-        { model_type: this.selectedModel, year: this.selectedYear },
+        this.generationPayload({ model_type: this.selectedModel }),
         `projects/${this.selectedProjectId}/generate_profiles/`
       ).toPromise();
-      this.toastr.success(`Started Demand Simulation for ${this.selectedYear}`);
+      this.toastr.success(`Started Demand Simulation for ${this.targetYearLabel}`);
     } catch (err) {
       this.toastr.danger('Simulation failed to start');
     } finally {
@@ -347,13 +465,18 @@ export class MapImporterComponent implements OnInit, AfterViewInit {
       this.toastr.danger('Please select a project first.');
       return;
     }
+    const targetYear = this.normalizedTargetYear();
+    if (!targetYear) {
+      this.toastr.warning('Enter a valid four-digit target year.', 'Invalid Year');
+      return;
+    }
     this.isCalculating = true;
     try {
       await this.api.post(
-        { year: this.selectedYear },
+        this.generationPayload(),
         `projects/${this.selectedProjectId}/generate_waste_heat/`
       ).toPromise();
-      this.toastr.success(`Started Waste Heat Analysis for ${this.selectedYear}`);
+      this.toastr.success(`Started Waste Heat Analysis for ${this.targetYearLabel}`);
     } catch (err) {
       this.toastr.danger('Analysis failed to start');
     } finally {

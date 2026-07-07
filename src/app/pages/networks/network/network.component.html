@@ -23,19 +23,37 @@
       [center]="center" 
       [zoom]="zoom"
       [options]="mapOptions">
+
+      <map-polyline
+        *ngFor="let route of visualRoutes"
+        [path]="route.decodedPath"
+        [options]="route | thermalLine:'halo'">
+      </map-polyline>
       
       <map-polyline
         *ngFor="let route of visualRoutes"
         [path]="route.decodedPath"
-        [options]="getRouteOptions(route)"
+        [options]="route | thermalLine:'route'"
         (polylineClick)="openRouteInfo(route)">
+      </map-polyline>
+
+      <map-polyline
+        *ngFor="let drop of visualServiceDrops"
+        [path]="drop.path"
+        [options]="drop.haloOptions">
+      </map-polyline>
+
+      <map-polyline
+        *ngFor="let drop of visualServiceDrops"
+        [path]="drop.path"
+        [options]="drop.lineOptions">
       </map-polyline>
 
       <ng-container *ngIf="!hasRoutes">
         <map-polyline
           *ngFor="let edge of edges"
           [path]="getEdgePath(edge)"
-          [options]="getEdgeOptions(edge)"
+          [options]="edge | thermalLine:'edge'"
           (polylineClick)="openEdgeInfo(edge, $event)">
         </map-polyline>
       </ng-container>
@@ -77,7 +95,10 @@
           <h3>{{ selectedRoute.route_type | titlecase }} Route</h3>
           <p class="edge-name">{{ selectedRoute.edge?.name || ('Route ' + selectedRoute.id) }}</p>
           <div class="details">
-            <p><strong>Distance:</strong> {{ selectedRoute.distance_meters | number:'1.0-1' }} m</p>
+            <p><strong>Route length:</strong> {{ selectedRoute.distance_meters | number:'1.0-1' }} m</p>
+            <p *ngIf="selectedRoute.is_shared">
+              <strong>Merged routes:</strong> {{ selectedRoute.overlap_count || selectedRoute.source_route_ids?.length || 1 }}
+            </p>
             <p *ngIf="selectedRoute.duration_seconds">
               <strong>Duration:</strong> {{ selectedRoute.duration_seconds / 60 | number:'1.0-0' }} min
             </p>

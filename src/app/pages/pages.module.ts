@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { ProjectsModule } from './projects/projects.module';
 import { BuildingsModule } from './buildings/buildings.module';
+import { NetworkAnalysisModule } from './networks/network-analysis/network-analysis.module';
 import { DataUploadComponent } from './data-upload/data-upload.component';
 import { MapImporterComponent } from './map-importer/map-importer.component';
 import { FormsModule } from '@angular/forms';
@@ -43,6 +44,7 @@ import { NodeMarkerComponent } from './node-marker/node-marker.component';
     ProjectsModule, 
     NetworksModule,
     BuildingsModule,
+    NetworkAnalysisModule,
     NbTabsetModule,
     NbSelectModule,
     NbIconModule,

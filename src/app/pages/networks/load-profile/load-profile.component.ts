@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RestApiService } from '../../../@core/utils/rest-api.service';
 import { NbThemeService } from '@nebular/theme';
-import { BehaviorSubject, Subject, forkJoin, of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { takeWhile, debounceTime, distinctUntilChanged, switchMap, catchError, map } from 'rxjs/operators';
 
 type ChartView = 'trend' | 'sankey' | 'utilization' | 'summary';
@@ -10,6 +10,7 @@ interface PresentationValueRow {
   label: string;
   value: number;
   unit: string;
+  kind: 'energy' | 'percent' | 'power';
 }
 
 interface ChartLegendItem {
@@ -98,14 +99,14 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
   extractThemeColors() {
     const vars = this.currentTheme.variables;
     this.chartColors = {
-      excess: vars.success || '#00d68f',
-      deficit: vars.danger || '#ff3d71',
-      producer: vars.info || '#0095ff',
-      consumer: vars.warning || '#ffaa00',
-      utilized: vars.primary || '#3366ff',
-      served: vars.warning || '#ffaa00',
-      unused: vars.success || '#00d68f',
-      unserved: vars.danger || '#ff3d71',
+      excess: '#16a34a',
+      deficit: '#dc2626',
+      producer: '#0f766e',
+      consumer: '#f97316',
+      utilized: '#2563eb',
+      served: '#7c3aed',
+      unused: '#64748b',
+      unserved: '#dc2626',
       textColor: vars.fgText || '#000000',
       axisLine: vars.separator || '#cccccc',
       bg: 'transparent',
@@ -488,25 +489,35 @@ toggleNodeSelection(node: any) {
 
   generateSystemTrend() {
     this.chartLegendItems = [
-      { label: 'System Excess', color: this.chartColors.excess, detail: 'Producer heat above consumer demand' },
-      { label: 'System Deficit', color: this.chartColors.deficit, detail: 'Consumer demand above producer heat' },
+      { label: 'Producer heat available', color: this.chartColors.producer, detail: 'Hourly available heat rate (kW)' },
+      { label: 'Consumer heat demand', color: this.chartColors.consumer, detail: 'Hourly demand heat rate (kW)' },
+      { label: 'Unused producer heat', color: this.chartColors.excess, detail: 'Available heat above demand (kW)' },
+      { label: 'Unserved demand', color: this.chartColors.deficit, detail: 'Demand above available heat (kW)' },
     ];
     const seriesList: any[] = [];
-    const legendData: string[] = ['System Excess', 'System Deficit'];
-    const excessData: any[] = []; const deficitData: any[] = []; const timestamps: number[] = [];
+    const legendData: string[] = ['Producer Heat Available', 'Consumer Heat Demand', 'Unused Producer Heat', 'Unserved Demand'];
+    const producerData: any[] = [];
+    const consumerData: any[] = [];
+    const unusedData: any[] = [];
+    const unservedData: any[] = [];
 
     this.aggregateSystemData.forEach(item => {
       const time = new Date(item.timestamp).getTime();
       if (isNaN(time)) return;
-      timestamps.push(time);
-      excessData.push([time, item.net_balance > 0 ? item.net_balance : 0]);
-      deficitData.push([time, item.net_balance < 0 ? item.net_balance : 0]);
+      const supply = Number(item.total_supply || 0);
+      const demand = Number(item.total_demand || 0);
+      producerData.push([time, supply]);
+      consumerData.push([time, demand]);
+      unusedData.push([time, Math.max(supply - demand, 0)]);
+      unservedData.push([time, Math.max(demand - supply, 0)]);
     });
 
-    seriesList.push({ name: 'System Excess', type: 'line', showSymbol: false, data: excessData, yAxisIndex: 1, lineStyle: { width: 1, color: this.chartColors.excess }, areaStyle: { color: this.chartColors.excess, opacity: 0.3 }, itemStyle: { color: this.chartColors.excess }});
-    seriesList.push({ name: 'System Deficit', type: 'line', showSymbol: false, data: deficitData, yAxisIndex: 1, lineStyle: { width: 1, color: this.chartColors.deficit }, areaStyle: { color: this.chartColors.deficit, opacity: 0.3 }, itemStyle: { color: this.chartColors.deficit }});
+    seriesList.push({ name: 'Producer Heat Available', type: 'line', showSymbol: false, smooth: true, data: producerData, lineStyle: { width: 2.4, color: this.chartColors.producer }, itemStyle: { color: this.chartColors.producer }});
+    seriesList.push({ name: 'Consumer Heat Demand', type: 'line', showSymbol: false, smooth: true, data: consumerData, lineStyle: { width: 2.4, color: this.chartColors.consumer }, itemStyle: { color: this.chartColors.consumer }});
+    seriesList.push({ name: 'Unused Producer Heat', type: 'line', showSymbol: false, smooth: true, data: unusedData, lineStyle: { width: 1.2, color: this.chartColors.excess }, areaStyle: { color: this.chartColors.excess, opacity: 0.18 }, itemStyle: { color: this.chartColors.excess }});
+    seriesList.push({ name: 'Unserved Demand', type: 'line', showSymbol: false, smooth: true, data: unservedData, lineStyle: { width: 1.2, color: this.chartColors.deficit }, areaStyle: { color: this.chartColors.deficit, opacity: 0.18 }, itemStyle: { color: this.chartColors.deficit }});
 
-    this.buildEChartsConfig(legendData, seriesList, 'System Balance', 'Heat');
+    this.buildEChartsConfig(legendData, seriesList, 'Heat rate (kW)');
   }
 
   generateSystemSankey() {
@@ -542,12 +553,13 @@ toggleNodeSelection(node: any) {
 
   generateSelectionTrend() {
     this.chartLegendItems = [
-      { label: 'Isolated Excess', color: this.chartColors.excess, detail: 'Selected producer heat above selected demand' },
-      { label: 'Isolated Deficit', color: this.chartColors.deficit, detail: 'Selected demand above selected producer heat' },
-      { label: 'Selected assets', color: this.chartColors.utilized, detail: 'Individual selected load traces' },
+      { label: 'Selected producer heat', color: this.chartColors.producer, detail: 'Selected available heat rate (kW)' },
+      { label: 'Selected consumer demand', color: this.chartColors.consumer, detail: 'Selected demand heat rate (kW)' },
+      { label: 'Unused selected heat', color: this.chartColors.excess, detail: 'Selected supply above demand (kW)' },
+      { label: 'Unserved selected demand', color: this.chartColors.deficit, detail: 'Selected demand above supply (kW)' },
     ];
     const seriesList: any[] = [];
-    const legendData: string[] = ['Isolated Excess', 'Isolated Deficit'];
+    const legendData: string[] = ['Selected Producer Heat', 'Selected Consumer Demand', 'Unused Selected Heat', 'Unserved Selected Demand'];
     
     const timestampSet = new Set<number>();
     this.selectedNodes.forEach(node => {
@@ -555,20 +567,26 @@ toggleNodeSelection(node: any) {
     });
     const timestamps = Array.from(timestampSet).sort();
 
-    const excessData: any[] = []; const deficitData: any[] = [];
+    const supplyData: any[] = [];
+    const demandData: any[] = [];
+    const unusedData: any[] = [];
+    const unservedData: any[] = [];
     timestamps.forEach(time => {
       let localSupply = 0; let localDemand = 0;
       this.selectedNodes.forEach(node => {
         const vals = this.nodeProfilesCache.get(node.id)?.get(time);
         if (vals) { localSupply += vals.supply; localDemand += vals.demand; }
       });
-      const balance = localSupply - localDemand;
-      excessData.push([time, balance > 0 ? balance : 0]);
-      deficitData.push([time, balance < 0 ? balance : 0]);
+      supplyData.push([time, localSupply]);
+      demandData.push([time, localDemand]);
+      unusedData.push([time, Math.max(localSupply - localDemand, 0)]);
+      unservedData.push([time, Math.max(localDemand - localSupply, 0)]);
     });
 
-    seriesList.push({ name: 'Isolated Excess', type: 'line', showSymbol: false, data: excessData, yAxisIndex: 1, lineStyle: { width: 1, color: this.chartColors.excess }, areaStyle: { color: this.chartColors.excess, opacity: 0.3 }, itemStyle: { color: this.chartColors.excess }});
-    seriesList.push({ name: 'Isolated Deficit', type: 'line', showSymbol: false, data: deficitData, yAxisIndex: 1, lineStyle: { width: 1, color: this.chartColors.deficit }, areaStyle: { color: this.chartColors.deficit, opacity: 0.3 }, itemStyle: { color: this.chartColors.deficit }});
+    seriesList.push({ name: 'Selected Producer Heat', type: 'line', showSymbol: false, smooth: true, data: supplyData, lineStyle: { width: 2.4, color: this.chartColors.producer }, itemStyle: { color: this.chartColors.producer }});
+    seriesList.push({ name: 'Selected Consumer Demand', type: 'line', showSymbol: false, smooth: true, data: demandData, lineStyle: { width: 2.4, color: this.chartColors.consumer }, itemStyle: { color: this.chartColors.consumer }});
+    seriesList.push({ name: 'Unused Selected Heat', type: 'line', showSymbol: false, smooth: true, data: unusedData, lineStyle: { width: 1.2, color: this.chartColors.excess }, areaStyle: { color: this.chartColors.excess, opacity: 0.18 }, itemStyle: { color: this.chartColors.excess }});
+    seriesList.push({ name: 'Unserved Selected Demand', type: 'line', showSymbol: false, smooth: true, data: unservedData, lineStyle: { width: 1.2, color: this.chartColors.deficit }, areaStyle: { color: this.chartColors.deficit, opacity: 0.18 }, itemStyle: { color: this.chartColors.deficit }});
 
     let i = 0;
     this.selectedNodes.forEach(node => {
@@ -576,13 +594,17 @@ toggleNodeSelection(node: any) {
       legendData.push(nodeName);
       seriesList.push({ 
         name: nodeName, type: 'line', showSymbol: false, 
-        data: timestamps.map(t => [t, Math.abs((this.nodeProfilesCache.get(node.id)?.get(t)?.supply || 0) - (this.nodeProfilesCache.get(node.id)?.get(t)?.demand || 0))]), 
-        yAxisIndex: 0, lineStyle: { width: 2 }, itemStyle: { color: this.chartColors.palette[i % this.chartColors.palette.length] }
+        data: timestamps.map(t => {
+          const values = this.nodeProfilesCache.get(node.id)?.get(t);
+          return [t, Math.max(values?.supply || 0, values?.demand || 0)];
+        }), 
+        lineStyle: { width: 1.1, opacity: 0.5, color: this.chartColors.palette[i % this.chartColors.palette.length] },
+        itemStyle: { color: this.chartColors.palette[i % this.chartColors.palette.length] }
       });
       i++;
     });
 
-    this.buildEChartsConfig(legendData, seriesList, 'Individual Load', 'Isolated Balance');
+    this.buildEChartsConfig(legendData, seriesList, 'Heat rate (kW)');
   }
 
   generateSelectionSankey() {
@@ -726,13 +748,15 @@ toggleNodeSelection(node: any) {
   buildPresentationRows(summary: any): PresentationValueRow[] {
     if (!summary) return [];
     return [
-      { label: 'Producer heat available', value: summary.annual_producer_heat_kwh || 0, unit: 'kWh' },
-      { label: 'Consumer heat demand', value: summary.annual_consumer_heat_kwh || 0, unit: 'kWh' },
-      { label: 'Heat used by consumers', value: summary.annual_utilized_heat_kwh || 0, unit: 'kWh' },
-      { label: 'Unused producer heat', value: summary.annual_unused_producer_heat_kwh || 0, unit: 'kWh' },
-      { label: 'Unserved consumer demand', value: summary.annual_unserved_consumer_heat_kwh || 0, unit: 'kWh' },
-      { label: 'Producer heat used', value: summary.producer_annual_utilization_pct || 0, unit: '%' },
-      { label: 'Demand served', value: summary.consumer_annual_utilization_pct || 0, unit: '%' },
+      { label: 'Producer heat available', value: summary.annual_producer_heat_kwh || 0, unit: 'kWh', kind: 'energy' },
+      { label: 'Consumer heat demand', value: summary.annual_consumer_heat_kwh || 0, unit: 'kWh', kind: 'energy' },
+      { label: 'Heat used by consumers', value: summary.annual_utilized_heat_kwh || 0, unit: 'kWh', kind: 'energy' },
+      { label: 'Unused producer heat', value: summary.annual_unused_producer_heat_kwh || 0, unit: 'kWh', kind: 'energy' },
+      { label: 'Unserved consumer demand', value: summary.annual_unserved_consumer_heat_kwh || 0, unit: 'kWh', kind: 'energy' },
+      { label: 'Peak producer heat', value: summary.peak_producer_heat_kw || summary.producer_capacity_kw || 0, unit: 'kW', kind: 'power' },
+      { label: 'Peak consumer demand', value: summary.peak_consumer_heat_kw || summary.consumer_capacity_kw || 0, unit: 'kW', kind: 'power' },
+      { label: 'Producer heat used', value: summary.producer_annual_utilization_pct || 0, unit: '%', kind: 'percent' },
+      { label: 'Demand served', value: summary.consumer_annual_utilization_pct || 0, unit: '%', kind: 'percent' },
     ];
   }
 
@@ -755,14 +779,14 @@ toggleNodeSelection(node: any) {
     const labelFormatter = (params: any) => {
       const value = Number(params.value || 0);
       const kwh = Number(params.data?.kwh || 0);
-      return value >= 4 ? `${value.toFixed(1)}%\n${this.formatCompactNumber(kwh)} kWh` : '';
+      return value >= 4 ? `${this.formatPercent(value)}\n${this.formatEnergy(kwh)}` : '';
     };
 
     this.chartLegendItems = [
-      { label: 'Heat used by consumers', color: this.chartColors.utilized, detail: `${producerPct.toFixed(1)}% of producer heat` },
-      { label: 'Unused producer heat', color: this.chartColors.unused, detail: `${unusedPct.toFixed(1)}% of producer heat` },
-      { label: 'Demand served', color: this.chartColors.served, detail: `${consumerPct.toFixed(1)}% of consumer demand` },
-      { label: 'Unserved demand', color: this.chartColors.unserved, detail: `${unservedPct.toFixed(1)}% of consumer demand` },
+      { label: 'Heat used by consumers', color: this.chartColors.utilized, detail: `${this.formatPercent(producerPct)} of producer energy` },
+      { label: 'Unused producer heat', color: this.chartColors.unused, detail: `${this.formatPercent(unusedPct)} of producer energy` },
+      { label: 'Demand served', color: this.chartColors.served, detail: `${this.formatPercent(consumerPct)} of consumer demand` },
+      { label: 'Unserved demand', color: this.chartColors.unserved, detail: `${this.formatPercent(unservedPct)} of consumer demand` },
     ];
 
     this.echartsOptions = {
@@ -771,13 +795,29 @@ toggleNodeSelection(node: any) {
       color: [this.chartColors.utilized, this.chartColors.unused, this.chartColors.served, this.chartColors.unserved],
       title: {
         text: title,
-        subtext: `Producer available: ${this.formatCompactNumber(producerTotal)} kWh   |   Consumer demand: ${this.formatCompactNumber(consumerTotal)} kWh`,
+        subtext: `Producer available: ${this.formatEnergy(producerTotal)}   |   Consumer demand: ${this.formatEnergy(consumerTotal)}`,
         left: 24,
         top: 18,
         textStyle: { color: this.chartColors.textColor, fontSize: 18, fontWeight: 800 },
         subtextStyle: { color: this.chartColors.textColor, fontSize: 12, lineHeight: 18 },
       },
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: (params: any[]) => {
+          if (!params?.length) return '';
+          const category = params[0].axisValue || '';
+          let tip = `<div style="font-weight:bold; margin-bottom:5px;">${String(category).replace('\n', '<br/>')}</div>`;
+          params.forEach((p: any) => {
+            const value = Number(p.value || 0);
+            const kwh = Number(p.data?.kwh || 0);
+            if (value > 0 || kwh > 0) {
+              tip += `<div><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${this.formatPercent(value)} (${this.formatEnergy(kwh)})</b></div>`;
+            }
+          });
+          return tip;
+        },
+      },
       legend: {
         data: ['Heat Used by Consumers', 'Unused Producer Heat', 'Demand Served', 'Unserved Demand'],
         textStyle: { color: this.chartColors.textColor },
@@ -791,7 +831,7 @@ toggleNodeSelection(node: any) {
       xAxis: {
         type: 'value',
         max: 100,
-        name: 'Share of annual total',
+        name: 'Share of annual energy',
         axisLabel: {
           formatter: '{value}%',
           textStyle: { color: this.chartColors.textColor },
@@ -802,8 +842,8 @@ toggleNodeSelection(node: any) {
       yAxis: {
         type: 'category',
         data: [
-          `Producer heat\n${this.formatCompactNumber(producerTotal)} kWh`,
-          `Consumer demand\n${this.formatCompactNumber(consumerTotal)} kWh`,
+          `Producer heat\n${this.formatEnergy(producerTotal)}`,
+          `Consumer demand\n${this.formatEnergy(consumerTotal)}`,
         ],
         axisLabel: { color: this.chartColors.textColor, fontWeight: 800, fontSize: 13, lineHeight: 18 },
         axisLine: { lineStyle: { color: this.chartColors.axisLine } },
@@ -851,9 +891,9 @@ toggleNodeSelection(node: any) {
 
   buildUtilizationConfig(rows: any[], title: string) {
     this.chartLegendItems = [
-      { label: 'Producer heat used', color: this.chartColors.producer, detail: 'Available producer heat used each hour' },
-      { label: 'Demand served', color: this.chartColors.consumer, detail: 'Consumer demand served each hour' },
-      { label: 'Utilized heat', color: this.chartColors.utilized, detail: 'Heat transferred to consumers each hour' },
+      { label: 'Producer heat used', color: this.chartColors.producer, detail: 'Share of available producer heat used each hour (%)' },
+      { label: 'Demand served', color: this.chartColors.consumer, detail: 'Share of consumer demand served each hour (%)' },
+      { label: 'Heat used by consumers', color: this.chartColors.utilized, detail: 'Hourly heat transferred to consumers (kW)' },
     ];
     const producerUtilization = rows.map(row => [new Date(row.timestamp).getTime(), row.producer_utilization_pct || 0]);
     const consumerUtilization = rows.map(row => [new Date(row.timestamp).getTime(), row.consumer_utilization_pct || 0]);
@@ -869,20 +909,21 @@ toggleNodeSelection(node: any) {
           if (!params.length) return '';
           let tip = `<div style="font-weight:bold; margin-bottom:5px;">${new Date(params[0].value[0]).toLocaleString()}</div>`;
           params.forEach((p: any) => {
-            const unit = p.seriesName === 'Utilized Heat' ? 'kW' : '%';
-            tip += `<div><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${p.value[1]?.toFixed(2)} ${unit}</b></div>`;
+            const value = Number(p.value?.[1] || 0);
+            const formatted = p.seriesName.includes('(kW)') ? this.formatPower(value) : this.formatPercent(value);
+            tip += `<div><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${formatted}</b></div>`;
           });
           return tip;
         },
       },
-      legend: { data: ['Producer Heat Used', 'Demand Served', 'Utilized Heat'], textStyle: { color: this.chartColors.textColor }, bottom: 0, type: 'scroll' },
+      legend: { data: ['Producer Heat Used (%)', 'Demand Served (%)', 'Heat Used by Consumers (kW)'], textStyle: { color: this.chartColors.textColor }, bottom: 0, type: 'scroll' },
       grid: { top: 44, left: 64, right: 72, bottom: 82, containLabel: true },
       dataZoom: [{ type: 'slider', show: true, bottom: 30, xAxisIndex: [0] }, { type: 'inside', xAxisIndex: [0] }],
       xAxis: { type: 'time', boundaryGap: false, axisLine: { lineStyle: { color: this.chartColors.axisLine } }, axisLabel: { textStyle: { color: this.chartColors.textColor } } },
       yAxis: [
         {
           type: 'value',
-          name: 'Utilization',
+          name: 'Utilization (%)',
           position: 'left',
           axisLabel: { formatter: '{value}%', textStyle: { color: this.chartColors.textColor } },
           axisLine: { show: true, lineStyle: { color: this.chartColors.axisLine } },
@@ -890,39 +931,39 @@ toggleNodeSelection(node: any) {
         },
         {
           type: 'value',
-          name: 'Heat',
+          name: 'Heat rate (kW)',
           position: 'right',
-          axisLabel: { formatter: '{value} kW', textStyle: { color: this.chartColors.textColor } },
+          axisLabel: { formatter: (value: number) => this.formatPowerAxis(value), textStyle: { color: this.chartColors.textColor } },
           axisLine: { show: true, lineStyle: { color: this.chartColors.axisLine } },
           splitLine: { show: false },
         },
       ],
       series: [
-        { name: 'Producer Heat Used', type: 'line', showSymbol: false, smooth: true, data: producerUtilization, yAxisIndex: 0, lineStyle: { width: 2, color: this.chartColors.producer }, itemStyle: { color: this.chartColors.producer } },
-        { name: 'Demand Served', type: 'line', showSymbol: false, smooth: true, data: consumerUtilization, yAxisIndex: 0, lineStyle: { width: 2, color: this.chartColors.consumer }, itemStyle: { color: this.chartColors.consumer } },
-        { name: 'Utilized Heat', type: 'bar', data: utilizedHeat, yAxisIndex: 1, barMaxWidth: 8, itemStyle: { color: this.chartColors.utilized, opacity: 0.35 } },
+        { name: 'Producer Heat Used (%)', type: 'line', showSymbol: false, smooth: true, data: producerUtilization, yAxisIndex: 0, lineStyle: { width: 2, color: this.chartColors.producer }, itemStyle: { color: this.chartColors.producer } },
+        { name: 'Demand Served (%)', type: 'line', showSymbol: false, smooth: true, data: consumerUtilization, yAxisIndex: 0, lineStyle: { width: 2, color: this.chartColors.consumer }, itemStyle: { color: this.chartColors.consumer } },
+        { name: 'Heat Used by Consumers (kW)', type: 'bar', data: utilizedHeat, yAxisIndex: 1, barMaxWidth: 8, itemStyle: { color: this.chartColors.utilized, opacity: 0.35 } },
       ],
       title: { text: title, left: 16, top: 8, textStyle: { color: this.chartColors.textColor, fontSize: 13, fontWeight: 600 } },
     };
   }
 
-  buildEChartsConfig(legendData: string[], seriesList: any[], y1Name: string, y2Name: string) {
+  buildEChartsConfig(legendData: string[], seriesList: any[], yAxisName: string) {
     this.echartsOptions = {
       backgroundColor: 'transparent', animationDuration: 500,
       tooltip: { trigger: 'axis', axisPointer: { type: 'cross' }, formatter: (params: any) => {
           if (!params.length) return '';
           let tip = `<div style="font-weight:bold; margin-bottom:5px;">${new Date(params[0].value[0]).toLocaleDateString()}</div>`;
-          params.forEach((p: any) => { if (p.value[1] !== 0) tip += `<div><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${p.value[1]?.toFixed(2)} kW</b></div>`; });
+          params.forEach((p: any) => {
+            const value = Number(p.value?.[1] || 0);
+            if (value !== 0) tip += `<div><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${this.formatPower(value)}</b></div>`;
+          });
           return tip;
       }},
       legend: { data: legendData, textStyle: { color: this.chartColors.textColor }, bottom: 0, type: 'scroll' },
       grid: { top: 40, left: 60, right: 60, bottom: 80, containLabel: true },
       dataZoom: [{ type: 'slider', show: true, bottom: 30, xAxisIndex: [0] }, { type: 'inside', xAxisIndex: [0] }],
       xAxis: { type: 'time', boundaryGap: false, axisLine: { lineStyle: { color: this.chartColors.axisLine } }, axisLabel: { textStyle: { color: this.chartColors.textColor } } },
-      yAxis: [
-        { type: 'value', name: y1Name, position: 'left', axisLine: { show: true, lineStyle: { color: this.chartColors.axisLine } }, axisLabel: { textStyle: { color: this.chartColors.textColor } }, splitLine: { lineStyle: { type: 'dashed', opacity: 0.5 } } },
-        { type: 'value', name: y2Name, position: 'right', axisLine: { show: true, lineStyle: { color: this.chartColors.axisLine } }, axisLabel: { textStyle: { color: this.chartColors.textColor } }, splitLine: { show: false } }
-      ],
+      yAxis: { type: 'value', name: yAxisName, position: 'left', axisLine: { show: true, lineStyle: { color: this.chartColors.axisLine } }, axisLabel: { formatter: (value: number) => this.formatPowerAxis(value), textStyle: { color: this.chartColors.textColor } }, splitLine: { lineStyle: { type: 'dashed', opacity: 0.5 } } },
       series: seriesList
     };
   }
@@ -966,9 +1007,9 @@ toggleNodeSelection(node: any) {
 
     this.echartsOptions = {
       backgroundColor: '#ffffff',
-      title: { text: 'Heat Flow Summary', left: 16, top: 10, textStyle: { color: this.chartColors.textColor, fontSize: 15, fontWeight: 700 } },
+      title: { text: 'Annual Heat Energy Flow', left: 16, top: 10, textStyle: { color: this.chartColors.textColor, fontSize: 15, fontWeight: 700 } },
       graphic: [{ type: 'group', right: 20, top: 18, children: legendChildren }],
-      tooltip: { trigger: 'item', triggerOn: 'mousemove', formatter: (p: any) => p.dataType === 'edge' ? `${p.data.source} ➔ ${p.data.target}<br/><b>${p.data.value.toLocaleString()} kW</b>` : p.name },
+      tooltip: { trigger: 'item', triggerOn: 'mousemove', formatter: (p: any) => p.dataType === 'edge' ? `${p.data.source} -> ${p.data.target}<br/><b>${this.formatEnergy(p.data.value)}</b>` : p.name },
       series: [{
         type: 'sankey',
         layout: 'none',
@@ -1089,13 +1130,46 @@ toggleNodeSelection(node: any) {
     return numberValue.toFixed(Math.abs(numberValue) >= 1000 ? 0 : 2);
   }
 
-  private formatCompactNumber(value: number) {
+  formatPresentationValue(row: PresentationValueRow): string {
+    if (row.kind === 'percent') return this.formatPercent(row.value);
+    if (row.kind === 'power') return this.formatPower(row.value);
+    return this.formatEnergy(row.value);
+  }
+
+  formatEnergy(valueKwh: number): string {
+    const value = Number(valueKwh || 0);
+    if (!Number.isFinite(value)) return '0 kWh';
+    const abs = Math.abs(value);
+    if (abs >= 1_000_000) return `${this.formatNumber(value / 1_000_000, 1)} GWh`;
+    if (abs >= 1_000) return `${this.formatNumber(value / 1_000, 1)} MWh`;
+    return `${this.formatNumber(value, abs >= 100 ? 0 : 1)} kWh`;
+  }
+
+  formatPower(valueKw: number): string {
+    const value = Number(valueKw || 0);
+    if (!Number.isFinite(value)) return '0 kW';
+    const abs = Math.abs(value);
+    if (abs >= 1_000) return `${this.formatNumber(value / 1_000, 2)} MW`;
+    return `${this.formatNumber(value, abs >= 100 ? 0 : 1)} kW`;
+  }
+
+  formatPowerAxis(valueKw: number): string {
+    const value = Number(valueKw || 0);
+    const abs = Math.abs(value);
+    if (abs >= 1_000) return `${this.formatNumber(value / 1_000, 1)} MW`;
+    return `${this.formatNumber(value, 0)} kW`;
+  }
+
+  formatPercent(value: number): string {
     const numberValue = Number(value || 0);
-    if (!Number.isFinite(numberValue)) return '0';
-    const options: Intl.NumberFormatOptions & { notation?: 'standard' | 'compact' } = {
-      notation: numberValue >= 100000 ? 'compact' : 'standard',
-      maximumFractionDigits: numberValue >= 100000 ? 1 : 0,
-    };
-    return new Intl.NumberFormat(undefined, options).format(numberValue);
+    if (!Number.isFinite(numberValue)) return '0%';
+    return `${this.formatNumber(numberValue, 1)}%`;
+  }
+
+  private formatNumber(value: number, maximumFractionDigits: number): string {
+    return new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits,
+    }).format(value);
   }
 }

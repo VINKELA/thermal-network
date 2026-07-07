@@ -39,6 +39,8 @@ import { COSMIC_THEME } from './styles/theme.cosmic';
 import { CORPORATE_THEME } from './styles/theme.corporate';
 import { DARK_THEME } from './styles/theme.dark';
 import { ThermalMarkerPipe } from './pipes/thermal-marker.pipe';
+import { ThermalLinePipe } from './pipes/thermal-line.pipe';
+import { MapFitViewDirective } from './directives/map-fit-view.directive';
 
 const NB_MODULES = [
   NbLayoutModule,
@@ -69,13 +71,17 @@ const PIPES = [
   RoundPipe,
   TimingPipe,
   NumberWithCommasPipe,
-  ThermalMarkerPipe
+  ThermalMarkerPipe,
+  ThermalLinePipe
+];
+const DIRECTIVES = [
+  MapFitViewDirective,
 ];
 
 @NgModule({
   imports: [CommonModule, ...NB_MODULES],
-  exports: [CommonModule, ...PIPES, ...COMPONENTS],
-  declarations: [...COMPONENTS, ...PIPES, ThermalMarkerPipe],
+  exports: [CommonModule, ...PIPES, ...COMPONENTS, ...DIRECTIVES],
+  declarations: [...COMPONENTS, ...PIPES, ...DIRECTIVES],
 })
 export class ThemeModule {
   static forRoot(): ModuleWithProviders<ThemeModule> {

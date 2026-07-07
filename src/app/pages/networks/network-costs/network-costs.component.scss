@@ -1,0 +1,159 @@
+.network-cost-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) 180px auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.constants-toolbar {
+  grid-template-columns: 1fr auto;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.metric {
+  border: 1px solid #edf1f7;
+  border-radius: 6px;
+  padding: 0.85rem;
+  background: #ffffff;
+
+  span {
+    display: block;
+    color: #8f9bb3;
+    font-size: 0.75rem;
+    margin-bottom: 0.35rem;
+  }
+
+  strong {
+    font-size: 1.05rem;
+  }
+}
+
+.tables {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.visual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.visual-card {
+  border: 1px solid #edf1f7;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0.85rem;
+  min-width: 0;
+}
+
+.visual-card.wide {
+  grid-column: 1 / -1;
+}
+
+.visual-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+
+  h6 {
+    margin: 0;
+  }
+}
+
+.chart {
+  height: 330px;
+  width: 100%;
+}
+
+.table-wrap {
+  overflow: auto;
+  border: 1px solid #edf1f7;
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #edf1f7;
+  white-space: nowrap;
+}
+
+th {
+  color: #8f9bb3;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.segment-table {
+  max-height: 360px;
+}
+
+.constants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+
+  label {
+    color: #8f9bb3;
+    font-size: 0.75rem;
+  }
+
+  input {
+    margin-top: 0.35rem;
+  }
+}
+
+.pipe-catalog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.empty-state {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8f9bb3;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .visual-grid {
+    grid-template-columns: 1fr;
+  }
+}

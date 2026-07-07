@@ -87,12 +87,7 @@
                           <map-polyline 
                               *ngFor="let edge of run.edges"
                               [path]="getPath(edge)"
-                              [options]="{
-                                  strokeColor: run.uiColor,
-                                  strokeOpacity: 0.6,
-                                  strokeWeight: 4,
-                                  zIndex: 100 - i
-                              }">
+                              [options]="edge | thermalLine:'comparison':run.uiColor:i">
                           </map-polyline>
                       </ng-container>
 

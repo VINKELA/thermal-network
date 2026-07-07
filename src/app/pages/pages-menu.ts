@@ -8,6 +8,11 @@ export const MENU_ITEMS: NbMenuItem[] = [
     home: true,
   },
   {
+    title: 'Project Users',
+    icon: 'people-outline',
+    link: '/pages/project-users',
+  },
+  {
     title: 'File Importer',
     icon: 'file-text-outline',
     link: '/pages/building-upload'
@@ -22,12 +27,6 @@ export const MENU_ITEMS: NbMenuItem[] = [
     icon: 'cloud-upload-outline',
     link: '/pages/data-upload'
   },
-  
-  {
-    title: 'LoadProfiles',
-    icon: 'thermometer-outline',
-    link: '/pages/load-profiles'
-  },
    
    {
     title: 'NETWORKS',
@@ -37,6 +36,32 @@ export const MENU_ITEMS: NbMenuItem[] = [
     title: 'Networks',
     icon: 'wifi-outline',
     link: '/pages/networks',
+    },
+  
+  {
+    title: 'LoadProfiles',
+    icon: 'thermometer-outline',
+    link: '/pages/load-profiles'
+  },
+  {
+    title: 'Network Demand Map',
+    icon: 'map-outline',
+    link: '/pages/networks/demand-map',
+    },
+    {
+    title: 'Network Evolution',
+    icon: 'trending-up-outline',
+    link: '/pages/networks/evolution',
+    },
+    {
+    title: 'Techno-Economic Analysis',
+    icon: 'trending-up-outline',
+    link: '/pages/networks/analysis',
+    },
+    {
+    title: 'Compare Techno-Economics',
+    icon: 'bar-chart-2-outline',
+    link: '/pages/networks/analysis/compare',
     },
     {
     title: 'Nodes',
@@ -82,6 +107,21 @@ export const MENU_ITEMS: NbMenuItem[] = [
     title: 'Pipe Sizes',
     icon: 'droplet-outline',
     link: '/pages/pipes',
+  },
+  {
+    title: 'Network Costs',
+    icon: 'pricetags-outline',
+    link: '/pages/network-costs',
+  },
+  {
+    title: 'Network Emissions',
+    icon: 'activity-outline',
+    link: '/pages/network-emissions',
+  },
+  {
+    title: 'Compare Emissions',
+    icon: 'bar-chart-outline',
+    link: '/pages/network-emissions/compare',
   },
   {
     title: 'NETWORK FEATURES',

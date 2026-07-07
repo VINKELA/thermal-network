@@ -42,6 +42,10 @@
         <span class="stat-label">Routes</span>
       </div>
       <div class="stat-item">
+        <span class="stat-value">{{ networkData?.statistics?.total_physical_segments || networkData?.statistics?.total_routes }}</span>
+        <span class="stat-label">Physical Segments</span>
+      </div>
+      <div class="stat-item">
         <span class="stat-value">{{ networkData?.statistics?.total_nodes }}</span>
         <span class="stat-label">Nodes</span>
       </div>
@@ -66,7 +70,7 @@
           *ngFor="let marker of markers"
           [position]="marker.position"
           [title]="marker.title"
-          [options]="marker.options"
+          [options]="marker.nodeData | thermalMarker"
           (mapClick)="onNodeClick(marker.nodeData)">
           
           <map-info-window *ngIf="selectedNode?.id === marker.nodeData.id">
@@ -80,23 +84,16 @@
         </map-marker>
         
         <!-- Route polylines -->
+        <map-polyline
+          *ngFor="let polyline of polylines"
+          [path]="polyline.path"
+          [options]="polyline.routeData | thermalLine:'halo'">
+        </map-polyline>
+
         <map-polyline 
           *ngFor="let polyline of polylines"
           [path]="polyline.path"
-          [options]="{
-            strokeColor: polyline.strokeColor,
-            strokeOpacity: polyline.strokeOpacity,
-            strokeWeight: polyline.strokeWeight,
-            clickable: true,
-            zIndex: 1,
-            title: polyline.name,
-            routeData: polyline.routeData,
-            name: polyline.name,
-            draggable: true
-
-
-
-          }"
+          [options]="polyline.routeData | thermalLine:'route'"
           (mapClick)="onRouteClick(polyline.routeData)">
         </map-polyline>
       </google-map>

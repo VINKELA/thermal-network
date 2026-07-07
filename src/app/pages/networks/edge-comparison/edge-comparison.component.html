@@ -71,7 +71,7 @@
                 <ng-container *ngFor="let item of comparisonData">
                   <map-polyline 
                     *ngIf="item.start_node?.latitude && item.end_node?.latitude"
-                    [options]="getPolylineOptions(item.uiColor!)"
+                    [options]="item | thermalLine:'comparison':item.uiColor"
                     [path]="[
                       { lat: item.start_node.latitude, lng: item.start_node.longitude }, 
                       { lat: item.end_node.latitude, lng: item.end_node.longitude }

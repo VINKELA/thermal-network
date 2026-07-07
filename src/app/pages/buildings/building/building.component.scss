@@ -157,3 +157,20 @@
     .value { font-size: 1.1rem; font-weight: 700; color: #333; }
   }
 }
+
+.empty-building-card {
+  min-height: 14rem;
+
+  nb-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  h3 {
+    margin: 0;
+    color: #222b45;
+  }
+}

@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NetworksComponent } from './networks/networks.component';
 import { NetworkComponent } from './network/network.component';
-import { NbMenuModule, NbCardModule, NbButtonModule, NbFormFieldModule, NbIconModule, NbInputModule, NbListModule, NbSelectModule, NbSpinnerModule, NbCheckboxModule, NbRadioModule, NbButtonGroupModule } from '@nebular/theme';
+import { NbMenuModule, NbCardModule, NbButtonModule, NbFormFieldModule, NbIconModule, NbInputModule, NbListModule, NbSelectModule, NbSpinnerModule, NbCheckboxModule, NbRadioModule, NbButtonGroupModule, NbAlertModule, NbToggleModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { ThemeModule } from '../../@theme/theme.module';
 import { NetworkAlgorithmComponent } from './network-algorithm/network-algorithm.component';
@@ -52,6 +52,12 @@ import { RoutesCompareComponent } from './routes-compare/routes-compare.componen
 import { PipeSizesComponent } from './pipe-sizes/pipe-sizes.component';
 import { PipeSizeComponent } from './pipe-size/pipe-size.component';
 import { PipeSizesCompareComponent } from './pipe-sizes-compare/pipe-sizes-compare.component'; // <--- NgxCharts
+import { NetworkCostsComponent } from './network-costs/network-costs.component';
+import { NetworkEmissionsComponent } from './network-emissions/network-emissions.component';
+import { NetworkEmissionsCompareComponent } from './network-emissions-compare/network-emissions-compare.component';
+import { NetworkDemandMapComponent } from './network-demand-map/network-demand-map.component';
+import { NetworkEvolutionComponent } from './network-evolution/network-evolution.component';
+import { PipeSectionAnalysisComponent } from './pipe-section-analysis/pipe-section-analysis.component';
 
 @NgModule({
   declarations: [
@@ -98,7 +104,13 @@ import { PipeSizesCompareComponent } from './pipe-sizes-compare/pipe-sizes-compa
     RoutesCompareComponent,
     PipeSizesComponent,
     PipeSizeComponent,
-    PipeSizesCompareComponent
+    PipeSizesCompareComponent,
+    NetworkCostsComponent,
+    NetworkEmissionsComponent,
+    NetworkEmissionsCompareComponent,
+    NetworkDemandMapComponent,
+    NetworkEvolutionComponent,
+    PipeSectionAnalysisComponent
   ],
   imports: [
     CommonModule,
@@ -122,6 +134,8 @@ import { PipeSizesCompareComponent } from './pipe-sizes-compare/pipe-sizes-compa
     NgxChartsModule,
     NbRadioModule,
     NbButtonGroupModule,
+    NbAlertModule,
+    NbToggleModule,
     
   ]
 })

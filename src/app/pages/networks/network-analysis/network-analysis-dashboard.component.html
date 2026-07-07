@@ -1,0 +1,283 @@
+<div class="analysis-page">
+  <nb-card class="analysis-shell">
+    <nb-card-header>
+      <div class="analysis-toolbar">
+        <div>
+          <h5>Techno-Economic & Carbon Analysis</h5>
+          <p>DEA reference costs, Canadian carbon pricing, topology, pipe sizing, and 20-year TULC projection.</p>
+        </div>
+
+        <div class="network-picker">
+          <nb-select
+            fullWidth
+            placeholder="Select network"
+            [(selected)]="selectedNetworkId"
+            (selectedChange)="loadReport()"
+            [disabled]="isLoadingNetworks">
+            <nb-option *ngFor="let network of networks" [value]="network.id">
+              {{ network.name }} · {{ network.project?.name || 'No project' }}
+            </nb-option>
+          </nb-select>
+          <button nbButton status="primary" (click)="loadReport()" [disabled]="!selectedNetworkId || isLoadingReport">
+            <nb-icon icon="refresh-outline"></nb-icon>
+            Run Analysis
+          </button>
+          <button nbButton status="info" outline (click)="goToCompare()">
+            <nb-icon icon="bar-chart-2-outline"></nb-icon>
+            Compare
+          </button>
+        </div>
+      </div>
+    </nb-card-header>
+
+    <nb-card-body>
+      <div *ngIf="isLoadingReport || isLoadingNetworks" class="skeleton-grid">
+        <div class="skeleton-card" *ngFor="let item of [1, 2, 3, 4]"></div>
+        <div class="skeleton-chart"></div>
+        <div class="skeleton-chart wide"></div>
+      </div>
+
+      <ng-container *ngIf="!isLoadingReport && !isLoadingNetworks && report">
+        <div class="context-strip">
+          <div>
+            <span>Network</span>
+            <strong>{{ selectedNetwork?.name || ('Network ' + selectedNetworkId) }}</strong>
+          </div>
+          <div>
+            <span>Project</span>
+            <strong>{{ selectedNetwork?.project?.name || 'Unassigned' }}</strong>
+          </div>
+          <div>
+            <span>Stage</span>
+            <strong>{{ selectedNetwork?.derivation_stage || 'network' }}</strong>
+          </div>
+        </div>
+
+        <section class="kpi-grid">
+          <article>
+            <span>Total CAPEX</span>
+            <strong>{{ formatMillions(kpis.total_capex_cad) }} CAD</strong>
+            <small>Localized DEA equipment and distribution capital</small>
+          </article>
+          <article>
+            <span>20-Year TULC</span>
+            <strong>{{ formatMillions(kpis.total_lifecycle_cost_cad) }} CAD</strong>
+            <small>CAPEX, embodied carbon, discounted OPEX, and discounted carbon debt</small>
+          </article>
+          <article>
+            <span>LCOH</span>
+            <strong>{{ formatLcoh(kpis.lcoh_cad_per_kwh) }}</strong>
+            <small>TULC divided by discounted 20-year useful heat</small>
+          </article>
+          <article class="carbon">
+            <span>Carbon Debt</span>
+            <strong>{{ formatMillions(kpis.total_carbon_debt_cad) }} CAD</strong>
+            <small>Year-zero embodied penalty plus discounted operational carbon</small>
+          </article>
+        </section>
+
+        <section class="assumption-strip">
+          <div>
+            <span>Method</span>
+            <strong>{{ assumptions.method || 'TULC' }}</strong>
+          </div>
+          <div>
+            <span>Discount Rate</span>
+            <strong>{{ formatPercent(assumptions.discount_rate) }}</strong>
+          </div>
+          <div>
+            <span>Fixed O&M</span>
+            <strong>{{ formatPercent(assumptions.fixed_om_rate) }}</strong>
+          </div>
+          <div>
+            <span>Source COP</span>
+            <strong>{{ formatNumber(assumptions.source_cop, 2) }}</strong>
+          </div>
+          <div>
+            <span>Ontario Grid</span>
+            <strong>{{ formatNumber(assumptions.ontario_grid_kgco2_per_kwh, 3) }} kg/kWh</strong>
+          </div>
+        </section>
+
+        <section class="visual-grid">
+          <article class="visual-card">
+            <div class="visual-header">
+              <div>
+                <h6>CAPEX Architecture</h6>
+                <span>{{ formatMillions(kpis.total_capex_cad) }} CAD</span>
+              </div>
+              <button nbButton size="small" status="basic" outline (click)="copyChart('capex')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy PNG
+              </button>
+            </div>
+            <div echarts [options]="capexDonutOption" (chartInit)="onChartInit('capex', $event)" class="chart donut"></div>
+          </article>
+
+          <article class="visual-card wide">
+            <div class="visual-header">
+              <div>
+                <h6>20-Year TULC Stack</h6>
+                <span>{{ formatMillions(kpis.total_lifecycle_cost_cad) }} CAD present-value total</span>
+              </div>
+              <button nbButton size="small" status="basic" outline (click)="copyChart('lifecycle')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy PNG
+              </button>
+            </div>
+            <div echarts [options]="lifecycleAreaOption" (chartInit)="onChartInit('lifecycle', $event)" class="chart"></div>
+          </article>
+
+          <article class="visual-card carbon-tax-card" [nbSpinner]="isLoadingCarbonTax">
+            <div class="visual-header">
+              <div>
+                <h6>Canadian Carbon Tax Schedule</h6>
+                <span>{{ carbonTaxRange }}</span>
+              </div>
+              <button
+                nbButton
+                size="small"
+                status="basic"
+                outline
+                (click)="copyChart('carbon-tax')"
+                [disabled]="!carbonTaxSchedule.length">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy PNG
+              </button>
+            </div>
+            <div
+              *ngIf="carbonTaxSchedule.length"
+              echarts
+              [options]="carbonTaxOption"
+              (chartInit)="onChartInit('carbon-tax', $event)"
+              class="chart carbon-tax-chart">
+            </div>
+            <div *ngIf="!isLoadingCarbonTax && !carbonTaxSchedule.length" class="empty-state compact">
+              Carbon tax schedule is not available.
+            </div>
+          </article>
+        </section>
+
+        <section class="component-plots">
+          <div class="section-title">
+              <div>
+                <h6>Component Lifecycle Trajectories</h6>
+              <span>Report-aligned component trajectories across the discounted 20-year horizon</span>
+            </div>
+          </div>
+
+          <div class="component-chart-grid">
+            <article class="visual-card">
+              <div class="visual-header">
+                <div>
+                  <h6>CAPEX by Component</h6>
+                  <span>Upfront capital carried through the analysis horizon</span>
+                </div>
+                <button nbButton size="small" status="basic" outline (click)="copyChart('capex-components')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy PNG
+                </button>
+              </div>
+              <div
+                echarts
+                [options]="capexComponentOption"
+                (chartInit)="onChartInit('capex-components', $event)"
+                class="chart component-chart">
+              </div>
+            </article>
+
+            <article class="visual-card">
+              <div class="visual-header">
+                <div>
+                  <h6>Discounted OPEX by Component</h6>
+                  <span>Present-value operating cost by year and component</span>
+                </div>
+                <button nbButton size="small" status="basic" outline (click)="copyChart('opex-components')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy PNG
+                </button>
+              </div>
+              <div
+                echarts
+                [options]="opexComponentOption"
+                (chartInit)="onChartInit('opex-components', $event)"
+                class="chart component-chart">
+              </div>
+            </article>
+
+            <article class="visual-card">
+              <div class="visual-header">
+                <div>
+                  <h6>Operational Emissions by Source</h6>
+                  <span>Annual emissions in tonnes of CO2 equivalent</span>
+                </div>
+                <button nbButton size="small" status="basic" outline (click)="copyChart('emissions-components')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy PNG
+                </button>
+              </div>
+              <div
+                echarts
+                [options]="emissionsComponentOption"
+                (chartInit)="onChartInit('emissions-components', $event)"
+                class="chart component-chart">
+              </div>
+            </article>
+
+            <article class="visual-card">
+              <div class="visual-header">
+                <div>
+                  <h6>Discounted Carbon Cost by Source</h6>
+                  <span>Year-zero embodied penalty and discounted operating carbon</span>
+                </div>
+                <button nbButton size="small" status="basic" outline (click)="copyChart('carbon-cost-components')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy PNG
+                </button>
+              </div>
+              <div
+                echarts
+                [options]="carbonCostComponentOption"
+                (chartInit)="onChartInit('carbon-cost-components', $event)"
+                class="chart component-chart">
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="projection-table">
+          <div class="section-title">
+            <h6>TULC Projection</h6>
+            <span>Values are cumulative present-value CAD</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Base CAPEX</th>
+                  <th>Cumulative OPEX PV</th>
+                  <th>Cumulative Carbon PV</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of report.lifecycle_projection_20yr">
+                  <td>{{ row.year }}</td>
+                  <td>{{ formatCurrency(row.cumulative_capex) }}</td>
+                  <td>{{ formatCurrency(row.cumulative_opex) }}</td>
+                  <td>{{ formatCurrency(row.cumulative_carbon) }}</td>
+                  <td>{{ formatCurrency(row.cumulative_total || (row.cumulative_capex + row.cumulative_opex + row.cumulative_carbon)) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </ng-container>
+
+      <div *ngIf="!isLoadingReport && !isLoadingNetworks && !report" class="empty-state">
+        Select a network to generate a TULC analysis.
+      </div>
+    </nb-card-body>
+  </nb-card>
+</div>

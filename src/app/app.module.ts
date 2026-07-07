@@ -6,7 +6,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule, isDevMode } from '@angular/core';
-import { HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
 import { CoreModule } from './@core/core.module';
 import { ThemeModule } from './@theme/theme.module';
 import { AppComponent } from './app.component';
@@ -21,6 +21,8 @@ import {
   NbWindowModule,
 } from '@nebular/theme';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { ProjectScopeInterceptor } from './@core/utils/project-scope.interceptor';
+import { AuthTokenInterceptor } from './@core/utils/auth-token.interceptor';
 
 @NgModule({
   declarations: [AppComponent],
@@ -47,6 +49,18 @@ import { ServiceWorkerModule } from '@angular/service-worker';
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'
     }),
+  ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthTokenInterceptor,
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ProjectScopeInterceptor,
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent],
 })

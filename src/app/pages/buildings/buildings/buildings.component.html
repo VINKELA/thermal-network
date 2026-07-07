@@ -15,7 +15,11 @@
       Showing first {{ buildings.length }} buildings
     </div>
     
-    <div class="results-badge error" *ngIf="!isLoading && buildings.length === 0">
+    <div class="results-badge error" *ngIf="!isLoading && errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="results-badge error" *ngIf="!isLoading && !errorMessage && buildings.length === 0">
       No buildings found
     </div>
   </div>

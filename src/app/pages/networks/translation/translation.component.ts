@@ -41,9 +41,9 @@ export class TranslationComponent {
 
   // --- STYLES ---
   // Route Styles
-  supplyOptions: google.maps.PolylineOptions = { strokeColor: '#ff3d71', strokeOpacity: 0.8, strokeWeight: 3, clickable: true };
-  returnOptions: google.maps.PolylineOptions = { strokeColor: '#3366ff', strokeOpacity: 0.8, strokeWeight: 3, clickable: true };
-  selectedOptions: google.maps.PolylineOptions = { strokeColor: '#00d68f', strokeOpacity: 1, strokeWeight: 5, zIndex: 100 };
+  supplyOptions: google.maps.PolylineOptions = { strokeColor: '#dc2626', strokeOpacity: 0.96, strokeWeight: 5, clickable: true, zIndex: 12 };
+  returnOptions: google.maps.PolylineOptions = { strokeColor: '#2563eb', strokeOpacity: 0.88, strokeWeight: 4, clickable: true, zIndex: 11 };
+  selectedOptions: google.maps.PolylineOptions = { strokeColor: '#0891b2', strokeOpacity: 1, strokeWeight: 6, zIndex: 100 };
 
   // Node Style
   nodeOptions: google.maps.MarkerOptions = {
@@ -106,6 +106,17 @@ export class TranslationComponent {
          this.center = { lat: this.nodes[0].latitude, lng: this.nodes[0].longitude };
       }
     });
+  }
+
+  getRouteHaloOptions(route: any): google.maps.PolylineOptions {
+    const isSupply = route.route_type === 'supply';
+    return {
+      strokeColor: '#111827',
+      strokeOpacity: 0.24,
+      strokeWeight: isSupply ? 9 : 8,
+      clickable: false,
+      zIndex: isSupply ? 10 : 9,
+    };
   }
 
   // --- CUSTOM DECODER (No Geometry Lib needed) ---

@@ -1,0 +1,273 @@
+.emissions-compare {
+  min-height: 78vh;
+}
+
+.scrollable-list {
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.network-choice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  width: 100%;
+}
+
+.stage-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-top: 0.35rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: #edf1f7;
+  color: #4b5563;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.compare-toolbar {
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) 170px 150px auto auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.mode-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  > div {
+    min-width: 0;
+    padding: 0.75rem;
+    border: 1px solid #edf1f7;
+    border-radius: 6px;
+    background: #ffffff;
+  }
+
+  span,
+  strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  strong {
+    margin-top: 0.2rem;
+    color: #192038;
+    font-size: 0.92rem;
+    font-weight: 900;
+  }
+
+  .mode-network {
+    border-color: #b6ead4;
+    background: #f0fdf8;
+
+    strong {
+      color: #065f46;
+    }
+  }
+
+  .mode-boiler {
+    border-color: #fed7aa;
+    background: #fff7ed;
+
+    strong {
+      color: #9a3412;
+    }
+  }
+}
+
+.insight-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+
+  > div {
+    min-width: 0;
+    padding-right: 0.75rem;
+    border-right: 1px solid #dbeafe;
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+
+  span,
+  strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    margin-top: 0.25rem;
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 950;
+  }
+}
+
+.visual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.visual-card {
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid #edf1f7;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.visual-card.wide {
+  grid-column: 1 / -1;
+}
+
+.visual-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+
+  h6 {
+    margin: 0;
+    color: #192038;
+    font-weight: 900;
+  }
+}
+
+.chart-note {
+  margin: -0.15rem 0 0.45rem;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.chart {
+  width: 100%;
+  height: 340px;
+}
+
+.table-wrap {
+  overflow: auto;
+  border: 1px solid #edf1f7;
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.comparison-table {
+  min-width: 940px;
+}
+
+th,
+td {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid #edf1f7;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  color: #8f9bb3;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+
+  span {
+    display: block;
+    margin-top: 0.2rem;
+    color: #6b7280;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: none;
+  }
+}
+
+td {
+  color: #1f2937;
+  font-weight: 700;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+td.best {
+  color: #047857;
+  font-weight: 950;
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+
+  h6 {
+    margin: 0 0 0.45rem;
+    color: #192038;
+    font-weight: 900;
+  }
+}
+
+.compact table {
+  min-width: 560px;
+}
+
+.empty-state {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8f9bb3;
+  font-weight: 800;
+}
+
+@media (max-width: 1200px) {
+  .compare-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .compare-toolbar,
+  .visual-grid {
+    grid-template-columns: 1fr;
+  }
+}

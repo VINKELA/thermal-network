@@ -76,12 +76,7 @@
                             <map-polyline 
                                 *ngFor="let path of config.decodedPaths"
                                 [path]="path"
-                                [options]="{
-                                    strokeColor: config.uiColor,
-                                    strokeOpacity: 0.7,
-                                    strokeWeight: 4,
-                                    zIndex: 100 - i
-                                }">
+                                [options]="{ uiColor: config.uiColor, route_type: 'return', id: config.id } | thermalLine:'comparison':config.uiColor:i">
                             </map-polyline>
                         </ng-container>
 

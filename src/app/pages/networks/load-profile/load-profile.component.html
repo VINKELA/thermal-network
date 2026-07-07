@@ -144,11 +144,11 @@
           </div>
           <div class="summary-item">
             <span>Unused heat</span>
-            <strong>{{ displayUtilizationSummary.annual_unused_producer_heat_kwh | number:'1.0-0' }} kWh</strong>
+            <strong>{{ formatEnergy(displayUtilizationSummary.annual_unused_producer_heat_kwh) }}</strong>
           </div>
           <div class="summary-item">
             <span>Unserved demand</span>
-            <strong>{{ displayUtilizationSummary.annual_unserved_consumer_heat_kwh | number:'1.0-0' }} kWh</strong>
+            <strong>{{ formatEnergy(displayUtilizationSummary.annual_unserved_consumer_heat_kwh) }}</strong>
           </div>
         </div>
 
@@ -165,7 +165,7 @@
         <div *ngIf="selectedChartView === 'summary' && presentationRows.length > 0" class="presentation-readout">
           <div *ngFor="let row of presentationRows" class="readout-item">
             <span>{{ row.label }}</span>
-            <strong>{{ row.value | number:'1.0-1' }} {{ row.unit }}</strong>
+            <strong>{{ formatPresentationValue(row) }}</strong>
           </div>
         </div>
 

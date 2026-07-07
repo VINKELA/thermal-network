@@ -1,0 +1,20 @@
+.task-alert {
+  margin-bottom: 1rem;
+}
+
+.task-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.35rem;
+
+  span {
+    font-weight: 700;
+  }
+
+  small {
+    color: #52627a;
+    font-weight: 600;
+  }
+}

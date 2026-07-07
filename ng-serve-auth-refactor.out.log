@@ -1,0 +1,108 @@
+
+Initial Chunk Files                                          | Names                                    |  Raw Size
+vendor.js                                                    | vendor                                   |   5.43 MB |
+styles.css, styles.js                                        | styles                                   |   1.87 MB |
+main.js                                                      | main                                     |   1.72 MB |
+scripts.js                                                   | scripts                                  |   1.38 MB |
+polyfills.js                                                 | polyfills                                | 480.34 kB |
+runtime.js                                                   | runtime                                  |  12.97 kB |
+
+| Initial Total                            |  10.89 MB
+
+Lazy Chunk Files                                             | Names                                    |  Raw Size
+src_app_pages_pages_module_ts.js                             | pages-pages-module                       |  23.32 MB |
+src_app_pages_extra-components_extra-components_module_ts.js | extra-components-extra-components-module |   3.61 MB |
+src_app_pages_modal-overlays_modal-overlays_module_ts.js     | modal-overlays-modal-overlays-module     |   2.37 MB |
+src_app_pages_maps_maps_module_ts.js                         | maps-maps-module                         |   1.23 MB |
+src_app_pages_charts_charts_module_ts.js                     | charts-charts-module                     | 995.01 kB |
+src_app_pages_layout_layout_module_ts.js                     | layout-layout-module                     | 969.44 kB |
+src_app_pages_ui-features_ui-features_module_ts.js           | ui-features-ui-features-module           | 968.21 kB |
+src_app_pages_editors_editors_module_ts.js                   | editors-editors-module                   | 838.26 kB |
+src_app_pages_forms_forms_module_ts.js                       | forms-forms-module                       | 648.44 kB |
+src_app_pages_tables_tables_module_ts.js                     | tables-tables-module                     | 620.15 kB |
+src_app_auth_auth_module_ts.js                               | auth-auth-module                         |  78.57 kB |
+src_app_landing_landing_module_ts.js                         | landing-landing-module                   |  20.61 kB |
+
+Build at: 2026-06-17T16:27:14.149Z - Hash: 0876bf11d38c23ca - Time: 55026ms
+
+** Angular Live Development Server is listening on 127.0.0.1:4201, open your browser on http://127.0.0.1:4201/ **
+
+
+√ Compiled successfully.
+
+Initial Chunk Files            | Names            | Raw Size
+runtime.js                     | runtime          | 12.97 kB |
+
+Lazy Chunk Files               | Names            | Raw Size
+src_app_auth_auth_module_ts.js | auth-auth-module | 78.75 kB |
+
+16 unchanged chunks
+
+Build at: 2026-06-17T16:30:16.996Z - Hash: 8467ebb0970ba841 - Time: 21709ms
+
+√ Compiled successfully.
+
+Initial Chunk Files            | Names            | Raw Size
+runtime.js                     | runtime          | 12.97 kB |
+
+Lazy Chunk Files               | Names            | Raw Size
+src_app_auth_auth_module_ts.js | auth-auth-module | 79.52 kB |
+
+16 unchanged chunks
+
+Build at: 2026-06-17T16:30:30.732Z - Hash: 58c8d22363c1586c - Time: 12146ms
+
+√ Compiled successfully.
+
+Initial Chunk Files | Names   | Raw Size
+main.js             | main    |  1.72 MB |
+runtime.js          | runtime | 12.97 kB |
+
+16 unchanged chunks
+
+Build at: 2026-06-17T16:43:42.182Z - Hash: 9d6cd990f8f93bd4 - Time: 8891ms
+
+√ Compiled successfully.
+
+Initial Chunk Files            | Names            |  Raw Size
+runtime.js                     | runtime          |  12.97 kB |
+
+Lazy Chunk Files               | Names            |  Raw Size
+src_app_auth_auth_module_ts.js | auth-auth-module | 101.22 kB |
+
+16 unchanged chunks
+
+Build at: 2026-06-17T16:46:21.288Z - Hash: 075d70a5dae9ca4a - Time: 7407ms
+
+√ Compiled successfully.
+
+Initial Chunk Files            | Names            |  Raw Size
+runtime.js                     | runtime          |  12.97 kB |
+
+Lazy Chunk Files               | Names            |  Raw Size
+src_app_auth_auth_module_ts.js | auth-auth-module | 101.56 kB |
+
+16 unchanged chunks
+
+Build at: 2026-06-17T16:47:41.637Z - Hash: ef0cdab230d49664 - Time: 4429ms
+
+√ Compiled successfully.
+
+Initial Chunk Files                  | Names                  |  Raw Size
+runtime.js                           | runtime                |  12.97 kB |
+
+Lazy Chunk Files                     | Names                  |  Raw Size
+src_app_auth_auth_module_ts.js       | auth-auth-module       | 101.58 kB |
+src_app_landing_landing_module_ts.js | landing-landing-module |  20.64 kB |
+
+15 unchanged chunks
+
+Build at: 2026-06-17T22:35:14.834Z - Hash: aed62676146522d1 - Time: 12976ms
+
+√ Compiled successfully.
+
+18 unchanged chunks
+
+Build at: 2026-06-17T22:35:18.438Z - Hash: aed62676146522d1 - Time: 2020ms
+
+√ Compiled successfully.

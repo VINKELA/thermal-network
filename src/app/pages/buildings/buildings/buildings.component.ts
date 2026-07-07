@@ -14,6 +14,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
   buildings: any[] = [];
   api = 'buildings/';
   isLoading = false;
+  errorMessage = '';
 
   // Map Settings (Default: Toronto)
   center: google.maps.LatLngLiteral = { lat: 43.6532, lng: -79.3832 };
@@ -53,6 +54,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
    */
  fetchBuildings(searchQuery: string = ''): void {
   this.isLoading = true;
+  this.errorMessage = '';
   
   // This now matches your Django setup
   const url = searchQuery 
@@ -60,8 +62,20 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     : this.api + '?limit=100';
 
   this.apiService.get(url).subscribe((data: any) => {
-    this.buildings = data['results'] ? data['results'] : data;
+    const rows = data?.results ? data.results : (Array.isArray(data) ? data : []);
+    this.buildings = rows
+      .map((building: any) => ({
+        ...building,
+        latitude: Number(building.latitude),
+        longitude: Number(building.longitude),
+      }))
+      .filter((building: any) => Number.isFinite(building.latitude) && Number.isFinite(building.longitude));
     this.setDynamicCenter();
+    this.isLoading = false;
+  }, (error) => {
+    console.error('Failed to load buildings', error);
+    this.buildings = [];
+    this.errorMessage = error?.error?.error || 'Buildings could not be loaded.';
     this.isLoading = false;
   });
 }
@@ -79,8 +93,8 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     const total = this.buildings.reduce(
       (acc, building) => {
         // Ensure values are numbers (API might return strings)
-        acc.lat += typeof building.latitude === 'string' ? parseFloat(building.latitude) : building.latitude;
-        acc.lng += typeof building.longitude === 'string' ? parseFloat(building.longitude) : building.longitude;
+        acc.lat += building.latitude;
+        acc.lng += building.longitude;
         return acc;
       },
       { lat: 0, lng: 0 }

@@ -1,0 +1,79 @@
+<nb-card [nbSpinner]="loading" nbSpinnerStatus="primary">
+  <nb-card-header class="page-header">
+    <div>
+      <h2>Project Users</h2>
+      <p>Grant project-level access. Editors can change project assets; viewers can only inspect them.</p>
+    </div>
+    <nb-select
+      *ngIf="projects.length"
+      status="primary"
+      placeholder="Select project"
+      [selected]="selectedProjectId"
+      (selectedChange)="selectProject($event)">
+      <nb-option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</nb-option>
+    </nb-select>
+  </nb-card-header>
+
+  <nb-card-body>
+    <nb-alert *ngIf="message" status="success">{{ message }}</nb-alert>
+    <nb-alert *ngIf="error" status="danger">{{ error }}</nb-alert>
+
+    <section class="access-grid" *ngIf="selectedProjectId; else emptyState">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="invite-panel">
+        <h3>Add user</h3>
+        <label>
+          <span>Email</span>
+          <input nbInput fullWidth formControlName="email" autocomplete="email">
+        </label>
+        <div class="two-col">
+          <label>
+            <span>First name</span>
+            <input nbInput fullWidth formControlName="first_name">
+          </label>
+          <label>
+            <span>Last name</span>
+            <input nbInput fullWidth formControlName="last_name">
+          </label>
+        </div>
+        <label>
+          <span>Role</span>
+          <nb-select fullWidth formControlName="role">
+            <nb-option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</nb-option>
+          </nb-select>
+        </label>
+        <button nbButton status="primary" type="submit" [disabled]="form.invalid || saving">
+          <nb-icon icon="person-add-outline"></nb-icon>
+          Add user
+        </button>
+      </form>
+
+      <div class="members-panel">
+        <h3>Members</h3>
+        <div class="member-row header">
+          <span>User</span>
+          <span>Role</span>
+          <span>Added</span>
+        </div>
+        <div class="member-row" *ngFor="let member of members">
+          <span>
+            <strong>{{ member.user.display_name || member.user.email }}</strong>
+            <small>{{ member.user.email }}</small>
+          </span>
+          <span class="role-pill" [class.owner]="member.role === 'owner'" [class.editor]="member.role === 'editor'">
+            {{ member.role }}
+          </span>
+          <span>{{ member.created_at | date:'mediumDate' }}</span>
+        </div>
+        <p class="empty-members" *ngIf="!members.length">No users have been added to this project yet.</p>
+      </div>
+    </section>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <nb-icon icon="folder-outline"></nb-icon>
+        <h3>No projects available</h3>
+        <p>Create a project first, then add users to it here.</p>
+      </div>
+    </ng-template>
+  </nb-card-body>
+</nb-card>

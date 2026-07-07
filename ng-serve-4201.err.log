@@ -1,0 +1,175 @@
+One or more browsers which are configured in the project's Browserslist configuration will be ignored as ES5 output is not supported by the Angular CLI.
+Ignored browsers: ie 11, kaios 2.5, op_mini all
+- Generating browser application bundles (phase: setup)...
+√ Browser application bundle generation complete.
+
+Warning: C:\Users\orjik\source\Research\thermal-network\node_modules\@nebular\eva-icons\fesm2020\nebular-eva-icons.mjs depends on 'eva-icons'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+
+√ Browser application bundle generation complete.
+
+Warning: C:\Users\orjik\source\Research\thermal-network\node_modules\@asymmetrik\ngx-leaflet\__ivy_ngcc__\dist\leaflet\core\leaflet.directive.js depends on 'leaflet'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:362:10 - error TS2551: Property 'buildDesignInsights' does not exist on type 'PipeSectionAnalysisComponent'. Did you mean 'designInsights'?
+
+362     this.buildDesignInsights();
+             ~~~~~~~~~~~~~~~~~~~
+
+  src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:165:3
+    165   designInsights: DesignInsight[] = [];
+          ~~~~~~~~~~~~~~
+    'designInsights' is declared here.
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:301:12 - error TS2339: Property 'downloadChart' does not exist on type 'PipeSectionAnalysisComponent'.
+
+301       this.downloadChart(dataUrl, filename);
+               ~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:652:5 - error TS2322: Type '{ label: string; diameterMm: number; velocityPct: number; pressurePct: number; pumpPct: number; pipeBodyPct: number; velocityStatus: string; pressureStatus: string; isCurrent: boolean; }[]' is not assignable to type 'DiameterTradeoffRow[]'.
+  Type '{ label: string; diameterMm: number; velocityPct: number; pressurePct: number; pumpPct: number; pipeBodyPct: number; velocityStatus: string; pressureStatus: string; isCurrent: boolean; }' is missing the following properties from type 'DiameterTradeoffRow': velocityMS, pressureGradientPaM, pumpingPowerKw, relativePipeArea
+
+652     return this.diameterOptions.map((pipe) => {
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+653       const row = this.evaluateGuide(pipe.label, { diameterMm: pipe.diameterMm });
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+... 
+664       };
+    ~~~~~~~~
+665     });
+    ~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:301:12 - error TS2339: Property 'downloadChart' does not exist on type 'PipeSectionAnalysisComponent'.
+
+301       this.downloadChart(dataUrl, filename);
+               ~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:652:5 - error TS2322: Type '{ label: string; diameterMm: number; velocityPct: number; pressurePct: number; pumpPct: number; pipeBodyPct: number; velocityStatus: string; pressureStatus: string; isCurrent: boolean; }[]' is not assignable to type 'DiameterTradeoffRow[]'.
+  Type '{ label: string; diameterMm: number; velocityPct: number; pressurePct: number; pumpPct: number; pipeBodyPct: number; velocityStatus: string; pressureStatus: string; isCurrent: boolean; }' is missing the following properties from type 'DiameterTradeoffRow': velocityMS, pressureGradientPaM, pumpingPowerKw, relativePipeArea
+
+652     return this.diameterOptions.map((pipe) => {
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+653       const row = this.evaluateGuide(pipe.label, { diameterMm: pipe.diameterMm });
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+... 
+664       };
+    ~~~~~~~~
+665     });
+    ~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:301:12 - error TS2339: Property 'downloadChart' does not exist on type 'PipeSectionAnalysisComponent'.
+
+301       this.downloadChart(dataUrl, filename);
+               ~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:301:12 - error TS2339: Property 'downloadChart' does not exist on type 'PipeSectionAnalysisComponent'.
+
+301       this.downloadChart(dataUrl, filename);
+               ~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:396:38 - error TS2551: Property 'buildFeasibleCombinations' does not exist on type 'PipeSectionAnalysisComponent'. Did you mean 'feasibleCombinations'?
+
+396     this.feasibleCombinations = this.buildFeasibleCombinations();
+                                         ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:169:3
+    169   feasibleCombinations: FeasibleCombination[] = [];
+          ~~~~~~~~~~~~~~~~~~~~
+    'feasibleCombinations' is declared here.
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-emissions-compare/network-emissions-compare.component.ts:371:36 - error TS1005: ')' expected.
+
+371           return lines.join('<br/>';
+                                       ~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-emissions-compare/network-emissions-compare.component.ts:142:19 - error TS2339: Property 'detail' does not exist on type 'never'.
+
+142             data?.detail || data?.error || 'Choose networks from the same project and try again.',
+                      ~~~~~~
+
+
+Error: src/app/pages/networks/network-emissions-compare/network-emissions-compare.component.ts:142:35 - error TS2339: Property 'error' does not exist on type 'never'.
+
+142             data?.detail || data?.error || 'Choose networks from the same project and try again.',
+                                      ~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.

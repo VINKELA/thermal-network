@@ -67,12 +67,7 @@
                   <map-polyline 
                     *ngIf="r.decodedPath && r.decodedPath.length > 0"
                     [path]="r.decodedPath" 
-                    [options]="{ 
-                      strokeColor: r.uiColor, 
-                      strokeWeight: r.route_type === 'supply' ? 8 : 4, 
-                      strokeOpacity: 0.8,
-                      zIndex: r.route_type === 'supply' ? 10 : 20 
-                    }">
+                    [options]="r | thermalLine:'comparison':r.uiColor">
                   </map-polyline>
                 </ng-container>
 

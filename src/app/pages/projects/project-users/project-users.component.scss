@@ -1,0 +1,139 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-header h2,
+.invite-panel h3,
+.members-panel h3 {
+  margin: 0;
+  color: #111827;
+}
+
+.page-header p {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+}
+
+.access-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 380px) minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.invite-panel,
+.members-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fff;
+}
+
+.invite-panel {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.invite-panel label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.invite-panel label span {
+  color: #334155;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.members-panel {
+  overflow-x: auto;
+}
+
+.member-row {
+  min-width: 620px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 140px 140px;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.member-row.header {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.member-row strong,
+.member-row small {
+  display: block;
+}
+
+.member-row small {
+  color: #64748b;
+  margin-top: 0.2rem;
+}
+
+.role-pill {
+  width: fit-content;
+  min-width: 76px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  background: #eef2ff;
+  color: #38438a;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.role-pill.owner {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.role-pill.editor {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.empty-state {
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #64748b;
+}
+
+.empty-state nb-icon {
+  font-size: 3rem;
+  color: #94a3b8;
+}
+
+.empty-members {
+  color: #64748b;
+  margin: 1rem 0 0;
+}
+
+@media (max-width: 900px) {
+  .access-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}

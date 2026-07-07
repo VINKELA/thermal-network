@@ -9,6 +9,15 @@
     </div>
   </nb-card-header>
   <nb-card-body>
+    <nb-alert status="info" *ngIf="activeOperations.length" class="task-alert">
+      <strong>Background route tracing</strong>
+      <div *ngFor="let operation of activeOperations" class="task-row">
+        <span>{{ operation.label }}</span>
+        <small>{{ operation.status }} · {{ operation.message || 'Running in Celery' }}</small>
+        <small>Task {{ operation.taskId }}</small>
+      </div>
+    </nb-alert>
+
     <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)" (editConfirm)="onEditConfirm($event)" (createConfirm)="onCreateConfirm($event)">
     </ng2-smart-table>
   </nb-card-body>

@@ -1,0 +1,153 @@
+<div class="analysis-compare-page">
+  <nb-card class="compare-shell">
+    <nb-card-header>
+      <div class="compare-toolbar">
+        <div>
+          <h5>Compare Techno-Economic Scenarios</h5>
+          <p>Select networks from one project and compare TULC, carbon debt, and discounted LCOH.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button nbButton status="basic" outline (click)="backToAnalysis()">
+            <nb-icon icon="arrow-back-outline"></nb-icon>
+            Analysis
+          </button>
+          <button nbButton status="primary" (click)="recalculate()" [disabled]="!selectedIds.length || isLoadingCompare">
+            <nb-icon icon="refresh-outline"></nb-icon>
+            Compare
+          </button>
+        </div>
+      </div>
+    </nb-card-header>
+
+    <nb-card-body>
+      <div class="compare-layout">
+        <aside class="network-panel" [nbSpinner]="isLoadingNetworks">
+          <div class="panel-title">
+            <strong>Networks</strong>
+            <span>{{ selectedIds.length }} selected</span>
+          </div>
+          <input nbInput fullWidth placeholder="Search network or project" [(ngModel)]="networkSearch">
+
+          <div class="network-list">
+            <label class="network-row" *ngFor="let network of filteredNetworks">
+              <nb-checkbox
+                [checked]="isSelected(network.id)"
+                (checkedChange)="toggleNetwork(network.id, $event)">
+              </nb-checkbox>
+              <span>
+                <strong>{{ network.name || ('Network ' + network.id) }}</strong>
+                <small>{{ network.project?.name || 'Unassigned' }} · {{ network.derivation_stage || 'network' }}</small>
+              </span>
+            </label>
+          </div>
+        </aside>
+
+        <main class="compare-results" [nbSpinner]="isLoadingCompare">
+          <nb-alert *ngIf="selectedIds.length > 1 && rows.length === 0 && !isLoadingCompare" outline="info">
+            Click Compare to generate TULC reports for the selected networks.
+          </nb-alert>
+
+          <section class="summary-grid" *ngIf="rows.length">
+            <article>
+              <span>Lowest TULC</span>
+              <strong>{{ bestLifecycle?.name }}</strong>
+              <small>{{ formatCurrency(bestLifecycle?.lifecycle || 0) }}</small>
+            </article>
+            <article>
+              <span>Lowest LCOH</span>
+              <strong>{{ bestLcoh?.name }}</strong>
+              <small>{{ formatLcoh(bestLcoh?.lcoh || 0) }}</small>
+            </article>
+            <article>
+              <span>Lowest Carbon Debt</span>
+              <strong>{{ bestCarbon?.name }}</strong>
+              <small>{{ formatCurrency(bestCarbon?.carbon || 0) }}</small>
+            </article>
+          </section>
+
+          <section class="visual-grid" *ngIf="rows.length">
+            <article class="visual-card wide">
+              <div class="visual-header">
+                <div>
+                  <h6>TULC Cost Scale</h6>
+                  <span>Log scale preserves visibility when scenarios differ widely</span>
+                </div>
+                <button nbButton size="small" status="basic" outline (click)="copyChart('lifecycle-scale')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy PNG
+                </button>
+              </div>
+              <div echarts [options]="lifecycleBarOption" (chartInit)="onChartInit('lifecycle-scale', $event)" class="chart"></div>
+            </article>
+
+            <article class="visual-card">
+              <div class="visual-header">
+                <div>
+                  <h6>Decision Heatmap</h6>
+                  <span>Each cell is percent of the comparison maximum</span>
+                </div>
+                <button nbButton size="small" status="basic" outline (click)="copyChart('decision-heatmap')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy PNG
+                </button>
+              </div>
+              <div echarts [options]="metricHeatmapOption" (chartInit)="onChartInit('decision-heatmap', $event)" class="chart"></div>
+            </article>
+
+            <article class="visual-card">
+              <div class="visual-header">
+                <div>
+                  <h6>TULC Composition</h6>
+                  <span>CAPEX, present-value OPEX, and present-value carbon share</span>
+                </div>
+                <button nbButton size="small" status="basic" outline (click)="copyChart('composition')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy PNG
+                </button>
+              </div>
+              <div echarts [options]="compositionOption" (chartInit)="onChartInit('composition', $event)" class="chart"></div>
+            </article>
+          </section>
+
+          <section class="compare-table" *ngIf="rows.length">
+            <div class="section-title">
+              <h6>Scenario Values</h6>
+              <span>20-year present-value totals in CAD</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Network</th>
+                    <th>CAPEX</th>
+                    <th>OPEX PV</th>
+                    <th>Carbon Debt PV</th>
+                    <th>TULC</th>
+                    <th>LCOH</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of rows">
+                    <td>
+                      <strong>{{ row.name }}</strong>
+                      <small>{{ row.projectName }}</small>
+                    </td>
+                    <td>{{ formatCurrency(row.capex) }}</td>
+                    <td>{{ formatCurrency(row.opex) }}</td>
+                    <td>{{ formatCurrency(row.carbon) }}</td>
+                    <td>{{ formatCurrency(row.lifecycle) }}</td>
+                    <td>{{ formatLcoh(row.lcoh) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <div class="empty-state" *ngIf="!rows.length && !isLoadingCompare">
+            Select two or more networks to compare techno-economic scenarios.
+          </div>
+        </main>
+      </div>
+    </nb-card-body>
+  </nb-card>
+</div>

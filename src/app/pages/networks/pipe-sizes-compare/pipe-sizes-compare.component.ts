@@ -123,7 +123,7 @@ export class PipeSizesCompareComponent {
       let maxVel = 0;
 
       edges.forEach(e => {
-        const len = e.edge?.length || 0;
+        const len = Number(e.length_m || e.route?.distance_meters || e.edge?.length || 0);
         const dn = `DN${Math.round(e.diameter_m * 1000)}`;
         
         boq[dn] = (boq[dn] || 0) + len;
@@ -224,17 +224,61 @@ export class PipeSizesCompareComponent {
   // --- 4. MAP HELPERS ---
 
   getPath(edge: any): google.maps.LatLngLiteral[] {
+    if (edge.segment_path?.length > 1) {
+      return edge.segment_path.map((point: any) => ({
+        lat: Number(point.lat),
+        lng: Number(point.lng),
+      }));
+    }
     if (edge.route?.polyline && typeof google !== 'undefined' && google.maps.geometry) {
        const decoded = google.maps.geometry.encoding.decodePath(edge.route.polyline);
-       return decoded.map(p => ({ lat: p.lat(), lng: p.lng() }));
+       const routePath = decoded.map(p => ({ lat: p.lat(), lng: p.lng() }));
+       const endpointPath = this.edgeEndpointPath(edge);
+       return endpointPath.length === 2
+         ? this.orientAndAnchorPath(routePath, endpointPath[0], endpointPath[1])
+         : routePath;
     }
-    if (edge.edge?.start_node && edge.edge?.end_node) {
-      return [
-        { lat: Number(edge.edge.start_node.latitude), lng: Number(edge.edge.start_node.longitude) },
-        { lat: Number(edge.edge.end_node.latitude), lng: Number(edge.edge.end_node.longitude) }
-      ];
+    return this.edgeEndpointPath(edge);
+  }
+
+  private edgeEndpointPath(edge: any): google.maps.LatLngLiteral[] {
+    if (!edge.edge?.start_node || !edge.edge?.end_node) return [];
+    return [
+      { lat: Number(edge.edge.start_node.latitude), lng: Number(edge.edge.start_node.longitude) },
+      { lat: Number(edge.edge.end_node.latitude), lng: Number(edge.edge.end_node.longitude) },
+    ];
+  }
+
+  private orientAndAnchorPath(
+    path: google.maps.LatLngLiteral[],
+    start: google.maps.LatLngLiteral,
+    end: google.maps.LatLngLiteral,
+  ): google.maps.LatLngLiteral[] {
+    if (!path?.length || !start || !end) return path || [];
+    const forward = this.distanceMeters(path[0], start) + this.distanceMeters(path[path.length - 1], end);
+    const reverse = this.distanceMeters(path[0], end) + this.distanceMeters(path[path.length - 1], start);
+    const oriented = reverse < forward ? [...path].reverse() : [...path];
+    const anchored = [...oriented];
+    const snapToleranceM = 2;
+    if (this.distanceMeters(anchored[0], start) > snapToleranceM) {
+      anchored.unshift(start);
     }
-    return [];
+    if (this.distanceMeters(anchored[anchored.length - 1], end) > snapToleranceM) {
+      anchored.push(end);
+    }
+    return anchored;
+  }
+
+  private distanceMeters(a: google.maps.LatLngLiteral, b: google.maps.LatLngLiteral): number {
+    const earthRadius = 6371000;
+    const toRad = (value: number) => value * Math.PI / 180;
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const h = Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
   }
 
   fitMapBounds() {

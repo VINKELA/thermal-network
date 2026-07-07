@@ -63,7 +63,24 @@
 
       <map-polyline 
         [path]="decodedPath"
-        [options]="lineOptions">
+        [options]="routeData | thermalLine:'halo'">
+      </map-polyline>
+
+      <map-polyline 
+        [path]="decodedPath"
+        [options]="routeData | thermalLine:'route'">
+      </map-polyline>
+
+      <map-polyline
+        *ngFor="let drop of serviceDrops"
+        [path]="drop.path"
+        [options]="drop.haloOptions">
+      </map-polyline>
+
+      <map-polyline
+        *ngFor="let drop of serviceDrops"
+        [path]="drop.path"
+        [options]="drop.lineOptions">
       </map-polyline>
 
       <map-marker 

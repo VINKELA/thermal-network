@@ -6,6 +6,7 @@ interface NetworkData {
   network: any;
   translation: any;
   routes: any[];
+  physical_segments?: any[];
   nodes: any[];
   statistics: any;
 }
@@ -162,8 +163,9 @@ export class RouteTraceComponent {
        };
      });
  
-     this.polylines = data.routes.map((route, index) => {
-       const path = this.decodePolyline(route.polyline);
+     const routeLines = data.physical_segments?.length ? data.physical_segments : data.routes;
+     this.polylines = routeLines.map((route, index) => {
+       const path = route.path?.length ? route.path : this.decodePolyline(route.polyline);
        const color = this.getRouteColor(route);
        path.forEach(coord => {
        this.bounds.extend(coord);
@@ -171,10 +173,11 @@ export class RouteTraceComponent {
        return {
          path,
          strokeColor: color,
-         strokeOpacity: 0.8,
-         strokeWeight: 4,
+         strokeOpacity: route.is_shared ? 0.98 : (route.route_type === 'supply' ? 0.96 : 0.88),
+         strokeWeight: route.is_shared ? 6 : (route.route_type === 'supply' ? 5 : 4),
+         haloOptions: this.getRouteHaloOptions(route),
          routeData: route,
-         name: index
+         name: route.is_shared ? `Shared by ${route.overlap_count} routes` : `Route ${route.id || index + 1}`
        };
      });
  
@@ -201,7 +204,19 @@ export class RouteTraceComponent {
        'consumer': '#0000FF',    // Blue
        'storage': '#008080',     // Teal
      };
-     return  route.route_type == 'supply' ? '#FF0000':  '#0000FF'; // Default gray
+    if (route.is_shared) return '#7c3aed';
+    return  route.route_type == 'supply' ? '#dc2626':  '#2563eb'; // Default gray
+   }
+
+   getRouteHaloOptions(route: any): google.maps.PolylineOptions {
+     const isSupply = route.route_type === 'supply';
+     return {
+       strokeColor: '#111827',
+       strokeOpacity: route.is_shared ? 0.3 : 0.24,
+       strokeWeight: route.is_shared ? 11 : (isSupply ? 9 : 8),
+       clickable: false,
+       zIndex: 0,
+     };
    }
  
    decodePolyline(encoded: string): google.maps.LatLngLiteral[] {

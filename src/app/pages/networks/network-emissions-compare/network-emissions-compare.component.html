@@ -1,0 +1,238 @@
+<div class="row h-100 emissions-compare">
+  <div class="col-md-3 h-100">
+    <nb-card class="h-100 d-flex flex-column">
+      <nb-card-header>
+        <div class="subtitle-2">Compare Emissions</div>
+        <div class="caption text-hint">{{ selectedIds.length }} selected, max 6</div>
+        <nb-form-field class="mt-2">
+          <nb-icon nbPrefix icon="search-outline" pack="eva"></nb-icon>
+          <input nbInput fullWidth placeholder="Search networks..." [(ngModel)]="searchText" (keyup)="onSearchInput()">
+        </nb-form-field>
+      </nb-card-header>
+
+      <nb-list class="scrollable-list flex-grow-1" [nbSpinner]="isLoadingList">
+        <nb-list-item *ngFor="let network of allNetworks">
+          <div class="network-choice">
+            <nb-checkbox
+              [checked]="selectedIds.includes(network.id)"
+              (checkedChange)="toggleSelection(network.id)"
+              [disabled]="!selectedIds.includes(network.id) && selectedIds.length >= 6">
+            </nb-checkbox>
+            <div>
+              <div class="subtitle-2">{{ network.name }}</div>
+              <div class="caption text-hint">{{ network.project?.name || 'No Project' }}</div>
+              <span class="stage-pill">{{ network.derivation_stage || 'network' }}</span>
+            </div>
+          </div>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
+  </div>
+
+  <div class="col-md-9 h-100">
+    <nb-card class="h-100">
+      <nb-card-header>
+        <div class="compare-toolbar">
+          <div>
+            <div class="subtitle-2">Network Emissions Comparison</div>
+            <div class="caption text-hint">Compares pipe embodied emissions and no-edge local boiler base cases</div>
+          </div>
+
+          <nb-select fullWidth placeholder="Pipe material" [(selected)]="selectedMaterial" (selectedChange)="recalculate()">
+            <nb-option *ngFor="let material of materials" [value]="material.value">
+              {{ material.label }}
+            </nb-option>
+          </nb-select>
+
+          <nb-form-field>
+            <nb-icon nbPrefix icon="layers-outline"></nb-icon>
+            <input nbInput type="number" min="0" max="100" [(ngModel)]="componentAllowancePct" (ngModelChange)="onAssumptionChange()" placeholder="Allowance %">
+          </nb-form-field>
+
+          <button nbButton status="primary" (click)="recalculate()" [disabled]="!selectedIds.length || isLoadingCompare">
+            <nb-icon icon="refresh-outline"></nb-icon>
+            Compare
+          </button>
+
+          <button nbButton status="success" outline (click)="refreshEpd()" [disabled]="!selectedIds.length || isLoadingCompare">
+            <nb-icon icon="cloud-download-outline"></nb-icon>
+            Refresh EPD
+          </button>
+        </div>
+      </nb-card-header>
+
+      <nb-card-body [nbSpinner]="isLoadingCompare">
+        <ng-container *ngIf="comparisonData.length; else emptyState">
+          <div class="mode-strip">
+            <div *ngFor="let item of comparisonData" [ngClass]="modeClass(item)">
+              <span>{{ item.network.name }}</span>
+              <strong>{{ modeLabel(item) }}</strong>
+            </div>
+          </div>
+
+          <div class="insight-banner" *ngIf="baselineInsight">
+            <div>
+              <span>{{ baselineInsight.referenceLabel }}</span>
+              <strong>{{ baselineInsight.baselineName }}</strong>
+            </div>
+            <div>
+              <span>Best alternative</span>
+              <strong>{{ baselineInsight.bestName }}</strong>
+            </div>
+            <div>
+              <span>Reduction</span>
+              <strong>{{ baselineInsight.reductionLabel }}</strong>
+            </div>
+            <div>
+              <span>Avoided GWP</span>
+              <strong>{{ baselineInsight.avoidedLabel }}</strong>
+            </div>
+            <div>
+              <span>Remaining GWP</span>
+              <strong>{{ baselineInsight.remainingLabel }}</strong>
+            </div>
+          </div>
+
+          <div class="visual-grid">
+            <section class="visual-card wide">
+              <div class="visual-header">
+                <h6>Total Emissions Ranking</h6>
+                <button nbButton ghost size="small" status="primary" (click)="copyChart('emissions-total-rank', 'network-emissions-total-ranking.png')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy
+                </button>
+              </div>
+              <p class="chart-note">Uses a log scale so a very large base case does not flatten the network alternatives.</p>
+              <div
+                echarts
+                [options]="totalRankOption"
+                (chartInit)="onChartInit('emissions-total-rank', $event)"
+                class="chart">
+              </div>
+            </section>
+
+            <section class="visual-card wide">
+              <div class="visual-header">
+                <h6>Avoided Emissions</h6>
+                <button nbButton ghost size="small" status="primary" (click)="copyChart('emissions-reduction', 'network-emissions-avoided.png')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy
+                </button>
+              </div>
+              <p class="chart-note">Shows how much each alternative reduces emissions relative to the base reference.</p>
+              <div
+                echarts
+                [options]="reductionOption"
+                (chartInit)="onChartInit('emissions-reduction', $event)"
+                class="chart">
+              </div>
+            </section>
+
+            <section class="visual-card wide">
+              <div class="visual-header">
+                <h6>Alternative Network Detail</h6>
+                <button nbButton ghost size="small" status="primary" (click)="copyChart('emissions-alternatives', 'network-emissions-alternatives.png')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy
+                </button>
+              </div>
+              <p class="chart-note">Uses a normal linear scale for the smaller network scenarios, without the base case dominating the axis.</p>
+              <div
+                echarts
+                [options]="alternativesOption"
+                (chartInit)="onChartInit('emissions-alternatives', $event)"
+                class="chart">
+              </div>
+            </section>
+
+            <section class="visual-card">
+              <div class="visual-header">
+                <h6>Life-Cycle Composition</h6>
+                <button nbButton ghost size="small" status="primary" (click)="copyChart('emissions-lifecycle-stack', 'network-emissions-lifecycle-mix.png')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy
+                </button>
+              </div>
+              <p class="chart-note">Normalized to 100% per scenario so the stage mix remains comparable.</p>
+              <div
+                echarts
+                [options]="lifecycleStackOption"
+                (chartInit)="onChartInit('emissions-lifecycle-stack', $event)"
+                class="chart">
+              </div>
+            </section>
+
+            <section class="visual-card">
+              <div class="visual-header">
+                <h6>Component Composition</h6>
+                <button nbButton ghost size="small" status="primary" (click)="copyChart('emissions-component-stack', 'network-emissions-component-contribution.png')">
+                  <nb-icon icon="copy-outline"></nb-icon>
+                  Copy
+                </button>
+              </div>
+              <p class="chart-note">Shows where each scenario’s own emissions come from, independent of absolute size.</p>
+              <div
+                echarts
+                [options]="componentStackOption"
+                (chartInit)="onChartInit('emissions-component-stack', $event)"
+                class="chart">
+              </div>
+            </section>
+          </div>
+
+          <div class="table-wrap">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th *ngFor="let item of comparisonData">
+                    <div>{{ item.network.name }}</div>
+                    <span>{{ modeLabel(item) }}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let metric of metricRows">
+                  <td>{{ metric.label }}</td>
+                  <td
+                    *ngFor="let item of comparisonData"
+                    [class.best]="bestFor(metric) !== null && metricValue(item, metric.key) === bestFor(metric)">
+                    {{ formatValue(metricValue(item, metric.key), metric.format) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="breakdown-grid">
+            <section *ngFor="let item of comparisonData">
+              <h6>{{ item.network.name }}</h6>
+              <div class="table-wrap compact">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Component</th>
+                      <th>Basis</th>
+                      <th>GWP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let component of item.component_breakdown">
+                      <td>{{ component.component }}</td>
+                      <td>{{ component.basis }}</td>
+                      <td>{{ component.emissions_kgco2e / 1000 | number:'1.1-1' }} t</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </ng-container>
+
+        <ng-template #emptyState>
+          <div class="empty-state">Select networks to compare emissions</div>
+        </ng-template>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>

@@ -17,7 +17,8 @@
           <map-marker 
             *ngFor="let b of foundBuildings"
             [position]="{ lat: b.lat, lng: b.lng }"
-            [title]="b.name">
+            [title]="b.name"
+            [options]="b | thermalMarker">
           </map-marker>
 
         </google-map>
@@ -30,7 +31,7 @@
       
       <nb-card-header class="d-flex justify-content-between align-items-center">
         <label class="label mb-0">Target Project</label>
-        <nb-select fullWidth size="small" placeholder="Select Project" [(selected)]="selectedProjectId" class="ml-2 flex-grow-1">
+        <nb-select fullWidth size="small" placeholder="Select Project" [selected]="selectedProjectId" (selectedChange)="onProjectChange($event)" class="ml-2 flex-grow-1">
           <nb-option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</nb-option>
         </nb-select>
       </nb-card-header>
@@ -116,7 +117,46 @@
           <div class="form-group row">
             <label class="col-4 col-form-label caption">Target Year</label>
             <div class="col-8">
-              <input nbInput fullWidth fieldSize="small" type="number" [(ngModel)]="selectedYear">
+              <div class="target-year-control" [class.invalid]="showYearError">
+                <span class="year-format-badge">YYYY</span>
+                <input
+                  nbInput
+                  fullWidth
+                  fieldSize="small"
+                  class="target-year-input"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  maxlength="4"
+                  pattern="[0-9]{4}"
+                  aria-label="Target year in YYYY format"
+                  placeholder="2026"
+                  [ngModel]="selectedYearText"
+                  (ngModelChange)="onYearChange($event)">
+              </div>
+              <small class="text-danger d-block mt-1" *ngIf="showYearError">
+                Enter a 4-digit year from {{ minTargetYear }} to {{ maxTargetYear }}.
+              </small>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-4 col-form-label caption">Target Network</label>
+            <div class="col-8">
+              <nb-select
+                fullWidth
+                size="small"
+                placeholder="All project buildings"
+                [(selected)]="selectedNetworkId"
+                [disabled]="!selectedProjectId">
+                <nb-option [value]="null">All project buildings</nb-option>
+                <nb-option *ngFor="let network of networks" [value]="network.id">
+                  {{ network.name }}
+                </nb-option>
+              </nb-select>
+              <small class="text-hint d-block mt-1" *ngIf="selectedProjectId && networks.length === 0">
+                No networks found for this project.
+              </small>
             </div>
           </div>
 

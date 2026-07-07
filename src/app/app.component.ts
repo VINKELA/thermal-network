@@ -17,7 +17,15 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.hideBootstrapSpinner();
     this.analytics.trackPageViews();
     this.seoService.trackCanonicalChanges();
+  }
+
+  private hideBootstrapSpinner(): void {
+    const spinner = document.getElementById('nb-global-spinner');
+    if (spinner && spinner.parentNode) {
+      spinner.parentNode.removeChild(spinner);
+    }
   }
 }

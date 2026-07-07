@@ -1,3 +1,129 @@
+<nb-card class="network-create-card">
+  <nb-card-header>
+    <div>
+      <h3>Create Network</h3>
+      <p>Select all buildings in a project, or build a network from specific buildings and reusable tags.</p>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <div class="create-grid">
+      <label class="field">
+        <span>Project</span>
+        <nb-select fullWidth placeholder="Select project" [(selected)]="createForm.project" (selectedChange)="onCreateProjectChange($event)">
+          <nb-option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</nb-option>
+        </nb-select>
+      </label>
+
+      <label class="field">
+        <span>Network name</span>
+        <input nbInput fullWidth placeholder="e.g. Phase 1 high-load network" [(ngModel)]="createForm.name">
+      </label>
+
+      <label class="field">
+        <span>Network type</span>
+        <nb-select fullWidth [(selected)]="createForm.network_type">
+          <nb-option *ngFor="let type of networkTypes" [value]="type.value">{{ type.label }}</nb-option>
+        </nb-select>
+      </label>
+
+      <label class="field span-2">
+        <span>Description</span>
+        <textarea nbInput fullWidth rows="2" placeholder="Optional notes" [(ngModel)]="createForm.description"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Include boilers</span>
+        <nb-checkbox [(ngModel)]="createForm.include_boilers">Estimate embedded boilers for consumer buildings</nb-checkbox>
+      </label>
+
+      <label class="field">
+        <span>Include heat exchangers</span>
+        <nb-checkbox [(ngModel)]="createForm.include_heat_exchangers">Estimate embedded heat exchangers for consumer buildings</nb-checkbox>
+      </label>
+    </div>
+
+    <div class="selection-panel" *ngIf="createForm.project">
+      <div class="selection-header">
+        <div>
+          <h4>Building Selection</h4>
+          <p>{{ selectedProjectName }} • {{ buildings.length }} loaded buildings • {{ selectedBuildingCount }} selected for this network</p>
+        </div>
+        <nb-radio-group [(ngModel)]="createForm.selectionMode">
+          <nb-radio value="all">All buildings</nb-radio>
+          <nb-radio value="specific">Specific buildings</nb-radio>
+        </nb-radio-group>
+      </div>
+
+      <div class="bulk-tools" [class.disabled]="createForm.selectionMode === 'all'">
+        <input nbInput placeholder="Search name, FSA, or tag" [(ngModel)]="buildingSearch">
+
+        <nb-select placeholder="Tag" [(selected)]="bulkTag">
+          <nb-option value="all">All tags</nb-option>
+          <nb-option value="__untagged__">Untagged</nb-option>
+          <nb-option *ngFor="let tag of availableTags" [value]="tag">{{ tag }}</nb-option>
+        </nb-select>
+
+        <nb-select placeholder="FSA" [(selected)]="bulkFsa">
+          <nb-option value="all">All FSA</nb-option>
+          <nb-option *ngFor="let fsa of availableFsas" [value]="fsa">{{ fsa }}</nb-option>
+        </nb-select>
+
+        <nb-select placeholder="Type" [(selected)]="bulkType">
+          <nb-option value="all">All types</nb-option>
+          <nb-option *ngFor="let type of buildingTypes" [value]="type.value">{{ type.label }}</nb-option>
+        </nb-select>
+
+        <button nbButton size="small" status="primary" outline (click)="selectFilteredBuildings()" [disabled]="createForm.selectionMode === 'all' || filteredBuildings.length === 0">
+          Select filtered
+        </button>
+        <button nbButton size="small" status="basic" outline (click)="clearBuildingSelection()" [disabled]="createForm.selectionMode === 'all' || selectedBuildingIds.size === 0">
+          Clear
+        </button>
+      </div>
+
+      <div class="tag-tools" [class.disabled]="createForm.selectionMode === 'all'">
+        <input nbInput placeholder="Tag selected buildings, e.g. phase-1 or high-load" [(ngModel)]="tagToApply">
+        <button nbButton size="small" status="info" (click)="applyTagToSelectedBuildings()" [disabled]="createForm.selectionMode === 'all' || isTaggingBuildings || selectedBuildingIds.size === 0">
+          <nb-icon icon="pricetags-outline"></nb-icon>
+          Apply tag to selected
+        </button>
+      </div>
+
+      <div class="building-picker" *ngIf="createForm.selectionMode === 'specific'" [nbSpinner]="isLoadingBuildings" nbSpinnerStatus="primary">
+        <div class="building-row header">
+          <span></span>
+          <span>Building</span>
+          <span>Tag</span>
+          <span>Type</span>
+          <span>FSA</span>
+          <span>Heat</span>
+        </div>
+        <div class="building-row" *ngFor="let building of filteredBuildings">
+          <nb-checkbox [checked]="isBuildingSelected(building.id)" (checkedChange)="toggleBuilding(building.id, $event)"></nb-checkbox>
+          <strong>{{ building.name || ('Building ' + building.id) }}</strong>
+          <span class="tag-pill" [class.empty]="!building.tag">{{ building.tag || 'untagged' }}</span>
+          <span>{{ building.building_type || 'other' }}</span>
+          <span>{{ building.fsa || '-' }}</span>
+          <span>{{ building.heating_demand || 0 | number:'1.0-0' }} kW</span>
+        </div>
+        <div class="empty-state" *ngIf="!isLoadingBuildings && filteredBuildings.length === 0">
+          No buildings match the current filters.
+        </div>
+      </div>
+    </div>
+
+    <div class="create-actions">
+      <button nbButton status="success" (click)="createNetworkFromSelection()" [disabled]="!canCreateNetwork || isCreatingNetwork">
+        <nb-icon icon="plus-circle-outline"></nb-icon>
+        Create network
+      </button>
+      <button nbButton status="basic" ghost (click)="resetCreateForm()">
+        Reset
+      </button>
+    </div>
+  </nb-card-body>
+</nb-card>
+
 <nb-card>
   <nb-card-header class="d-flex justify-content-between align-items-center">
     <h3>Networks</h3>
@@ -9,7 +135,7 @@
     </div>
   </nb-card-header>
   <nb-card-body>
-    <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)" (editConfirm)="onEditConfirm($event)" (createConfirm)="onCreateConfirm($event)">>
+    <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)" (editConfirm)="onEditConfirm($event)" (createConfirm)="onCreateConfirm($event)">
     </ng2-smart-table>
   </nb-card-body>
 </nb-card>

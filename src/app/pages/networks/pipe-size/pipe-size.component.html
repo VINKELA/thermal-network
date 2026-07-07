@@ -3,10 +3,17 @@
   <div class="top-section">
  
 
-    <div class="map-panel">
+    <div class="map-panel" #mapPanel>
      <google-map height="100%" width="100%" [center]="center" [zoom]="zoom" [options]="mapOptions" (zoomChanged)="onMapZoom()">
+
+        <map-polyline *ngFor="let edge of edges" [path]="edge.path" [options]="edge | thermalLine:'shadow':currentZoom"></map-polyline>
         
-        <map-polyline *ngFor="let edge of edges" [path]="edge.path" [options]="edge.options" (polylineClick)="selectEdge(edge, null)"></map-polyline>
+        <map-polyline
+          *ngFor="let edge of edges"
+          [path]="edge.path"
+          [options]="edge | thermalLine:(selectedItem === edge ? 'selected' : 'pipe'):{ color: edge.displayColor, selected: selectedItem === edge, zoom: currentZoom }"
+          (polylineClick)="selectEdge(edge, null)">
+        </map-polyline>
         
         <map-marker 
           *ngFor="let node of nodes" 
@@ -28,7 +35,7 @@
 
             <div *ngIf="selectedType === 'edge'" class="edge-details">
               <header>
-                <span class="tag edge">Branch Segment</span>
+                <span class="tag edge">{{ segmentBasis(selectedItem) }}</span>
                 <h4 class="segment-name">{{ selectedItem.edge?.name || 'Unnamed Pipe' }}</h4>
               </header>
               <div class="highlight-box">
@@ -60,7 +67,15 @@
                 </div>
                 <div class="data-row">
                   <label>Length</label>
-                  <span>{{ selectedItem.edge?.length | number:'1.0-0' }} m</span>
+                  <span>{{ segmentLength(selectedItem) | number:'1.0-0' }} m</span>
+                </div>
+                <div class="data-row">
+                  <label>{{ selectedLegendOption.label }}</label>
+                  <strong [style.color]="selectedItem.displayColor">{{ selectedLegendValue(selectedItem) }}</strong>
+                </div>
+                <div class="data-row" *ngIf="selectedItem.is_shared_segment">
+                  <label>Shared Routes</label>
+                  <span>{{ selectedItem.overlap_count || 1 }}</span>
                 </div>
               </div>
             </div>
@@ -69,20 +84,72 @@
         </map-info-window>
 
       </google-map>
+
+      <button
+        type="button"
+        class="map-expand-button"
+        (click)="toggleMapFullscreen($event)"
+        [attr.aria-label]="isMapFullscreen ? 'Exit fullscreen map' : 'Expand map'">
+        <nb-icon [icon]="isMapFullscreen ? 'collapse-outline' : 'expand-outline'"></nb-icon>
+      </button>
+
+      <div
+        #mapLegend
+        class="pipe-map-legend"
+        (click)="$event.stopPropagation()"
+        (mousedown)="$event.stopPropagation()"
+        (dblclick)="$event.stopPropagation()"
+        (wheel)="$event.stopPropagation()">
+        <div class="legend-heading">
+          <div>
+            <strong>Pipe Sizing</strong>
+            <span>{{ edges.length }} sections</span>
+          </div>
+          <label>
+            <span>Map by</span>
+            <select
+              class="legend-select"
+              [ngModel]="selectedLegendProperty"
+              (ngModelChange)="onLegendPropertyChange($event)">
+              <option *ngFor="let property of legendProperties" [value]="property.key">
+                {{ property.label }}
+              </option>
+            </select>
+          </label>
+        </div>
+
+        <div class="range-legend">
+          <div class="range-row" *ngFor="let bin of legendBins">
+            <span class="range-swatch" [style.backgroundColor]="bin.color"></span>
+            <div>
+              <strong>{{ bin.label }}</strong>
+              <span>{{ bin.range }}</span>
+            </div>
+            <em>{{ bin.count }}</em>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-<div class="bottom-section" [class.expanded]="isTableExpanded">
+<div
+  class="bottom-section"
+  [class.expanded]="isTableExpanded"
+  [class.collapsed]="isTableCollapsed">
     
     <div class="table-toolbar">
       <h3 class="table-title">Hydraulic Edge Data</h3>
       <div class="actions">
-        <button class="btn-action" (click)="copyTableToClipboard()">
+        <button class="btn-action" *ngIf="!isTableCollapsed" (click)="copyTableToClipboard()">
           <i class="eva eva-copy-outline"></i> Copy Data
         </button>
-        <button class="btn-action" (click)="toggleTableSize()">
+        <button class="btn-action" *ngIf="!isTableCollapsed" (click)="toggleTableSize()">
           <i class="eva" [ngClass]="isTableExpanded ? 'eva-collapse-outline' : 'eva-expand-outline'"></i> 
           {{ isTableExpanded ? 'Collapse' : 'Expand' }} Table
+        </button>
+        <button class="btn-action" (click)="toggleTableCollapse()">
+          <i class="eva" [ngClass]="isTableCollapsed ? 'eva-list-outline' : 'eva-eye-off-outline'"></i>
+          {{ isTableCollapsed ? 'Show Table' : 'Hide Table' }}
         </button>
       </div>
     </div>
@@ -93,6 +160,7 @@
           <tr>
             <th>Color</th>
             <th>Segment Name</th>
+            <th>Basis</th>
             <th>Comm. Size (DN)</th>
             <th>Exact Dia. (mm)</th> <th>Peak Demand (kW)</th>
             <th>Mass Flow (kg/s)</th>
@@ -105,13 +173,14 @@
           <tr *ngFor="let edge of edges" (click)="selectEdge(edge, null)" [class.selected]="selectedItem === edge">
             <td><div class="color-swatch" [style.backgroundColor]="edge.displayColor"></div></td>
             <td class="fw-bold">{{ edge.edge?.name || 'Unnamed' }}</td>
+            <td>{{ segmentBasis(edge) }}</td>
             <td>DN{{ edge.diameter_m * 1000 | number:'1.0-0' }}</td>
             <td>{{ edge.diameter_m * 1000 | number:'1.1-2' }}</td> 
             <td>{{ edge.peak_load_kw | number:'1.1-1' }}</td>
             <td>{{ edge.mass_flow_kg_s | number:'1.2-2' }}</td>
             <td [ngClass]="getVelocityStatus(edge.velocity_m_s)"><b>{{ edge.velocity_m_s | number:'1.2-2' }}</b></td>
             <td>{{ (edge.pressure_drop_pa / 1000) | number:'1.2-2' }}</td>
-            <td class="text-muted">{{ edge.edge?.length | number:'1.0-0' }}</td>
+            <td class="text-muted">{{ segmentLength(edge) | number:'1.0-0' }}</td>
           </tr>
         </tbody>
       </table>

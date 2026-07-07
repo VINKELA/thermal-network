@@ -1,20 +1,20 @@
 <div class="building-container" 
      *ngIf="building" 
-     [ngClass]="loadConfig[building.load_type].themeClass">
+     [ngClass]="loadConfig[loadType].themeClass">
   
   <div class="info-panel">
     
     <header class="panel-header">
       <div class="type-badge">
-        <i [class]="'eva eva-' + typeConfig[building.building_type]?.icon"></i>
-        <span>{{ typeConfig[building.building_type]?.label }}</span>
+        <i [class]="'eva eva-' + typeConfig[buildingType].icon"></i>
+        <span>{{ typeConfig[buildingType].label }}</span>
       </div>
       
       <h1>{{ building.name || 'Unnamed Building' }}</h1>
       
       <div class="load-badge">
-        <i [class]="'eva eva-' + loadConfig[building.load_type]?.icon"></i>
-        {{ loadConfig[building.load_type]?.label }}
+        <i [class]="'eva eva-' + loadConfig[loadType].icon"></i>
+        {{ loadConfig[loadType].label }}
       </div>
     </header>
 
@@ -36,6 +36,10 @@
 
       <div class="spec-group">
         <h3>Dimensions</h3>
+        <div class="data-row" *ngIf="building.tag">
+          <span class="label">Selection Tag</span>
+          <span class="value">{{ building.tag }}</span>
+        </div>
         <div class="data-row">
           <span class="label">Floor Area</span>
           <span class="value">{{ building.floor_area | number }} m²</span>
@@ -78,3 +82,13 @@
   </div>
 
 </div>
+
+<nb-card *ngIf="!building && !isLoading" class="empty-building-card">
+  <nb-card-body>
+    <button nbButton ghost status="basic" size="small" (click)="goBack()">
+      <nb-icon icon="arrow-back-outline"></nb-icon>
+      Buildings
+    </button>
+    <h3>{{ notFoundMessage || 'Building not found.' }}</h3>
+  </nb-card-body>
+</nb-card>

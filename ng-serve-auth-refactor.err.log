@@ -1,0 +1,21 @@
+One or more browsers which are configured in the project's Browserslist configuration will be ignored as ES5 output is not supported by the Angular CLI.
+Ignored browsers: ie 11, kaios 2.5, op_mini all
+- Generating browser application bundles (phase: setup)...
+√ Browser application bundle generation complete.
+
+Warning: C:\Users\orjik\source\Research\thermal-network\node_modules\@nebular\eva-icons\fesm2020\nebular-eva-icons.mjs depends on 'eva-icons'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+
+√ Browser application bundle generation complete.
+
+Warning: C:\Users\orjik\source\Research\thermal-network\node_modules\@asymmetrik\ngx-leaflet\__ivy_ngcc__\dist\leaflet\core\leaflet.directive.js depends on 'leaflet'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.

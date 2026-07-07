@@ -1,0 +1,214 @@
+<div class="section-page">
+  <div class="loading-state" *ngIf="isLoading">
+    Loading pipe section analysis...
+  </div>
+
+  <div class="error-state" *ngIf="!isLoading && error">
+    <h3>Pipe section analysis unavailable</h3>
+    <p>{{ error }}</p>
+    <button type="button" class="ghost-button" (click)="goBack()">Back to pipe sizing</button>
+  </div>
+
+  <ng-container *ngIf="!isLoading && !error && analysis && baseline as base">
+    <header class="page-header">
+      <button type="button" class="ghost-button" (click)="goBack()">
+        <nb-icon icon="arrow-back-outline"></nb-icon>
+        Back to pipe sizing
+      </button>
+
+      <div>
+        <span class="eyebrow">Pipe section design</span>
+        <h1>{{ analysis.segment_name || ('Section ' + analysis.id) }}</h1>
+      </div>
+
+      <div class="header-badges">
+        <span *ngIf="analysis.is_shared_segment">Shared x{{ analysis.overlap_count || 1 }}</span>
+        <strong>{{ formatNumber(analysis.length_m, 0) }} m</strong>
+      </div>
+    </header>
+
+    <section class="guide-grid">
+      <article class="guide-panel">
+        <header>
+          <div>
+            <span class="eyebrow">Variable input</span>
+            <h2>Heat duty</h2>
+          </div>
+          <button type="button" class="ghost-button compact" (click)="resetGuide()">Reset</button>
+        </header>
+
+        <div class="guide-controls">
+          <label class="guide-control" *ngFor="let control of guideRanges">
+            <div class="control-head">
+              <span>{{ control.label }}</span>
+              <strong>
+                {{ formatNumber(guideValue(control.key), control.step < 1 ? 1 : 0) }} {{ control.unit }}
+              </strong>
+            </div>
+            <div class="input-row">
+              <input
+                type="range"
+                [min]="control.min"
+                [max]="control.max"
+                [step]="control.step"
+                [ngModel]="guideValue(control.key)"
+                (ngModelChange)="setGuideValue(control.key, $event)" />
+              <input
+                class="number-input"
+                type="number"
+                [min]="control.min"
+                [max]="control.max"
+                [step]="control.step"
+                [ngModel]="guideValue(control.key)"
+                (ngModelChange)="setGuideValue(control.key, $event)" />
+            </div>
+            <div class="range-foot">
+              <span>{{ formatNumber(control.min, control.step < 1 ? 1 : 0) }}</span>
+              <span>{{ formatNumber(control.max, control.step < 1 ? 1 : 0) }}</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="assumption-strip">
+          <span>Supply {{ formatNumber(guide.supplyTempC, 1) }} C</span>
+          <span>Return {{ formatNumber(guide.returnTempC, 1) }} C</span>
+          <span>Section length {{ formatNumber(guide.lengthM, 0) }} m</span>
+          <span>Pump efficiency {{ formatNumber(guide.pumpEfficiencyPct, 0) }}%</span>
+          <span>Density {{ formatNumber(analysis.constants?.rho_kg_m3, 1) }} kg/m3</span>
+          <span>Specific heat {{ formatNumber(analysis.constants?.cp_kj_kg_k, 2) }} kJ/kgK</span>
+          <span>Velocity window {{ formatNumber(analysis.constants?.min_velocity_m_s, 1) }}-{{ formatNumber(analysis.constants?.max_velocity_m_s, 1) }} m/s</span>
+          <span>Pressure gradient target {{ formatNumber(analysis.constants?.target_pressure_drop_pa_m, 0) }} Pa/m</span>
+        </div>
+      </article>
+
+      <article class="result-panel diagnosis-panel" *ngIf="guidedResult as current">
+        <header>
+          <span class="eyebrow">Design feasibility</span>
+          <h2>Passing DN and Delta T combinations</h2>
+        </header>
+
+        <div class="verdict-card" [ngClass]="'tone-' + designVerdict.tone">
+          <span>{{ designVerdict.label }}</span>
+          <strong>{{ designVerdict.value }}</strong>
+          <em>{{ designVerdict.detail }}</em>
+        </div>
+
+        <div class="insight-list">
+          <div class="insight-card" *ngFor="let insight of designInsights" [ngClass]="'tone-' + insight.tone">
+            <span>{{ insight.label }}</span>
+            <strong>{{ insight.value }}</strong>
+            <em>{{ insight.detail }}</em>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="decision-grid">
+      <article class="decision-card" *ngFor="let move of designMoves" [ngClass]="'tone-' + move.tone">
+        <span>{{ move.label }}</span>
+        <strong>{{ move.outcome }}</strong>
+        <p>{{ move.detail }}</p>
+      </article>
+    </section>
+
+    <section class="controls-row">
+      <div>
+        <span class="eyebrow">Feasibility table</span>
+        <strong>{{ selectedModeLabel }}</strong>
+      </div>
+    </section>
+
+    <section class="details-grid">
+      <article class="table-card">
+        <header>
+          <div>
+            <span class="eyebrow">Values</span>
+            <h2>{{ selectedModeLabel }}</h2>
+          </div>
+        </header>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Feasible combination</th>
+                <th>Heat duty (kW)</th>
+                <th>Delta T (C)</th>
+                <th>Required supply (C)</th>
+                <th>Catalog DN</th>
+                <th>Mass flow (kg/s)</th>
+                <th>Velocity (m/s)</th>
+                <th>Pressure gradient (Pa/m)</th>
+                <th>Pressure drop (kPa)</th>
+                <th>Head loss (m)</th>
+                <th>Pump power (kW)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of currentRows">
+                <td>{{ row.label }}</td>
+                <td>{{ formatNumber(row.peak_load_kw, 1) }}</td>
+                <td>{{ formatNumber(row.delta_t_c, 1) }}</td>
+                <td [ngClass]="statusClass(row.supply_temperature_status)">
+                  {{ formatNumber(row.required_supply_temperature_c, 1) }}
+                </td>
+                <td>{{ row.diameter_mm | number:'1.0-0' }}</td>
+                <td>{{ formatNumber(row.mass_flow_kg_s, 2) }}</td>
+                <td [ngClass]="statusClass(row.velocity_status)">{{ formatNumber(row.velocity_m_s, 2) }}</td>
+                <td [ngClass]="statusClass(row.pressure_drop_status)">{{ formatNumber(row.pressure_drop_pa_per_m, 0) }}</td>
+                <td [ngClass]="statusClass(row.pressure_drop_status)">{{ formatNumber(row.pressure_drop_kpa, 2) }}</td>
+                <td>{{ formatNumber(row.head_loss_m, 2) }}</td>
+                <td>{{ formatNumber(row.pumping_power_kw, 3) }}</td>
+              </tr>
+              <tr *ngIf="currentRows.length === 0">
+                <td class="empty-row" colspan="11">
+                  No pipe catalog DN and Delta T combination can meet this heat duty within the fixed temperature,
+                  velocity, and pressure-gradient assumptions.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="charts-grid">
+      <article class="chart-card wide">
+        <header>
+          <div>
+            <span class="eyebrow">Feasible combinations</span>
+            <h2>DN and Delta T matrix</h2>
+          </div>
+          <button type="button" class="copy-graph-button" (click)="copyChart('diameter', 'pipe-section-dn-selection.png')">
+            <nb-icon icon="copy-outline"></nb-icon>
+            Copy
+          </button>
+        </header>
+        <div
+          class="large-chart"
+          echarts
+          [options]="diameterChartOption"
+          (chartInit)="onChartInit('diameter', $event)">
+        </div>
+      </article>
+
+      <article class="chart-card">
+        <header>
+          <div>
+            <span class="eyebrow">Best option per Delta T</span>
+            <h2>Pressure gradient and pumping power</h2>
+          </div>
+          <button type="button" class="copy-graph-button" (click)="copyChart('temperature', 'pipe-section-temperature-regime.png')">
+            <nb-icon icon="copy-outline"></nb-icon>
+            Copy
+          </button>
+        </header>
+        <div
+          class="large-chart"
+          echarts
+          [options]="temperatureChartOption"
+          (chartInit)="onChartInit('temperature', $event)">
+        </div>
+      </article>
+    </section>
+  </ng-container>
+</div>

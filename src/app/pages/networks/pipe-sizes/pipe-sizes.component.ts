@@ -50,6 +50,22 @@ export class PipeSizesComponent implements OnInit {
           return `<a href="pages/pipe-sizes/${row.id}">${name}</a>`;
         }
       },
+      source_type: {
+        title: 'Sizing Source',
+        type: 'string',
+        editor: {
+          type: 'list',
+          config: {
+            list: [
+              { value: 'connection', title: 'Connection' },
+              { value: 'route', title: 'Route Tracing' },
+            ],
+          },
+        },
+        valuePrepareFunction: (_: any, row: any) => {
+          return row.topology_source === 'route' ? 'Route Tracing' : 'Connection';
+        },
+      },
       method: {
         title: 'Method',
         type: 'string',
@@ -75,7 +91,26 @@ export class PipeSizesComponent implements OnInit {
             list: [],
           },
         },
-        valuePrepareFunction: () => 'Derived from connection',
+        valuePrepareFunction: (_: any, row: any) => {
+          return row.topology_source === 'connection'
+            ? (row.topology_source_name || `Connection ${row.source_edge_connection_algorithm_id || ''}`)
+            : '-';
+        },
+      },
+      edge_translation_id: {
+        title: 'Source Route',
+        type: 'string',
+        editor: {
+          type: 'list',
+          config: {
+            list: [],
+          },
+        },
+        valuePrepareFunction: (_: any, row: any) => {
+          return row.topology_source === 'route'
+            ? (row.topology_source_name || `Route tracing ${row.source_edge_translation_id || ''}`)
+            : '-';
+        },
       },
       network_name: {
         title: 'Output Network',
@@ -117,6 +152,7 @@ export class PipeSizesComponent implements OnInit {
     });
 
     this.loadConnectionAlgorithmsForDropdown();
+    this.loadRouteTracingsForDropdown();
   }
 
   loadConnectionAlgorithmsForDropdown() {
@@ -133,6 +169,23 @@ export class PipeSizesComponent implements OnInit {
         this.settings = newSettings;
       },
       error: (err) => console.error('Failed to load connection algorithms for sizing dropdown', err),
+    });
+  }
+
+  loadRouteTracingsForDropdown() {
+    this.http.get<any>(`${environment.appUrl}/edge_translations/?limit=100`).subscribe({
+      next: (res) => {
+        const translations = res.results || res || [];
+        const options = translations.map((translation: any) => ({
+          value: translation.id,
+          title: `${translation.name} (${translation.network?.name || 'Network ' + translation.network?.id})`,
+        }));
+
+        const newSettings: any = Object.assign({}, this.settings);
+        newSettings.columns.edge_translation_id.editor.config.list = options;
+        this.settings = newSettings;
+      },
+      error: (err) => console.error('Failed to load route tracings for sizing dropdown', err),
     });
   }
 
@@ -174,15 +227,24 @@ export class PipeSizesComponent implements OnInit {
 
   onCreateConfirm(event: any): void {
     if (window.confirm('Create a new derived network with pipe sizing results?')) {
+      const sourceType = event.newData.source_type || 'connection';
       const connectionId = event.newData.edge_connection_algorithm_id;
-      if (!connectionId) {
+      const routeTracingId = event.newData.edge_translation_id;
+      if (sourceType === 'route' && !routeTracingId) {
+        alert('Please select a source route tracing.');
+        event.confirm.reject();
+        return;
+      }
+      if (sourceType !== 'route' && !connectionId) {
         alert('Please select a source connection algorithm.');
         event.confirm.reject();
         return;
       }
 
       const payload = {
-        edge_connection_algorithm_id: connectionId,
+        source_type: sourceType,
+        edge_connection_algorithm_id: sourceType === 'route' ? null : connectionId,
+        edge_translation_id: sourceType === 'route' ? routeTracingId : null,
         name_prefix: event.newData.name || 'Pipe Sizing',
         method: event.newData.method || 'peak_sizing',
       };

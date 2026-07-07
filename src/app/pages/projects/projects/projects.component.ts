@@ -41,6 +41,10 @@ settings = {
         type: 'string',
         
       },
+      current_user_role: {
+        title: 'Your Role',
+        type: 'string',
+      },
       
     },
   };
@@ -51,7 +55,8 @@ settings = {
     this.api.get(this.url)
     .subscribe((data: any) => 
       {
-        const flattened = data.results.map(item => ({
+        const rows = data?.results || data || [];
+        const flattened = rows.map(item => ({
         ...item,
       }));            
       this.source.load(flattened);
@@ -62,7 +67,7 @@ settings = {
     if (window.confirm('Are you sure you want to delete?')) {
       console.log("Deleting Network with ID:", event.data.id);
       event.confirm.resolve();
-      this.api.delete(this.url, event.data.id)
+      this.api.delete(event.data.id, this.url)
     .subscribe((data: any) => 
       {
         console.log("Network deleted successfully:", data);

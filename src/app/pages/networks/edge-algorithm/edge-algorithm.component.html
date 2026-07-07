@@ -51,7 +51,7 @@
       <map-polyline 
         *ngFor="let edge of edges"
         [path]="edge.path"
-        [options]="selectedItem === edge ? selectedEdgeOptions : edgeOptions"
+        [options]="edge | thermalLine:(selectedItem === edge ? 'selected' : 'edge')"
         (polylineClick)="selectEdge(edge, lineRef)"
         #lineRef="mapPolyline">
       </map-polyline>

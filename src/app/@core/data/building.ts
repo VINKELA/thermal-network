@@ -7,6 +7,7 @@ export interface Building {
   name?: string;
   building_type: BuildingType;
   fsa?: string;
+  tag?: string;
   load_type: LoadType;
   floor_area?: number;    // m2
   heating_demand?: number; // kW

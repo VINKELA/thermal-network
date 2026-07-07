@@ -1,0 +1,140 @@
+<div class="evolution-page">
+  <nb-card class="control-card">
+    <nb-card-header>
+      <div>
+        <h3>Network Evolution</h3>
+        <p>Attach new project buildings to existing routed pipes when they are close enough to join the route.</p>
+      </div>
+    </nb-card-header>
+    <nb-card-body>
+      <div class="control-grid">
+        <label>
+          <span>Routed network</span>
+          <nb-select fullWidth placeholder="Select routed network" [(selected)]="selectedNetworkId">
+            <nb-option *ngFor="let network of networks" [value]="network.id">
+              {{ network.name }} · {{ network.route_count }} routes
+            </nb-option>
+          </nb-select>
+        </label>
+
+        <label>
+          <span>Max distance to route (m)</span>
+          <input nbInput fullWidth type="number" min="1" [(ngModel)]="maxDistanceM">
+        </label>
+
+        <label>
+          <span>Building tag</span>
+          <input nbInput fullWidth placeholder="Optional, e.g. phase-2" [(ngModel)]="tagFilter">
+        </label>
+
+        <label>
+          <span>Minimum heat demand (kW)</span>
+          <input nbInput fullWidth type="number" min="0" placeholder="Optional" [(ngModel)]="minHeatKw">
+        </label>
+
+        <label class="span-2">
+          <span>Output network name</span>
+          <input nbInput fullWidth placeholder="Expanded network name" [(ngModel)]="outputName">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button nbButton status="primary" (click)="previewExpansion()" [disabled]="!selectedNetworkId || isPreviewing || isCreating">
+          <nb-icon icon="search-outline"></nb-icon>
+          Preview candidates
+        </button>
+        <button nbButton status="success" (click)="createExpandedNetwork()" [disabled]="!acceptedCandidates.length || isCreating">
+          <nb-icon icon="plus-circle-outline"></nb-icon>
+          {{ isCreating ? 'Creating in background...' : 'Create expanded network' }}
+        </button>
+      </div>
+
+      <nb-alert status="info" *ngIf="activeOperations.length" class="task-alert">
+        <strong>Background network evolution</strong>
+        <div *ngFor="let operation of activeOperations" class="task-row">
+          <span>{{ operation.label }}</span>
+          <small>{{ operation.status }} · {{ operation.message || 'Running in Celery' }}</small>
+          <small>Task {{ operation.taskId }}</small>
+        </div>
+      </nb-alert>
+
+      <nb-alert status="danger" *ngIf="errorMessage">{{ errorMessage }}</nb-alert>
+    </nb-card-body>
+  </nb-card>
+
+  <div class="summary-grid" *ngIf="preview">
+    <div class="summary-item">
+      <span>Accepted Buildings</span>
+      <strong>{{ acceptedCandidates.length }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Rejected Buildings</span>
+      <strong>{{ rejectedCandidates.length }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Added Demand</span>
+      <strong>{{ preview.summary?.added_heat_kw || 0 | number:'1.0-0' }} kW</strong>
+    </div>
+    <div class="summary-item">
+      <span>Service Length</span>
+      <strong>{{ preview.summary?.added_service_length_m || 0 | number:'1.0-0' }} m</strong>
+    </div>
+  </div>
+
+  <nb-card class="map-card" *ngIf="preview">
+    <nb-card-body>
+      <google-map height="680px" width="100%" [center]="center" [zoom]="zoom" [options]="mapOptions">
+        <map-polyline *ngFor="let route of routes" [path]="route.path" [options]="route.haloOptions"></map-polyline>
+        <map-polyline *ngFor="let route of routes" [path]="route.path" [options]="route.lineOptions"></map-polyline>
+
+        <ng-container *ngFor="let candidate of candidates">
+          <map-polyline *ngIf="candidate.accepted" [path]="candidate.servicePath" [options]="candidate.serviceHaloOptions"></map-polyline>
+          <map-polyline [path]="candidate.servicePath" [options]="candidate.serviceOptions"></map-polyline>
+        </ng-container>
+
+        <map-marker
+          *ngFor="let candidate of candidates"
+          [position]="{ lat: candidate.building.latitude, lng: candidate.building.longitude }"
+          [options]="candidate.markerOptions"
+          (mapClick)="openCandidate(candidateMarker, candidate)"
+          #candidateMarker="mapMarker">
+        </map-marker>
+
+        <map-info-window>
+          <div class="candidate-popup" *ngIf="selectedCandidate">
+            <h4>{{ selectedCandidate.building?.name || ('Building ' + selectedCandidate.building?.id) }}</h4>
+            <p>{{ selectedCandidate.status | titlecase }} · {{ selectedCandidate.distance_to_route_m | number:'1.0-1' }} m from route</p>
+            <p>Heat demand: {{ selectedCandidate.building?.heating_demand || 0 | number:'1.0-0' }} kW</p>
+            <p *ngIf="selectedCandidate.building?.tag">Tag: {{ selectedCandidate.building.tag }}</p>
+          </div>
+        </map-info-window>
+      </google-map>
+    </nb-card-body>
+  </nb-card>
+
+  <nb-card *ngIf="preview">
+    <nb-card-header>
+      <h3>Candidate Buildings</h3>
+    </nb-card-header>
+    <nb-card-body>
+      <div class="candidate-table">
+        <div class="candidate-row header">
+          <span>Status</span>
+          <span>Building</span>
+          <span>Tag</span>
+          <span>Heat</span>
+          <span>Distance</span>
+          <span>Route</span>
+        </div>
+        <div class="candidate-row" *ngFor="let candidate of candidates" [class.rejected]="!candidate.accepted">
+          <span class="status-pill" [class.accepted]="candidate.accepted">{{ candidate.status }}</span>
+          <strong>{{ candidate.building?.name || ('Building ' + candidate.building?.id) }}</strong>
+          <span>{{ candidate.building?.tag || '-' }}</span>
+          <span>{{ candidate.building?.heating_demand || 0 | number:'1.0-0' }} kW</span>
+          <span>{{ candidate.distance_to_route_m | number:'1.0-1' }} m</span>
+          <span>#{{ candidate.source_route_id }}</span>
+        </div>
+      </div>
+    </nb-card-body>
+  </nb-card>
+</div>

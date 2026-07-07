@@ -3,14 +3,17 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import {catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { query } from '@angular/animations';
+import { ProjectContextService } from './project-context.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RestApiService {
   apiUrl = environment?.appUrl + '/'
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private projectContext: ProjectContextService,
+  ) { }
   httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
@@ -20,14 +23,14 @@ export class RestApiService {
     get<T>(path:string, token?:string): Observable<T>
     {
       this.authorizeRequest(token)
-      let url = path;
+      let url = this.projectContext.appendProjectScope(path);
       return this.http
         .get<T>(this.apiUrl + url,
           this.httpOptions
           )
           .pipe(
           map(response => (<T>response)),
-          catchError(async (error) => <T>(error.error)))
+          catchError(error => this.handleHttpError<T>(error)))
     }
 
     getAll(path:string, token?:string
@@ -56,7 +59,7 @@ getById<T>(id: any, url:string, token:string | undefined = undefined): Observabl
     .get<T>(this.apiUrl + url + id, this.httpOptions)
     .pipe(
       map(response => (<T>response)),
-      catchError(async (error) => <T>(error.error)))
+      catchError(error => this.handleHttpError<T>(error)))
 }
   // HttpClient API post() method => Create resource
 post<T>(resource: any, url:string, token:string|undefined = undefined): Observable<T>
@@ -70,7 +73,7 @@ return this.http
   )
   .pipe(
     map(response => (<T>response)),
-    catchError(async (error) => <T>(error.error)))
+    catchError(error => this.handleHttpError<T>(error)))
 }
   // HttpClient API put() method => Update resource
 update<T>(id: any, resource: any, url:string, token:string|undefined = undefined): Observable<T> {
@@ -83,7 +86,7 @@ return this.http
     )
     .pipe(
       map(response => (<T>response)),
-      catchError(async (error) => <T>(error.error)))
+      catchError(error => this.handleHttpError<T>(error)))
 }
   // HttpClient API delete() method => Delete resource
 delete<T>(id: any, url:string, token:string|undefined = undefined) {
@@ -94,7 +97,16 @@ return this.http
     .delete<T>(path, this.httpOptions)
     .pipe(
       map(response => (<T>response)),
-      catchError(async (error) => <T>(error.error)))
+      catchError(error => this.handleHttpError<T>(error)))
+}
+private handleHttpError<T>(error: any): Observable<T> {
+  if (error?.status === 401) {
+    localStorage.removeItem('thermalNetworkToken');
+    localStorage.removeItem('jwt');
+    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/auth/login?returnUrl=${returnUrl}`;
+  }
+  return throwError(() => error);
 }
 private authorizeRequest(token:string|undefined){
   if(token)
@@ -130,4 +142,3 @@ console.log(errorMessage);
   });
 }
 }
-

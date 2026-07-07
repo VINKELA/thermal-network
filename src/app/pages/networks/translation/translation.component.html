@@ -50,10 +50,16 @@
       [zoom]="zoom"
       [options]="mapOptions">
 
+      <map-polyline
+        *ngFor="let r of visualRoutes"
+        [path]="r.decodedPath"
+        [options]="r | thermalLine:'halo'">
+      </map-polyline>
+
       <map-polyline 
         *ngFor="let r of visualRoutes"
         [path]="r.decodedPath"
-        [options]="selectedRoute === r ? selectedOptions : (r.route_type === 'supply' ? supplyOptions : returnOptions)"
+        [options]="r | thermalLine:'route':selectedRoute === r"
         (polylineClick)="selectRoute(r, lineRef)"
         #lineRef="mapPolyline">
       </map-polyline>

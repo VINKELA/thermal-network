@@ -1,0 +1,245 @@
+<div class="network-cost-page">
+  <nb-card>
+    <nb-card-header>
+      <div class="toolbar">
+        <nb-select fullWidth placeholder="Network" [(selected)]="selectedNetworkId" (selectedChange)="onNetworkChange()" [disabled]="isLoadingNetworks">
+          <nb-option *ngFor="let network of networks" [value]="network.id">
+            {{ network.name }}
+          </nb-option>
+        </nb-select>
+
+        <nb-form-field>
+          <nb-icon nbPrefix icon="pricetags-outline"></nb-icon>
+          <input nbInput type="number" min="0" [(ngModel)]="costPerMeter" (ngModelChange)="onCostPerMeterChange()" placeholder="Cost per m">
+        </nb-form-field>
+
+        <button nbButton status="primary" (click)="recalculate()" [disabled]="!selectedNetworkId || isLoadingSummary">
+          <nb-icon icon="refresh-outline"></nb-icon>
+          Recalculate
+        </button>
+      </div>
+    </nb-card-header>
+
+    <nb-card-body [nbSpinner]="isLoadingSummary">
+      <ng-container *ngIf="summary; else emptyState">
+        <div class="summary-grid">
+          <div class="metric">
+            <span>Total Length</span>
+            <strong>{{ metricValue('metrics.total_length_m') | number:'1.0-0' }} m</strong>
+          </div>
+          <div class="metric" *ngIf="metricValue('metrics.individual_route_length_m')">
+            <span>Route Distance</span>
+            <strong>{{ metricValue('metrics.individual_route_length_m') | number:'1.0-0' }} m</strong>
+          </div>
+          <div class="metric">
+            <span>Construction Cost</span>
+            <strong>{{ metricValue('metrics.construction_cost') | currency:'USD':'symbol':'1.0-0' }}</strong>
+          </div>
+          <div class="metric">
+            <span>Pumping Lifecycle</span>
+            <strong>{{ metricValue('metrics.pumping_lifecycle_cost') | currency:'USD':'symbol':'1.0-0' }}</strong>
+          </div>
+          <div class="metric">
+            <span>Total Lifecycle</span>
+            <strong>{{ metricValue('metrics.total_lifecycle_cost') | currency:'USD':'symbol':'1.0-0' }}</strong>
+          </div>
+          <div class="metric">
+            <span>Average Cost</span>
+            <strong>{{ metricValue('metrics.average_cost_per_meter') | currency:'USD':'symbol':'1.0-0' }}/m</strong>
+          </div>
+          <div class="metric">
+            <span>Average Lifecycle</span>
+            <strong>{{ metricValue('metrics.average_lifecycle_cost_per_meter') | currency:'USD':'symbol':'1.0-0' }}/m</strong>
+          </div>
+          <div class="metric">
+            <span>Max Diameter</span>
+            <strong>{{ metricValue('metrics.max_diameter_m') | number:'1.3-3' }} m</strong>
+          </div>
+          <div class="metric">
+            <span>Max Velocity</span>
+            <strong>{{ metricValue('metrics.max_velocity_m_s') | number:'1.2-2' }} m/s</strong>
+          </div>
+          <div class="metric">
+            <span>Pressure Drop</span>
+            <strong>{{ metricValue('metrics.total_pressure_drop_pa') | number:'1.0-0' }} Pa</strong>
+          </div>
+        </div>
+
+        <div class="visual-grid">
+          <section class="visual-card">
+            <div class="visual-header">
+              <h6>Cost Composition</h6>
+              <button nbButton ghost size="small" status="primary" (click)="copyChart('cost-composition', 'network-cost-composition.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy
+              </button>
+            </div>
+            <div
+              echarts
+              [options]="costCompositionOption"
+              (chartInit)="onChartInit('cost-composition', $event)"
+              class="chart">
+            </div>
+          </section>
+
+          <section class="visual-card">
+            <div class="visual-header">
+              <h6>Diameter Cost Drivers</h6>
+              <button nbButton ghost size="small" status="primary" (click)="copyChart('diameter-cost', 'network-diameter-cost-drivers.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy
+              </button>
+            </div>
+            <div
+              echarts
+              [options]="diameterCostOption"
+              (chartInit)="onChartInit('diameter-cost', $event)"
+              class="chart">
+            </div>
+          </section>
+
+          <section class="visual-card wide">
+            <div class="visual-header">
+              <h6>Top Segment Cost Drivers</h6>
+              <button nbButton ghost size="small" status="primary" (click)="copyChart('segment-pareto', 'network-segment-cost-drivers.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy
+              </button>
+            </div>
+            <div
+              echarts
+              [options]="segmentParetoOption"
+              (chartInit)="onChartInit('segment-pareto', $event)"
+              class="chart">
+            </div>
+          </section>
+        </div>
+
+        <div class="tables">
+          <section>
+            <h6>Diameter Breakdown</h6>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>DN</th>
+                    <th>Diameter</th>
+                    <th>Segments</th>
+                    <th>Length</th>
+                    <th>Construction</th>
+                    <th>Pumping</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of diameterBreakdown">
+                    <td>{{ item.dn || 'Unsized' }}</td>
+                    <td>{{ item.diameter_m ? (item.diameter_m | number:'1.3-3') + ' m' : '-' }}</td>
+                    <td>{{ item.segment_count }}</td>
+                    <td>{{ item.length_m | number:'1.0-0' }} m</td>
+                    <td>{{ item.construction_cost | currency:'USD':'symbol':'1.0-0' }}</td>
+                    <td>{{ item.pumping_lifecycle_cost | currency:'USD':'symbol':'1.0-0' }}</td>
+                    <td>{{ item.total_cost | currency:'USD':'symbol':'1.0-0' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section>
+            <h6>Segment Costing</h6>
+            <div class="table-wrap segment-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Segment</th>
+                    <th>Basis</th>
+                    <th>Length</th>
+                    <th>DN</th>
+                    <th>Cost / m</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let segment of segmentBreakdown">
+                    <td>{{ segment.edge_name || ('Edge ' + segment.edge_id) }}</td>
+                    <td>{{ segment.is_shared ? ('Shared x' + segment.overlap_count) : (segment.route_id ? 'Route' : 'Edge') }}</td>
+                    <td>{{ segment.length_m | number:'1.0-0' }} m</td>
+                    <td>{{ segment.dn || 'Unsized' }}</td>
+                    <td>{{ segment.unit_cost_per_m | currency:'USD':'symbol':'1.0-0' }}</td>
+                    <td>{{ segment.total_cost | currency:'USD':'symbol':'1.0-0' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyState>
+        <div class="empty-state">Select a network to calculate costs</div>
+      </ng-template>
+    </nb-card-body>
+  </nb-card>
+
+  <nb-card *ngIf="constants">
+    <nb-card-header>
+      <div class="toolbar constants-toolbar">
+        <span>Network Constants</span>
+        <button nbButton size="small" status="success" (click)="saveConstants()" [disabled]="isSavingConstants">
+          <nb-icon icon="save-outline"></nb-icon>
+          Save
+        </button>
+      </div>
+    </nb-card-header>
+    <nb-card-body>
+      <div class="constants-grid">
+        <label>Density <input nbInput type="number" [(ngModel)]="constants.rho"></label>
+        <label>Specific Heat <input nbInput type="number" [(ngModel)]="constants.cp"></label>
+        <label>Viscosity <input nbInput type="number" [(ngModel)]="constants.mu"></label>
+        <label>Max Velocity <input nbInput type="number" [(ngModel)]="constants.max_velocity"></label>
+        <label>Min Velocity <input nbInput type="number" [(ngModel)]="constants.min_velocity"></label>
+        <label>Target Pressure Drop <input nbInput type="number" [(ngModel)]="constants.target_pressure_drop"></label>
+        <label>Electricity Cost <input nbInput type="number" [(ngModel)]="constants.electricity_cost"></label>
+        <label>Pump Efficiency <input nbInput type="number" [(ngModel)]="constants.pump_efficiency"></label>
+        <label>Lifespan <input nbInput type="number" [(ngModel)]="constants.lifespan_years"></label>
+        <label>Hours / Year <input nbInput type="number" [(ngModel)]="constants.hours_per_year"></label>
+      </div>
+
+      <div class="pipe-catalog-header">
+        <h6>Standard Pipe Catalog</h6>
+        <button nbButton ghost size="small" status="primary" (click)="addPipe()">
+          <nb-icon icon="plus-outline"></nb-icon>
+          Add Pipe
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>DN</th>
+              <th>Internal Diameter</th>
+              <th>Cost / m</th>
+              <th>Roughness</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let pipe of constants.pipe_catalog; let i = index">
+              <td><input nbInput type="number" [(ngModel)]="pipe.dn"></td>
+              <td><input nbInput type="number" [(ngModel)]="pipe.di"></td>
+              <td><input nbInput type="number" [(ngModel)]="pipe.cost"></td>
+              <td><input nbInput type="number" [(ngModel)]="pipe.roughness"></td>
+              <td>
+                <button nbButton ghost status="danger" size="small" (click)="removePipe(i)">
+                  <nb-icon icon="trash-2-outline"></nb-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </nb-card-body>
+  </nb-card>
+</div>

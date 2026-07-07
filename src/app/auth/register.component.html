@@ -1,0 +1,33 @@
+<nb-card class="auth-card" [nbSpinner]="loading" nbSpinnerStatus="primary">
+  <nb-card-header>
+    <h1>Create account</h1>
+    <p>Your projects and assets will be private to your project memberships.</p>
+  </nb-card-header>
+  <nb-card-body>
+    <nb-alert *ngIf="error" status="danger">{{ error }}</nb-alert>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+      <div class="two-col">
+        <label>
+          <span>First name</span>
+          <input nbInput fullWidth formControlName="first_name" autocomplete="given-name">
+        </label>
+        <label>
+          <span>Last name</span>
+          <input nbInput fullWidth formControlName="last_name" autocomplete="family-name">
+        </label>
+      </div>
+      <label>
+        <span>Email</span>
+        <input nbInput fullWidth formControlName="email" autocomplete="email">
+      </label>
+      <label>
+        <span>Password</span>
+        <input nbInput fullWidth type="password" formControlName="password" autocomplete="new-password">
+      </label>
+      <button nbButton status="primary" fullWidth type="button" (click)="submit()" [disabled]="form.invalid || loading">Create account</button>
+    </form>
+  </nb-card-body>
+  <nb-card-footer>
+    <a routerLink="/auth/login">I already have an account</a>
+  </nb-card-footer>
+</nb-card>

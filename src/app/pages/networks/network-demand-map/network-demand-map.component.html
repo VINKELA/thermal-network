@@ -1,0 +1,117 @@
+<div class="demand-map-page">
+  <div class="toolbar">
+    <div>
+      <h1>Network Demand Map</h1>
+      <p>{{ network?.project_name || 'Select a network' }} • route geometry and connected buildings</p>
+    </div>
+
+    <div class="toolbar-actions">
+      <nb-select
+        placeholder="Select network"
+        size="small"
+        [selected]="selectedNetworkId"
+        (selectedChange)="onNetworkChange($event)">
+        <nb-option *ngFor="let item of networks" [value]="item.id">
+          {{ item.name }}
+        </nb-option>
+      </nb-select>
+
+      <nb-toggle
+        class="node-toggle"
+        status="primary"
+        [checked]="showRouteNodes"
+        (checkedChange)="onRouteNodeVisibilityChange($event)">
+        Nodes
+      </nb-toggle>
+
+      <button nbButton size="small" status="primary" outline (click)="toggleMapFullscreen($event)">
+        <nb-icon [icon]="isMapFullscreen ? 'collapse-outline' : 'expand-outline'"></nb-icon>
+        {{ isMapFullscreen ? 'Exit' : 'Expand' }}
+      </button>
+
+      <button
+        nbButton
+        size="small"
+        status="success"
+        (click)="exportDemandDiagram('png')"
+        [disabled]="isExporting || isLoading || !nodes.length">
+        <nb-icon icon="download-outline"></nb-icon>
+        Export 4K PNG
+      </button>
+
+      <button
+        nbButton
+        size="small"
+        status="info"
+        outline
+        (click)="exportDemandDiagram('svg')"
+        [disabled]="isExporting || isLoading || !nodes.length">
+        <nb-icon icon="file-text-outline"></nb-icon>
+        Export SVG
+      </button>
+    </div>
+  </div>
+
+  <div class="map-frame" #mapFrame [nbSpinner]="isLoading" nbSpinnerStatus="primary">
+    <google-map
+      height="100%"
+      width="100%"
+      [center]="center"
+      [zoom]="zoom"
+      (mapInitialized)="onMapInitialized()"
+      [options]="mapOptions">
+
+      <map-marker
+        *ngFor="let node of visibleMarkerNodes; trackBy: trackByNodeId"
+        [position]="node.position"
+        [options]="node.markerOptions"
+        (mapClick)="openNodeInfo(markerRef, node)"
+        #markerRef="mapMarker">
+      </map-marker>
+
+      <map-info-window>
+        <div class="node-popup" *ngIf="selectedNode">
+          <strong>{{ selectedNode.name }}</strong>
+          <span>{{ selectedNode.role === 'producer' ? producerLegendLabel : 'Consumer building' }}</span>
+        </div>
+      </map-info-window>
+    </google-map>
+
+    <div class="heat-legend">
+      <div class="legend-header">
+        <strong>Routes</strong>
+      </div>
+
+      <div class="producer-key">
+        <span
+          class="producer-dot"
+          [ngClass]="producerLegendMarkerClass"
+          [ngStyle]="producerLegendIconStyle">
+        </span>
+        <div>
+          <strong>{{ producerLegendLabel }}</strong>
+        </div>
+      </div>
+
+      <div class="building-count-card">
+        <span>Buildings</span>
+        <strong>{{ buildingCount }}</strong>
+      </div>
+
+      <div class="route-key">
+        <span class="producer-route"></span>
+        <div>
+          <strong>Producer route</strong>
+        </div>
+        <span class="consumer-route"></span>
+        <div>
+          <strong>Consumer routes</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-state" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>

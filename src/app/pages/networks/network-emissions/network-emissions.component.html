@@ -1,0 +1,306 @@
+<div class="network-emissions-page">
+  <nb-card>
+    <nb-card-header>
+      <div class="toolbar">
+        <nb-select fullWidth placeholder="Network" [(selected)]="selectedNetworkId" (selectedChange)="onNetworkChange()" [disabled]="isLoadingNetworks">
+          <nb-option *ngFor="let network of networks" [value]="network.id">
+            {{ network.name }}
+          </nb-option>
+        </nb-select>
+
+        <nb-select fullWidth placeholder="Pipe material" [(selected)]="selectedMaterial" (selectedChange)="recalculate()" [disabled]="isBoilerBaseCase || isLoadingSummary">
+          <nb-option *ngFor="let material of materials" [value]="material.value">
+            {{ material.label }}
+          </nb-option>
+        </nb-select>
+
+        <nb-form-field>
+          <nb-icon nbPrefix icon="layers-outline"></nb-icon>
+          <input nbInput type="number" min="0" max="100" [(ngModel)]="componentAllowancePct" placeholder="Allowance %" [disabled]="isBoilerBaseCase || isLoadingSummary">
+        </nb-form-field>
+
+        <button nbButton status="primary" (click)="recalculate()" [disabled]="!selectedNetworkId || isLoadingSummary">
+          <nb-icon icon="refresh-outline"></nb-icon>
+          Recalculate
+        </button>
+
+        <button nbButton status="success" outline (click)="refreshEpd()" [disabled]="!selectedNetworkId || isLoadingSummary">
+          <nb-icon icon="cloud-download-outline"></nb-icon>
+          Refresh EPD
+        </button>
+
+        <button nbButton status="info" outline routerLink="/pages/network-emissions/compare">
+          <nb-icon icon="bar-chart-outline"></nb-icon>
+          Compare
+        </button>
+      </div>
+    </nb-card-header>
+
+    <nb-card-body [nbSpinner]="isLoadingSummary">
+      <ng-container *ngIf="summary; else emptyState">
+        <div class="base-case-banner" *ngIf="isBoilerBaseCase">
+          <nb-icon icon="info-outline"></nb-icon>
+          <span>
+            This network has no edges, so emissions are shown as a local boiler base case:
+            each consumer building is assumed to meet its heat demand with its own boiler.
+          </span>
+        </div>
+
+        <div class="summary-grid" *ngIf="!isBoilerBaseCase; else boilerSummary">
+          <div class="metric highlight">
+            <span>Total GWP</span>
+            <strong>{{ metricValue('metrics.total_emissions_tco2e') | number:'1.1-1' }} t CO2e</strong>
+          </div>
+          <div class="metric">
+            <span>Average Intensity</span>
+            <strong>{{ metricValue('metrics.average_kgco2e_per_m') | number:'1.1-1' }} kg/m</strong>
+          </div>
+          <div class="metric">
+            <span>Pipe Length</span>
+            <strong>{{ metricValue('metrics.total_length_m') | number:'1.0-0' }} m</strong>
+          </div>
+          <div class="metric">
+            <span>Pipe Mass</span>
+            <strong>{{ metricValue('metrics.total_pipe_mass_kg') / 1000 | number:'1.1-1' }} t</strong>
+          </div>
+          <div class="metric">
+            <span>Pipe Material</span>
+            <strong>{{ metricValue('metrics.pipe_material_emissions_kgco2e') / 1000 | number:'1.1-1' }} t</strong>
+          </div>
+          <div class="metric">
+            <span>Component Allowance</span>
+            <strong>{{ metricValue('metrics.component_allowance_emissions_kgco2e') / 1000 | number:'1.1-1' }} t</strong>
+          </div>
+          <div class="metric">
+            <span>Module D</span>
+            <strong>{{ metricValue('metrics.beyond_boundary_module_d_kgco2e') / 1000 | number:'1.1-1' }} t</strong>
+          </div>
+          <div class="metric">
+            <span>EPD Factor</span>
+            <strong>{{ factor.cradle_to_grave_kgco2e_per_kg | number:'1.2-2' }} kg/kg</strong>
+          </div>
+        </div>
+
+        <ng-template #boilerSummary>
+          <div class="summary-grid">
+            <div class="metric highlight">
+              <span>Base Case GWP</span>
+              <strong>{{ metricValue('metrics.total_emissions_tco2e') | number:'1.1-1' }} t CO2e</strong>
+            </div>
+            <div class="metric">
+              <span>Annual Boiler GWP</span>
+              <strong>{{ metricValue('metrics.annual_boiler_emissions_tco2e') | number:'1.1-1' }} t/yr</strong>
+            </div>
+            <div class="metric">
+              <span>Annual Heat Demand</span>
+              <strong>{{ metricValue('metrics.annual_heat_demand_mwh') | number:'1.0-0' }} MWh/yr</strong>
+            </div>
+            <div class="metric">
+              <span>Peak Heat Demand</span>
+              <strong>{{ metricValue('metrics.peak_heat_demand_kw') | number:'1.0-0' }} kW</strong>
+            </div>
+            <div class="metric">
+              <span>Installed Boiler Capacity</span>
+              <strong>{{ metricValue('metrics.installed_boiler_capacity_kw') | number:'1.0-0' }} kW</strong>
+            </div>
+            <div class="metric">
+              <span>Buildings Served</span>
+              <strong>{{ metricValue('metrics.base_case_building_count') | number:'1.0-0' }}</strong>
+            </div>
+            <div class="metric">
+              <span>Boiler Efficiency</span>
+              <strong>{{ metricValue('metrics.boiler_efficiency') * 100 | number:'1.0-0' }}%</strong>
+            </div>
+            <div class="metric">
+              <span>Fuel Factor</span>
+              <strong>{{ metricValue('metrics.boiler_fuel_emission_factor_kgco2e_per_kwh') | number:'1.3-3' }} kg/kWh</strong>
+            </div>
+          </div>
+        </ng-template>
+
+        <div class="basis-strip">
+          <div>
+            <span>Source</span>
+            <strong>
+              {{ isBoilerBaseCase ? summary.emissions_basis.mode_label : (summary.emissions_basis.public_api + ' · ' + summary.emissions_basis.datastock) }}
+            </strong>
+          </div>
+          <div>
+            <span>Dataset</span>
+            <strong>
+              {{ isBoilerBaseCase ? (boilerAssumptions.fuel_type || 'local boiler') : (factor.dataset_name || summary.emissions_basis.material_label) }}
+            </strong>
+          </div>
+          <div>
+            <span>Boundary</span>
+            <strong>{{ summary.emissions_basis.boundary }}</strong>
+          </div>
+          <div>
+            <span>Length Basis</span>
+            <strong>{{ summary.emissions_basis.length_basis }}</strong>
+          </div>
+        </div>
+
+        <div class="visual-grid">
+          <section class="visual-card">
+            <div class="visual-header">
+              <h6>Life-Cycle Stage GWP</h6>
+              <button nbButton ghost size="small" status="primary" (click)="copyChart('lifecycle', 'network-emissions-lifecycle.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy
+              </button>
+            </div>
+            <div
+              echarts
+              [options]="lifecycleOption"
+              (chartInit)="onChartInit('lifecycle', $event)"
+              class="chart">
+            </div>
+          </section>
+
+          <section class="visual-card">
+            <div class="visual-header">
+              <h6>Component Contribution</h6>
+              <button nbButton ghost size="small" status="primary" (click)="copyChart('components', 'network-emissions-components.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy
+              </button>
+            </div>
+            <div
+              echarts
+              [options]="componentOption"
+              (chartInit)="onChartInit('components', $event)"
+              class="chart">
+            </div>
+          </section>
+
+          <section class="visual-card">
+            <div class="visual-header">
+              <h6>{{ isBoilerBaseCase ? 'Local Boiler Demand Drivers' : 'Diameter Emissions Drivers' }}</h6>
+              <button nbButton ghost size="small" status="primary" (click)="copyChart('diameter', 'network-emissions-diameter.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy
+              </button>
+            </div>
+            <div
+              echarts
+              [options]="diameterOption"
+              (chartInit)="onChartInit('diameter', $event)"
+              class="chart">
+            </div>
+          </section>
+
+          <section class="visual-card">
+            <div class="visual-header">
+              <h6>{{ isBoilerBaseCase ? 'Top Local Boiler Emitters' : 'Top Segment Emitters' }}</h6>
+              <button nbButton ghost size="small" status="primary" (click)="copyChart('segments', 'network-emissions-segments.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy
+              </button>
+            </div>
+            <div
+              echarts
+              [options]="segmentOption"
+              (chartInit)="onChartInit('segments', $event)"
+              class="chart">
+            </div>
+          </section>
+        </div>
+
+        <div class="tables">
+          <section>
+            <h6>{{ isBoilerBaseCase ? 'Building Boiler Base Case' : 'Diameter Breakdown' }}</h6>
+            <div class="table-wrap">
+              <table *ngIf="!isBoilerBaseCase; else boilerTable">
+                <thead>
+                  <tr>
+                    <th>DN</th>
+                    <th>Diameter</th>
+                    <th>Segments</th>
+                    <th>Length</th>
+                    <th>Mass</th>
+                    <th>Pipe GWP</th>
+                    <th>Total GWP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of diameterBreakdown">
+                    <td>{{ item.dn || 'Unsized' }}</td>
+                    <td>{{ item.diameter_m ? (item.diameter_m | number:'1.3-3') + ' m' : '-' }}</td>
+                    <td>{{ item.segment_count }}</td>
+                    <td>{{ item.length_m | number:'1.0-0' }} m</td>
+                    <td>{{ item.mass_kg / 1000 | number:'1.1-1' }} t</td>
+                    <td>{{ item.pipe_emissions_kgco2e / 1000 | number:'1.1-1' }} t</td>
+                    <td>{{ item.total_emissions_kgco2e / 1000 | number:'1.1-1' }} t</td>
+                  </tr>
+                </tbody>
+              </table>
+              <ng-template #boilerTable>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Building</th>
+                      <th>Demand Basis</th>
+                      <th>Annual Heat</th>
+                      <th>Peak Heat</th>
+                      <th>Boiler Capacity</th>
+                      <th>Annual Fuel</th>
+                      <th>Annual GWP</th>
+                      <th>Study GWP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of boilerBreakdown">
+                      <td>{{ item.building_name || ('Building ' + item.building_id) }}</td>
+                      <td>{{ item.demand_source }}</td>
+                      <td>{{ item.annual_heat_mwh | number:'1.1-1' }} MWh</td>
+                      <td>{{ item.peak_heat_kw | number:'1.0-0' }} kW</td>
+                      <td>{{ item.installed_boiler_capacity_kw | number:'1.0-0' }} kW</td>
+                      <td>{{ item.annual_fuel_kwh / 1000 | number:'1.1-1' }} MWh</td>
+                      <td>{{ item.annual_emissions_kgco2e / 1000 | number:'1.1-1' }} t/yr</td>
+                      <td>{{ item.total_emissions_kgco2e / 1000 | number:'1.1-1' }} t</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </ng-template>
+            </div>
+          </section>
+
+          <section *ngIf="!isBoilerBaseCase">
+            <h6>Segment Emissions</h6>
+            <div class="table-wrap segment-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Segment</th>
+                    <th>Basis</th>
+                    <th>Length</th>
+                    <th>DN</th>
+                    <th>Mass / m</th>
+                    <th>Factor</th>
+                    <th>Total GWP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let segment of segmentBreakdown">
+                    <td>{{ segment.edge_name || ('Edge ' + segment.edge_id) }}</td>
+                    <td>{{ segment.is_shared ? ('Shared x' + segment.overlap_count) : (segment.route_id ? 'Route' : 'Edge') }}</td>
+                    <td>{{ segment.length_m | number:'1.0-0' }} m</td>
+                    <td>{{ segment.dn || 'Unsized' }}</td>
+                    <td>{{ segment.mass_per_m_kg | number:'1.1-1' }} kg/m</td>
+                    <td>{{ segment.factor_kgco2e_per_kg | number:'1.2-2' }} kg/kg</td>
+                    <td>{{ segment.total_emissions_kgco2e / 1000 | number:'1.1-1' }} t</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyState>
+        <div class="empty-state">Select a network to estimate emissions</div>
+      </ng-template>
+    </nb-card-body>
+  </nb-card>
+</div>

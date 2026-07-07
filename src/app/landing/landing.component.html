@@ -1,0 +1,50 @@
+<main class="landing-shell">
+  <nav class="landing-nav">
+    <a class="brand" routerLink="/">District Heat Network</a>
+    <div class="nav-actions">
+      <a nbButton ghost status="basic" routerLink="/auth/login">Sign in</a>
+      <a nbButton status="primary" routerLink="/auth/register">Create account</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">District heat network planning</p>
+      <h1>Design, compare, and govern project networks in one workspace.</h1>
+      <p class="summary">
+        Build project-scoped heating and waste-heat networks, run techno-economic and carbon analysis,
+        and share access without exposing another project's data.
+      </p>
+      <div class="hero-actions">
+        <a nbButton status="primary" size="large" routerLink="/auth/login">
+          <nb-icon icon="log-in-outline"></nb-icon>
+          Open workspace
+        </a>
+        <a nbButton outline status="primary" size="large" routerLink="/auth/register">Start new account</a>
+      </div>
+    </div>
+
+    <div class="hero-panel" aria-label="District heat network preview">
+      <div class="map-band"></div>
+      <div class="network-lines">
+        <span class="producer"></span>
+        <span class="node n1"></span>
+        <span class="node n2"></span>
+        <span class="node n3"></span>
+        <span class="line l1"></span>
+        <span class="line l2"></span>
+        <span class="line l3"></span>
+      </div>
+      <div class="metric-row">
+        <div>
+          <strong>Project Access</strong>
+          <span>Owner, editor, viewer</span>
+        </div>
+        <div>
+          <strong>Private Scope</strong>
+          <span>Assets filtered by project</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
