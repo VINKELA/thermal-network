@@ -73,11 +73,9 @@ export class PipeSizesComponent implements OnInit {
           type: 'list',
           config: {
             list: [
-              { value: 'peak_sizing', title: 'Peak Sizing' },
-              { value: 'diversity', title: 'Diversity' },
-              { value: 'pressure_optimized', title: 'Pressure Optimized' },
-              { value: 'lifecycle_cost', title: 'Lifecycle Cost' },
-              { value: 'return_temp_opt', title: 'Return Temperature Optimized' },
+              { value: 'velocity_limited', title: 'Velocity Limited' },
+              { value: 'pressure_gradient', title: 'Velocity + Pressure Gradient' },
+              { value: 'lifecycle_cost', title: 'Lifecycle Economic' },
             ],
           },
         },
@@ -246,7 +244,7 @@ export class PipeSizesComponent implements OnInit {
         edge_connection_algorithm_id: sourceType === 'route' ? null : connectionId,
         edge_translation_id: sourceType === 'route' ? routeTracingId : null,
         name_prefix: event.newData.name || 'Pipe Sizing',
-        method: event.newData.method || 'peak_sizing',
+        method: event.newData.method || 'velocity_limited',
       };
 
       this.http.post(`${environment.appUrl}/${this.url}`, payload).subscribe({

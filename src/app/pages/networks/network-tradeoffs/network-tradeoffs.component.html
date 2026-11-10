@@ -1,0 +1,236 @@
+<div class="tradeoffs-page">
+  <nb-card class="selector-card" [nbSpinner]="isLoading">
+    <nb-card-header>
+      <div>
+        <span class="eyebrow">Thermal network design</span>
+        <h5>Network Tradeoffs</h5>
+        <p>Cost, carbon, utilization, routing, diversity, and hydraulic operating choices for the selected network.</p>
+      </div>
+    </nb-card-header>
+    <nb-card-body>
+      <section class="selector-grid">
+        <label>
+          <span>Network</span>
+          <nb-select fullWidth [selected]="selectedNetworkId" (selectedChange)="onNetworkChange($event)">
+            <nb-option *ngFor="let network of networks" [value]="network.id">
+              {{ network.name }}
+            </nb-option>
+          </nb-select>
+        </label>
+
+        <label>
+          <span>Pipe sizing run</span>
+          <nb-select fullWidth [selected]="selectedPipeSizingId" (selectedChange)="onRunChange($event)">
+            <nb-option *ngFor="let run of filteredRuns" [value]="run.id">
+              {{ run.name }} · {{ run.topology_source_name || run.network_name || 'Network' }}
+            </nb-option>
+          </nb-select>
+        </label>
+
+        <label>
+          <span>Profile year</span>
+          <input nbInput type="number" min="2000" max="2100" [(ngModel)]="selectedYear" (change)="onYearChange()">
+        </label>
+      </section>
+
+      <nb-alert *ngIf="error" status="danger" outline="danger">{{ error }}</nb-alert>
+    </nb-card-body>
+  </nb-card>
+
+  <section class="kpi-grid">
+    <article>
+      <span>Annual served demand</span>
+      <strong>{{ formatNumber(annualHeatMwh, 1) }} MWh</strong>
+      <small>{{ formatNumber(coincidentPeakKw, 0) }} kW coincident peak</small>
+    </article>
+    <article>
+      <span>Diversity factor</span>
+      <strong>{{ formatNumber(diversityFactor, 2) }}</strong>
+      <small>{{ formatNumber(peakCoincidenceSavingKw, 0) }} kW avoided peak</small>
+    </article>
+    <article>
+      <span>Waste heat match</span>
+      <strong>{{ formatNumber(utilizationMatchPct, 0) }}%</strong>
+      <small>{{ formatNumber(backupHeatMwh, 1) }} MWh backup heat</small>
+    </article>
+    <article>
+      <span>Route overlap removed</span>
+      <strong>{{ formatNumber(routeOverlapSavedM / 1000, 2) }} km</strong>
+      <small>{{ formatNumber(routeOverlapRatio * 100, 0) }}% of individual routes</small>
+    </article>
+  </section>
+
+  <section class="insight-card">
+    <div>
+      <span class="eyebrow">Best delta T in this run</span>
+      <h2>{{ bestDeltaT ? (formatNumber(bestDeltaT.deltaT, 0) + ' C') : 'No pipe sizing data' }}</h2>
+      <p *ngIf="bestDeltaT">
+        Lifecycle {{ formatCurrency(bestDeltaT.lifecycleCost) }},
+        pump power {{ formatNumber(bestDeltaT.pumpKw, 2) }} kW,
+        average DN{{ formatNumber(bestDeltaT.averageDn, 0) }}.
+      </p>
+    </div>
+    <div>
+      <span class="eyebrow">Selected network value</span>
+      <h2>{{ selectedPoint ? formatNumber(selectedPoint.annualHeatMwh / ((selectedPoint.lengthM || 1) / 1000), 1) : '--' }} MWh/km</h2>
+      <p *ngIf="selectedPoint">
+        {{ formatCurrency(selectedPoint.lifecycleCost) }} lifecycle cost,
+        {{ formatNumber(selectedPoint.emissionsKg / 1000, 1) }} tCO2e embodied emissions.
+      </p>
+    </div>
+  </section>
+
+  <section class="charts-grid">
+    <article class="chart-card wide">
+      <header>
+        <div>
+          <span class="eyebrow">Delta T vs flow</span>
+          <h2>Flow Rate vs Temperature Difference</h2>
+        </div>
+        <button type="button" class="copy-button" (click)="copyChart('delta-t', 'flow-rate-vs-temperature-difference.png')">
+          <nb-icon icon="copy-outline"></nb-icon>
+          Copy
+        </button>
+      </header>
+      <div class="chart" echarts [options]="deltaTOption" (chartInit)="onChartInit('delta-t', $event)"></div>
+    </article>
+
+    <article class="chart-card pair-card" *ngFor="let pair of pairTradeoffCharts">
+      <header>
+        <div>
+          <span class="eyebrow">{{ pair.eyebrow }}</span>
+          <h2>{{ pair.title }}</h2>
+        </div>
+        <button type="button" class="copy-button" (click)="copyChart(pair.key, pair.filename)">
+          <nb-icon icon="copy-outline"></nb-icon>
+          Copy
+        </button>
+      </header>
+      <div class="chart pair-chart" echarts [options]="pair.option" (chartInit)="onChartInit(pair.key, $event)"></div>
+    </article>
+
+    <article class="chart-card">
+      <header>
+        <div>
+          <span class="eyebrow">Waste heat utilization</span>
+          <h2>Used Heat, Spillage, and Backup Need</h2>
+        </div>
+        <button type="button" class="copy-button" (click)="copyChart('utilization', 'waste-heat-utilization-backup.png')">
+          <nb-icon icon="copy-outline"></nb-icon>
+          Copy
+        </button>
+      </header>
+      <div class="chart" echarts [options]="utilizationOption" (chartInit)="onChartInit('utilization', $event)"></div>
+    </article>
+
+    <article class="chart-card">
+      <header>
+        <div>
+          <span class="eyebrow">Peak diversity</span>
+          <h2>Individual Peaks vs Coincident Peak</h2>
+        </div>
+        <button type="button" class="copy-button" (click)="copyChart('diversity', 'network-peak-diversity.png')">
+          <nb-icon icon="copy-outline"></nb-icon>
+          Copy
+        </button>
+      </header>
+      <div class="chart" echarts [options]="diversityOption" (chartInit)="onChartInit('diversity', $event)"></div>
+    </article>
+
+    <article class="chart-card">
+      <header>
+        <div>
+          <span class="eyebrow">Length vs value</span>
+          <h2>Demand Served per Network Length</h2>
+        </div>
+        <button type="button" class="copy-button" (click)="copyChart('length-benefit', 'network-length-demand-benefit.png')">
+          <nb-icon icon="copy-outline"></nb-icon>
+          Copy
+        </button>
+      </header>
+      <div class="chart" echarts [options]="lengthBenefitOption" (chartInit)="onChartInit('length-benefit', $event)"></div>
+    </article>
+
+    <article class="chart-card">
+      <header>
+        <div>
+          <span class="eyebrow">Carbon vs cost</span>
+          <h2>Lifecycle Cost and Embodied Carbon</h2>
+        </div>
+        <button type="button" class="copy-button" (click)="copyChart('carbon-cost', 'network-carbon-cost-tradeoff.png')">
+          <nb-icon icon="copy-outline"></nb-icon>
+          Copy
+        </button>
+      </header>
+      <div class="chart" echarts [options]="carbonCostOption" (chartInit)="onChartInit('carbon-cost', $event)"></div>
+    </article>
+
+    <article class="chart-card">
+      <header>
+        <div>
+          <span class="eyebrow">Route overlap</span>
+          <h2>Individual Routes vs Constructed Pipe</h2>
+        </div>
+        <button type="button" class="copy-button" (click)="copyChart('overlap', 'route-overlap-constructed-length.png')">
+          <nb-icon icon="copy-outline"></nb-icon>
+          Copy
+        </button>
+      </header>
+      <div class="chart" echarts [options]="overlapOption" (chartInit)="onChartInit('overlap', $event)"></div>
+    </article>
+
+    <article class="chart-card">
+      <header>
+        <div>
+          <span class="eyebrow">Network evolution</span>
+          <h2>Density, Unit Cost, and Route Sharing</h2>
+        </div>
+        <button type="button" class="copy-button" (click)="copyChart('evolution', 'network-evolution-tradeoffs.png')">
+          <nb-icon icon="copy-outline"></nb-icon>
+          Copy
+        </button>
+      </header>
+      <div class="chart" echarts [options]="evolutionOption" (chartInit)="onChartInit('evolution', $event)"></div>
+    </article>
+  </section>
+
+  <section class="table-card" [nbSpinner]="isComparing">
+    <header>
+      <div>
+        <span class="eyebrow">Related networks</span>
+        <h2>Tradeoff Summary</h2>
+      </div>
+      <strong>{{ comparisonPoints.length }} networks</strong>
+    </header>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Network</th>
+            <th>Stage</th>
+            <th>Length</th>
+            <th>Demand</th>
+            <th>Demand Density</th>
+            <th>Lifecycle Cost</th>
+            <th>Cost / Annual MWh</th>
+            <th>Embodied Carbon</th>
+            <th>Overlap</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of comparisonPoints" [class.selected-row]="row.id === selectedNetworkId">
+            <td><strong>{{ row.name }}</strong></td>
+            <td>{{ row.stage || 'base' }}</td>
+            <td>{{ formatNumber(row.lengthM / 1000, 2) }} km</td>
+            <td>{{ formatNumber(row.annualHeatMwh, 1) }} MWh</td>
+            <td>{{ formatNumber(row.lengthM ? row.annualHeatMwh / (row.lengthM / 1000) : 0, 1) }} MWh/km</td>
+            <td>{{ formatCurrency(row.lifecycleCost) }}</td>
+            <td>{{ formatCurrency(row.annualHeatMwh ? row.lifecycleCost / row.annualHeatMwh : 0) }}</td>
+            <td>{{ formatNumber(row.emissionsKg / 1000, 1) }} tCO2e</td>
+            <td>{{ formatNumber(row.overlapRatio * 100, 0) }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

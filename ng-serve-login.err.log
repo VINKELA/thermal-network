@@ -1,0 +1,105 @@
+One or more browsers which are configured in the project's Browserslist configuration will be ignored as ES5 output is not supported by the Angular CLI.
+Ignored browsers: ie 11, kaios 2.5, op_mini all
+- Generating browser application bundles (phase: setup)...
+√ Browser application bundle generation complete.
+
+Warning: C:\Users\orjik\source\Research\thermal-network\node_modules\@nebular\eva-icons\fesm2020\nebular-eva-icons.mjs depends on 'eva-icons'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+
+√ Browser application bundle generation complete.
+
+Warning: C:\Users\orjik\source\Research\thermal-network\node_modules\@asymmetrik\ngx-leaflet\__ivy_ngcc__\dist\leaflet\core\leaflet.directive.js depends on 'leaflet'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:652:31 - error TS2339: Property 'scenariosByDiameter' does not exist on type 'PipeSectionSensitivityComponent'.
+
+652     const diameterRows = this.scenariosByDiameter();
+                                  ~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:655:59 - error TS2339: Property 'diameterScenarioLabel' does not exist on type 'PipeSectionSensitivityComponent'.
+
+655     const diameterLabels = diameterRows.map((row) => this.diameterScenarioLabel(row));
+                                                              ~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:657:43 - error TS2339: Property 'diameterScenarioLabel' does not exist on type 'PipeSectionSensitivityComponent'.
+
+657     const economicLabel = economic ? this.diameterScenarioLabel(economic) : '';
+                                              ~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:652:31 - error TS2339: Property 'scenariosByDiameter' does not exist on type 'PipeSectionSensitivityComponent'.
+
+652     const diameterRows = this.scenariosByDiameter();
+                                  ~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:655:59 - error TS2339: Property 'diameterScenarioLabel' does not exist on type 'PipeSectionSensitivityComponent'.
+
+655     const diameterLabels = diameterRows.map((row) => this.diameterScenarioLabel(row));
+                                                              ~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:657:43 - error TS2339: Property 'diameterScenarioLabel' does not exist on type 'PipeSectionSensitivityComponent'.
+
+657     const economicLabel = economic ? this.diameterScenarioLabel(economic) : '';
+                                              ~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-tradeoffs/network-tradeoffs.component.ts:519:36 - error TS2339: Property 'buildDeltaTPairCharts' does not exist on type 'NetworkTradeoffsComponent'.
+
+519     this.pairTradeoffCharts = this.buildDeltaTPairCharts();
+                                       ~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-tradeoffs/network-tradeoffs.component.ts:519:36 - error TS2339: Property 'buildDeltaTPairCharts' does not exist on type 'NetworkTradeoffsComponent'.
+
+519     this.pairTradeoffCharts = this.buildDeltaTPairCharts();
+                                       ~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.

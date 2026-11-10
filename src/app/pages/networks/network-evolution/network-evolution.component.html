@@ -79,7 +79,45 @@
       <span>Service Length</span>
       <strong>{{ preview.summary?.added_service_length_m || 0 | number:'1.0-0' }} m</strong>
     </div>
+    <div class="summary-item">
+      <span>Average Score</span>
+      <strong>{{ preview.score_summary?.average_score || 0 | number:'1.0-1' }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Average Heat Density</span>
+      <strong>{{ preview.score_summary?.average_linear_heat_density_mwh_per_m_year || 0 | number:'1.2-2' }} MWh/m/y</strong>
+    </div>
   </div>
+
+  <nb-card class="score-card" *ngIf="preview?.score_summary">
+    <nb-card-header>
+      <h3>Pre-Optimization Candidate Score</h3>
+    </nb-card-header>
+    <nb-card-body>
+      <div class="score-overview">
+        <div>
+          <span>Top candidate</span>
+          <strong>{{ preview.score_summary?.top_candidate?.building_name || ('Building ' + preview.score_summary?.top_candidate?.building_id) }}</strong>
+          <small>{{ preview.score_summary?.top_candidate?.score || 0 | number:'1.0-1' }} score</small>
+        </div>
+        <div>
+          <span>Available heat surplus</span>
+          <strong>{{ preview.score_summary?.assumptions?.available_heat_surplus_kw || 0 | number:'1.0-0' }} kW</strong>
+          <small>{{ preview.score_summary?.assumptions?.has_heat_inventory ? 'From selected network source/load data' : 'Neutral score because source data is incomplete' }}</small>
+        </div>
+        <div>
+          <span>Service cost basis</span>
+          <strong>{{ preview.score_summary?.assumptions?.pipe_cost_per_m || 0 | currency:'CAD':'symbol':'1.0-0' }}/m</strong>
+          <small>{{ preview.score_summary?.assumptions?.annual_full_load_hours || 0 | number:'1.0-0' }} full-load hours/year</small>
+        </div>
+      </div>
+      <div class="weight-strip">
+        <span *ngFor="let item of preview.score_summary?.weights | keyvalue">
+          {{ scoreWeightLabel(item.key) }} {{ (item.value * 100) | number:'1.0-0' }}%
+        </span>
+      </div>
+    </nb-card-body>
+  </nb-card>
 
   <nb-card class="map-card" *ngIf="preview">
     <nb-card-body>
@@ -103,8 +141,10 @@
         <map-info-window>
           <div class="candidate-popup" *ngIf="selectedCandidate">
             <h4>{{ selectedCandidate.building?.name || ('Building ' + selectedCandidate.building?.id) }}</h4>
-            <p>{{ selectedCandidate.status | titlecase }} · {{ selectedCandidate.distance_to_route_m | number:'1.0-1' }} m from route</p>
+            <p>{{ selectedCandidate.status | titlecase }} · Score {{ selectedCandidate.suitability_score || 0 | number:'1.0-1' }} · {{ selectedCandidate.distance_to_route_m | number:'1.0-1' }} m from route</p>
             <p>Heat demand: {{ selectedCandidate.building?.heating_demand || 0 | number:'1.0-0' }} kW</p>
+            <p>Heat density: {{ selectedCandidate.linear_heat_density_mwh_per_m_year || 0 | number:'1.2-2' }} MWh/m/y</p>
+            <p>Service cost: {{ selectedCandidate.estimated_connection_cost_cad || 0 | currency:'CAD':'symbol':'1.0-0' }}</p>
             <p *ngIf="selectedCandidate.building?.tag">Tag: {{ selectedCandidate.building.tag }}</p>
           </div>
         </map-info-window>
@@ -120,18 +160,32 @@
       <div class="candidate-table">
         <div class="candidate-row header">
           <span>Status</span>
+          <span>Rank</span>
+          <span>Score</span>
           <span>Building</span>
           <span>Tag</span>
           <span>Heat</span>
+          <span>Heat Density</span>
           <span>Distance</span>
+          <span>Service Cost</span>
           <span>Route</span>
         </div>
         <div class="candidate-row" *ngFor="let candidate of candidates" [class.rejected]="!candidate.accepted">
           <span class="status-pill" [class.accepted]="candidate.accepted">{{ candidate.status }}</span>
+          <span>#{{ candidate.suitability_rank }}</span>
+          <span class="score-cell">
+            <strong>{{ candidate.suitability_score || 0 | number:'1.0-1' }}</strong>
+            <small>{{ candidate.suitability_label }}</small>
+            <span class="score-track">
+              <span [style.width.%]="candidate.suitability_score || 0"></span>
+            </span>
+          </span>
           <strong>{{ candidate.building?.name || ('Building ' + candidate.building?.id) }}</strong>
           <span>{{ candidate.building?.tag || '-' }}</span>
           <span>{{ candidate.building?.heating_demand || 0 | number:'1.0-0' }} kW</span>
+          <span>{{ candidate.linear_heat_density_mwh_per_m_year || 0 | number:'1.2-2' }} MWh/m/y</span>
           <span>{{ candidate.distance_to_route_m | number:'1.0-1' }} m</span>
+          <span>{{ candidate.estimated_connection_cost_cad || 0 | currency:'CAD':'symbol':'1.0-0' }}</span>
           <span>#{{ candidate.source_route_id }}</span>
         </div>
       </div>

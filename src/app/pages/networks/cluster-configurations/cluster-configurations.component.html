@@ -1,15 +1,149 @@
-<nb-card>
-   <nb-card-header class="d-flex justify-content-between align-items-center">
-    <h3>Edges</h3>
-    
-    <div class="header-actions">
-      <button nbButton size="small" status="info" (click)="goToComparison()">
-        <nb-icon icon="bar-chart-2-outline"></nb-icon> Compare Edges
-      </button>
+<section class="cluster-config-page">
+  <nb-card class="create-card" [nbSpinner]="isLoading" nbSpinnerStatus="primary">
+    <nb-card-header>
+      <div>
+        <h3>Cluster Configurations</h3>
+        <p>Create and manage standard and complementary cluster configurations.</p>
+      </div>
+
+      <div class="header-actions">
+        <button nbButton size="small" status="basic" outline (click)="loadWorkspace()" [disabled]="!selectedProjectId || isLoading">
+          <nb-icon icon="refresh-outline"></nb-icon>
+          Refresh
+        </button>
+        <button nbButton size="small" status="info" (click)="goToComparison()">
+          <nb-icon icon="bar-chart-2-outline"></nb-icon>
+          Compare
+        </button>
+      </div>
+    </nb-card-header>
+
+    <nb-card-body>
+      <div class="project-row">
+        <label class="field">
+          <span>Project</span>
+          <nb-select fullWidth placeholder="Select project" [(selected)]="selectedProjectId" (selectedChange)="onProjectChange($event)">
+            <nb-option *ngFor="let project of projects; trackBy: trackById" [value]="project.id">
+              {{ project.name }}
+            </nb-option>
+          </nb-select>
+        </label>
+      </div>
+
+      <div class="complementary-panel">
+        <div class="panel-title">
+          <h4>Create Complementary Configuration</h4>
+          <span>{{ complementaryConfigurations.length }} complementary configuration{{ complementaryConfigurations.length === 1 ? '' : 's' }}</span>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Base network</span>
+            <nb-select fullWidth placeholder="Select network" [(selected)]="complementaryForm.networkId">
+              <nb-option *ngFor="let network of networks; trackBy: trackById" [value]="network.id">
+                {{ network.name }} · {{ network.route_count || 0 }} routes
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <label class="field">
+            <span>Grouping radius (km)</span>
+            <input nbInput fullWidth type="number" min="0.05" step="0.05" [(ngModel)]="complementaryForm.maxRadiusKm">
+          </label>
+
+          <label class="field">
+            <span>Source configuration optional</span>
+            <nb-select fullWidth placeholder="Cluster all unconnected buildings" [(selected)]="complementaryForm.sourceConfigurationId">
+              <nb-option [value]="null">None - cluster all unconnected buildings</nb-option>
+              <nb-option *ngFor="let config of standardConfigurations; trackBy: trackById" [value]="config.id">
+                {{ config.name || ('Configuration ' + config.id) }} · {{ config.cluster_count || 0 }} clusters
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <label class="field">
+            <span>Output name</span>
+            <input nbInput fullWidth placeholder="Optional" [(ngModel)]="complementaryForm.name">
+          </label>
+
+          <div class="create-action">
+            <button
+              nbButton
+              status="success"
+              (click)="createComplementaryConfiguration()"
+              [disabled]="!complementaryForm.networkId || isCreatingComplementary">
+              <nb-icon icon="copy-outline"></nb-icon>
+              Create complementary
+            </button>
+          </div>
+        </div>
+
+        <nb-alert *ngIf="selectedProjectId && networks.length === 0" status="warning" outline="basic">
+          Create or select a network first.
+        </nb-alert>
+      </div>
+
+      <nb-alert *ngIf="errorMessage" status="danger" outline="basic">
+        {{ errorMessage }}
+      </nb-alert>
+    </nb-card-body>
+  </nb-card>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <span>Standard</span>
+      <strong>{{ standardConfigurations.length }}</strong>
     </div>
-  </nb-card-header>
-  <nb-card-body>
-    <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)" (editConfirm)="onEditConfirm($event)" (createConfirm)="onCreateConfirm($event)">>
-    </ng2-smart-table>
-  </nb-card-body>
-</nb-card>
+    <div class="summary-card">
+      <span>Complementary</span>
+      <strong>{{ complementaryConfigurations.length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Networks</span>
+      <strong>{{ networks.length }}</strong>
+    </div>
+  </div>
+
+  <nb-card *ngIf="complementaryConfigurations.length">
+    <nb-card-header>
+      <h4>Complementary Configurations</h4>
+    </nb-card-header>
+    <nb-card-body>
+      <div class="complementary-list">
+        <button
+          type="button"
+          class="config-row"
+          *ngFor="let config of complementaryConfigurations; trackBy: trackById"
+          (click)="openConfiguration(config)">
+          <div>
+            <strong>{{ config.name || ('Configuration ' + config.id) }}</strong>
+            <span>{{ config.cluster_count || 0 }} clusters · {{ config.total_buildings || 0 }} buildings</span>
+          </div>
+          <div>
+            <span>Base network</span>
+            <strong>{{ config.base_network_name || '-' }}</strong>
+          </div>
+          <div>
+            <span>Source</span>
+            <strong>{{ config.source_cluster_configuration_name || '-' }}</strong>
+          </div>
+        </button>
+      </div>
+    </nb-card-body>
+  </nb-card>
+
+  <nb-card>
+    <nb-card-header>
+      <h4>All Configurations</h4>
+    </nb-card-header>
+    <nb-card-body>
+      <ng2-smart-table
+        [settings]="settings"
+        [source]="source"
+        (deleteConfirm)="onDeleteConfirm($event)"
+        (editConfirm)="onEditConfirm($event)"
+        (createConfirm)="onCreateConfirm($event)">
+      </ng2-smart-table>
+    </nb-card-body>
+  </nb-card>
+</section>

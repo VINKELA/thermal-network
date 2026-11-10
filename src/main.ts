@@ -11,6 +11,17 @@ import { environment } from './environments/environment';
 
 if (environment.production) {
   enableProdMode();
+} else if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations()
+    .then(registrations => registrations.forEach(registration => registration.unregister()))
+    .catch(err => console.warn('Unable to unregister development service worker', err));
+  if ('caches' in window) {
+    caches.keys()
+      .then(keys => keys
+        .filter(key => key.includes('ngsw'))
+        .forEach(key => caches.delete(key)))
+      .catch(err => console.warn('Unable to clear development service worker cache', err));
+  }
 }
 
 platformBrowserDynamic().bootstrapModule(AppModule)

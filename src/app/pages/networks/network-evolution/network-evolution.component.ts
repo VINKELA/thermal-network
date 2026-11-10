@@ -288,6 +288,10 @@ export class NetworkEvolutionComponent implements OnInit, OnDestroy {
     };
   }
 
+  scoreWeightLabel(key: string): string {
+    return String(key || '').replace(/_/g, ' ');
+  }
+
   private routeLineOptions(route: any): google.maps.PolylineOptions {
     const isSupply = route.route_type === 'supply';
     const isService = route.route_type === 'service';

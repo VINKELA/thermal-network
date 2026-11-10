@@ -1,0 +1,1205 @@
+<div class="phasing-page">
+  <nb-card class="control-card">
+    <nb-card-header>
+      <div>
+        <h3>Network Phasing</h3>
+        <p>Plan when future buildings or clusters should connect to an existing routed network.</p>
+      </div>
+    </nb-card-header>
+    <nb-card-body>
+      <div class="control-grid">
+        <label>
+          <span>Starting network</span>
+          <nb-select fullWidth placeholder="Select network" [(selected)]="selectedNetworkId" (selectedChange)="onNetworkChange($event)">
+            <nb-option *ngFor="let network of networks" [value]="network.id">
+              {{ network.name }} · {{ network.derivation_stage || 'network' }} · {{ network.route_count || 0 }} routes
+            </nb-option>
+          </nb-select>
+        </label>
+
+        <label>
+          <span>Study name</span>
+          <input nbInput fullWidth [(ngModel)]="studyName" placeholder="Phasing study name">
+        </label>
+
+        <label>
+          <span>Solver mode</span>
+          <nb-select fullWidth [(selected)]="solverMode" (selectedChange)="clearCurrentResults()">
+            <nb-option *ngFor="let mode of solverModes" [value]="mode.value">{{ mode.label }}</nb-option>
+          </nb-select>
+        </label>
+
+        <label>
+          <span>Scenario decisions</span>
+          <nb-select fullWidth [(selected)]="scenarioDecisionMode" (selectedChange)="clearCurrentResults()">
+            <nb-option *ngFor="let mode of scenarioDecisionModes" [value]="mode.value">{{ mode.label }}</nb-option>
+          </nb-select>
+        </label>
+
+        <label>
+          <span>Planning years</span>
+          <input nbInput fullWidth [(ngModel)]="yearsInput" (ngModelChange)="onYearsInputChange($event)" placeholder="2028, 2030, 2035">
+        </label>
+
+        <label>
+          <span>Max distance to trunk (m)</span>
+          <input nbInput fullWidth type="number" min="1" [(ngModel)]="maxDistanceM">
+        </label>
+
+        <label>
+          <span>Minimum linear heat density</span>
+          <input nbInput fullWidth type="number" step="0.01" min="0" [(ngModel)]="minLinearHeatDensity">
+        </label>
+
+        <label>
+          <span>Available heat (kW)</span>
+          <input nbInput fullWidth type="number" min="0" placeholder="Use network data" [(ngModel)]="availableHeatKw" [disabled]="assumeUnlimitedAvailableHeat">
+        </label>
+
+        <label class="toggle-label">
+          <span>Unlimited heat</span>
+          <nb-toggle [(checked)]="assumeUnlimitedAvailableHeat" (checkedChange)="clearCurrentResults()"></nb-toggle>
+        </label>
+
+        <label>
+          <span>Demand profile year</span>
+          <input nbInput fullWidth type="number" min="2000" max="2100" step="1" placeholder="Use static demand" [(ngModel)]="demandYear" (ngModelChange)="clearCurrentResults()">
+        </label>
+
+        <label>
+          <span>Pipe cost basis ($/m)</span>
+          <input nbInput fullWidth type="number" min="0" placeholder="Use network constants" [(ngModel)]="pipeCostPerM">
+        </label>
+
+        <label>
+          <span>Full-load hours/year</span>
+          <input nbInput fullWidth type="number" min="1" placeholder="Use network constants" [(ngModel)]="annualFullLoadHours">
+        </label>
+
+        <label>
+          <span>Heat value ($/MWh)</span>
+          <input nbInput fullWidth type="number" min="0" [(ngModel)]="heatPriceCadPerMwh">
+        </label>
+
+        <label>
+          <span>Ontario gas basis ($/MWh)</span>
+          <input nbInput fullWidth type="number" min="0" step="0.01" [(ngModel)]="gasPriceCadPerMwh">
+        </label>
+
+        <label class="toggle-label">
+          <span>Create phase networks</span>
+          <nb-toggle [(checked)]="createNetworks"></nb-toggle>
+        </label>
+      </div>
+
+      <div class="phase-panel" *ngIf="phaseControls.length">
+        <div class="section-title">
+          <div>
+            <h4>Phase Limits</h4>
+            <small>Optional gates that control how much each planning year can build.</small>
+          </div>
+        </div>
+        <div class="phase-grid header">
+          <span>Year</span>
+          <span>Available heat (kW)</span>
+          <span>CAPEX budget (CAD)</span>
+          <span>Max new connections</span>
+        </div>
+        <div class="phase-grid" *ngFor="let phase of phaseControls">
+          <strong>{{ phase.year }}</strong>
+          <input
+            nbInput
+            type="number"
+            min="0"
+            placeholder="Use baseline"
+            [(ngModel)]="phase.available_heat_kw"
+            [disabled]="assumeUnlimitedAvailableHeat"
+            (ngModelChange)="onPhaseLimitChange()">
+          <input
+            nbInput
+            type="number"
+            min="0"
+            placeholder="No budget cap"
+            [(ngModel)]="phase.capex_budget_cad"
+            (ngModelChange)="onPhaseLimitChange()">
+          <input
+            nbInput
+            type="number"
+            min="1"
+            step="1"
+            placeholder="No connection cap"
+            [(ngModel)]="phase.max_new_connections"
+            (ngModelChange)="onPhaseLimitChange()">
+        </div>
+      </div>
+
+      <div class="assumption-panel">
+        <div class="section-title">
+          <div>
+            <h4>Engineering and Carbon Assumptions</h4>
+            <small>{{ carbonTaxLabel() }}</small>
+          </div>
+        </div>
+
+        <div class="assumption-grid">
+          <label>
+            <span>Project life (years)</span>
+            <input nbInput fullWidth type="number" min="1" step="1" [(ngModel)]="projectLifespanYears">
+          </label>
+
+          <label>
+            <span>Electricity ($/kWh)</span>
+            <input nbInput fullWidth type="number" min="0" step="0.001" [(ngModel)]="electricityCostCadPerKwh">
+          </label>
+
+          <label>
+            <span>Grid emissions (kg CO2e/kWh)</span>
+            <input nbInput fullWidth type="number" min="0" step="0.001" [(ngModel)]="gridEmissionFactorKgPerKwh">
+          </label>
+
+          <label>
+            <span>Carbon value ($/tCO2e)</span>
+            <input nbInput fullWidth type="number" min="0" step="1" [(ngModel)]="carbonPriceCadPerTonne">
+          </label>
+
+          <label>
+            <span>Base boiler efficiency</span>
+            <input nbInput fullWidth type="number" min="0.01" max="1" step="0.01" [(ngModel)]="baseBoilerEfficiency">
+          </label>
+
+          <label>
+            <span>Gas emissions (kg CO2e/kWh fuel)</span>
+            <input nbInput fullWidth type="number" min="0" step="0.001" [(ngModel)]="gasEmissionFactorKgPerKwh">
+          </label>
+
+          <label>
+            <span>Design Delta T (C)</span>
+            <input nbInput fullWidth type="number" min="1" step="1" [(ngModel)]="designDeltaTC">
+          </label>
+
+          <label>
+            <span>Pressure gradient (Pa/m)</span>
+            <input nbInput fullWidth type="number" min="1" step="5" [(ngModel)]="targetPressureDropPaPerM">
+          </label>
+
+          <label>
+            <span>Pump efficiency</span>
+            <input nbInput fullWidth type="number" min="0.01" max="1" step="0.01" [(ngModel)]="pumpEfficiency">
+          </label>
+
+          <label>
+            <span>Min velocity (m/s)</span>
+            <input nbInput fullWidth type="number" min="0" step="0.1" [(ngModel)]="minVelocityMS">
+          </label>
+
+          <label>
+            <span>Max velocity (m/s)</span>
+            <input nbInput fullWidth type="number" min="0.1" step="0.1" [(ngModel)]="maxVelocityMS">
+          </label>
+        </div>
+
+        <p class="candidate-note">
+          These inputs affect avoided gas-boiler cost, avoided carbon cost, and service-pipe pumping cost used when ranking candidate connections.
+        </p>
+      </div>
+
+      <div class="pipeline-panel">
+        <div class="section-title">
+          <h4>Preparation Pipeline</h4>
+        </div>
+
+        <div class="pipeline-grid">
+          <label class="toggle-label">
+            <span>Prepare before phasing</span>
+            <nb-toggle [(checked)]="preparePipeline"></nb-toggle>
+          </label>
+
+          <label class="toggle-label" *ngIf="preparePipeline">
+            <span>Reuse sized child</span>
+            <nb-toggle [(checked)]="reuseSizedNetwork"></nb-toggle>
+          </label>
+
+          <label *ngIf="preparePipeline">
+            <span>Edge generation</span>
+            <nb-select fullWidth [(selected)]="edgeGenerationMethod">
+              <nb-option *ngFor="let method of edgeGenerationMethods" [value]="method.value">{{ method.label }}</nb-option>
+            </nb-select>
+          </label>
+
+          <label *ngIf="preparePipeline">
+            <span>Edge optimization</span>
+            <nb-select fullWidth [(selected)]="edgeConnectionMethod">
+              <nb-option *ngFor="let method of edgeConnectionMethods" [value]="method.value">{{ method.label }}</nb-option>
+            </nb-select>
+          </label>
+
+          <label *ngIf="preparePipeline">
+            <span>Route tracing</span>
+            <nb-select fullWidth [(selected)]="routeTracingMode">
+              <nb-option *ngFor="let method of routeTracingModes" [value]="method.value">{{ method.label }}</nb-option>
+            </nb-select>
+          </label>
+
+          <label *ngIf="preparePipeline">
+            <span>Pipe sizing</span>
+            <nb-select fullWidth [(selected)]="pipeSizingMethod">
+              <nb-option *ngFor="let method of pipeSizingMethods" [value]="method.value">{{ method.label }}</nb-option>
+            </nb-select>
+          </label>
+
+          <label *ngIf="preparePipeline">
+            <span>Sizing year</span>
+            <input nbInput fullWidth type="number" min="2000" max="2100" step="1" [(ngModel)]="pipeSizingYear">
+          </label>
+
+          <label class="toggle-label" *ngIf="preparePipeline">
+            <span>Complementary clusters</span>
+            <nb-toggle [(checked)]="ensureComplementaryClusters"></nb-toggle>
+          </label>
+
+          <label *ngIf="preparePipeline && ensureComplementaryClusters">
+            <span>Cluster radius (km)</span>
+            <input nbInput fullWidth type="number" min="0.05" step="0.05" [(ngModel)]="complementaryClusterRadiusKm">
+          </label>
+        </div>
+      </div>
+
+      <div class="candidate-panel">
+        <div class="section-title">
+          <h4>Candidate Assets</h4>
+          <small *ngIf="isLoadingCandidates">Loading project assets...</small>
+          <small *ngIf="!isLoadingCandidates">
+            {{ candidateAssetSummary }}
+          </small>
+        </div>
+
+        <nb-radio-group name="candidateMode" [(ngModel)]="candidateMode" class="candidate-mode">
+          <nb-radio value="auto">Auto-discover candidate assets</nb-radio>
+          <nb-radio value="selected">Use selected assets only</nb-radio>
+        </nb-radio-group>
+
+        <div class="candidate-source-row">
+          <label>
+            <span>Candidate source</span>
+            <nb-select fullWidth [selected]="candidateSourceMode" (selectedChange)="onCandidateSourceModeChange($event)">
+              <nb-option *ngFor="let mode of candidateSourceModes" [value]="mode.value">{{ mode.label }}</nb-option>
+            </nb-select>
+          </label>
+        </div>
+
+        <div class="asset-picker-grid" *ngIf="candidateMode === 'auto'">
+          <label *ngIf="usesBuildingCandidates">
+            <span>Building tag filter</span>
+            <input nbInput fullWidth placeholder="Optional tag" [(ngModel)]="tagFilter">
+          </label>
+
+          <label *ngIf="usesClusterCandidates">
+            <span>Complementary clusters</span>
+            <nb-select fullWidth placeholder="None" [(selected)]="selectedComplementaryConfigId" (selectedChange)="onComplementaryConfigChange($event)">
+              <nb-option [value]="null">None</nb-option>
+              <nb-option *ngFor="let config of complementaryConfigurations; trackBy: trackById" [value]="config.id">
+                {{ complementaryConfigLabel(config) }}
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <label *ngIf="usesClusterCandidates && selectedComplementaryConfigId">
+            <span>Specific cluster candidates</span>
+            <nb-select fullWidth multiple placeholder="All clusters in configuration" [(selected)]="selectedClusterIds">
+              <nb-option *ngFor="let cluster of clusters; trackBy: trackById" [value]="cluster.id">
+                {{ cluster.name || ('Cluster ' + cluster.id) }} · {{ clusterMetaLabel(cluster) }}
+              </nb-option>
+            </nb-select>
+          </label>
+        </div>
+
+        <div class="asset-picker-grid" *ngIf="candidateMode === 'selected'">
+          <label *ngIf="usesBuildingCandidates">
+            <span>Buildings</span>
+            <nb-select fullWidth multiple placeholder="Choose buildings" [(selected)]="selectedBuildingIds">
+              <nb-option *ngFor="let building of buildings; trackBy: trackById" [value]="building.id">
+                {{ building.name || ('Building ' + building.id) }} · {{ buildingDemandLabel(building) }} · {{ buildingMetaLabel(building) }}
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <label *ngIf="usesClusterCandidates">
+            <span>Complementary configuration</span>
+            <nb-select fullWidth placeholder="Select configuration" [(selected)]="selectedComplementaryConfigId" (selectedChange)="onComplementaryConfigChange($event)">
+              <nb-option *ngFor="let config of complementaryConfigurations; trackBy: trackById" [value]="config.id">
+                {{ complementaryConfigLabel(config) }}
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <label *ngIf="usesClusterCandidates">
+            <span>Complementary clusters</span>
+            <nb-select fullWidth multiple placeholder="Choose clusters" [(selected)]="selectedClusterIds">
+              <nb-option *ngFor="let cluster of clusters; trackBy: trackById" [value]="cluster.id">
+                {{ cluster.name || ('Cluster ' + cluster.id) }} · {{ clusterMetaLabel(cluster) }}
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <div class="selected-count">
+            <span>Selected</span>
+            <strong>{{ selectedAssetCount }}</strong>
+          </div>
+        </div>
+
+        <p class="candidate-note">
+          Candidate buildings are same-project buildings not already in the base network. Cluster candidates come from complementary configurations for this base network; a full pipeline run can create those clusters automatically when enabled.
+        </p>
+      </div>
+
+      <div class="scenario-panel">
+        <div class="section-title">
+          <div>
+            <h4>Demand and Gas Price Scenarios</h4>
+            <small>{{ gasRateLabel() }}</small>
+          </div>
+          <button nbButton size="small" ghost status="primary" (click)="addScenario()">
+            <nb-icon icon="plus-outline"></nb-icon>
+            Add scenario
+          </button>
+        </div>
+        <div class="scenario-grid header">
+          <span>Name</span>
+          <span>Probability</span>
+          <span>Discount rate</span>
+          <span>Demand multiplier</span>
+          <span>Gas price multiplier</span>
+          <span></span>
+        </div>
+        <div class="scenario-grid" *ngFor="let scenario of scenarios; let i = index">
+          <input nbInput [(ngModel)]="scenario.name">
+          <input nbInput type="number" step="0.01" min="0" [(ngModel)]="scenario.probability">
+          <input nbInput type="number" step="0.001" min="0" [(ngModel)]="scenario.discount_rate">
+          <input nbInput type="number" step="0.01" min="0" [(ngModel)]="scenario.demand_multiplier">
+          <input nbInput type="number" step="0.01" min="0" [(ngModel)]="scenario.fuel_price_multiplier">
+          <button nbButton size="small" ghost status="danger" (click)="removeScenario(i)" [disabled]="scenarios.length <= 1">
+            <nb-icon icon="trash-2-outline"></nb-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <nb-select placeholder="Open completed study" [(selected)]="selectedStudyId" (selectedChange)="openStudy($event)">
+          <nb-option *ngFor="let study of studies" [value]="study.id">
+            {{ study.name }} · {{ study.status }}
+          </nb-option>
+        </nb-select>
+        <button nbButton status="primary" (click)="previewPhasing()" [disabled]="!selectedNetworkId || isPreviewing || isRunning">
+          <nb-icon icon="search-outline"></nb-icon>
+          Preview phasing
+        </button>
+        <button nbButton status="success" (click)="runPhasing()" [disabled]="!selectedNetworkId || isRunning">
+          <nb-icon icon="play-circle-outline"></nb-icon>
+          {{ isRunning ? 'Running...' : 'Run phasing study' }}
+        </button>
+      </div>
+
+      <nb-alert status="info" *ngIf="activeOperations.length" class="task-alert">
+        <strong>Background network phasing</strong>
+        <div *ngFor="let operation of activeOperations" class="task-row">
+          <span>{{ operation.label }}</span>
+          <small>{{ operation.status }} · {{ operation.message || 'Running in Celery' }}</small>
+          <small>Task {{ operation.taskId }}</small>
+        </div>
+      </nb-alert>
+
+      <nb-alert status="danger" *ngIf="errorMessage">{{ errorMessage }}</nb-alert>
+    </nb-card-body>
+  </nb-card>
+
+  <ng-container *ngIf="currentData">
+    <div class="summary-grid">
+      <div class="summary-item">
+        <span>Base Available Heat</span>
+        <strong>{{ availableHeatSummary }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Candidates</span>
+        <strong>{{ candidateRows.length }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Selected</span>
+        <strong>{{ selectedConnectionCount }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Solver</span>
+        <strong>{{ currentSolverLabel }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Phases</span>
+        <strong>{{ timelineRows.length }}</strong>
+      </div>
+    </div>
+
+    <nb-card class="map-card">
+      <nb-card-header>
+        <div class="map-title">
+          <h3>Initial Candidate Pool Map</h3>
+          <div class="map-legend">
+            <span><i class="legend-line base"></i>Base network</span>
+            <span><i class="legend-dot candidate"></i>Candidate node</span>
+          </div>
+        </div>
+      </nb-card-header>
+      <nb-card-body>
+        <google-map #candidateMap height="620px" width="100%" [center]="center" [zoom]="zoom" [options]="mapOptions">
+          <map-polyline *ngFor="let route of mapRoutes" [path]="route.path" [options]="route | thermalLine:'halo'"></map-polyline>
+          <map-polyline *ngFor="let route of mapRoutes" [path]="route.path" [options]="route | thermalLine:'route'"></map-polyline>
+          <map-marker
+            *ngFor="let candidate of candidateMapNodes; trackBy: trackByMapKey"
+            [position]="candidate.position"
+            [options]="candidate.markerOptions">
+          </map-marker>
+        </google-map>
+        <div class="phase-map-caption">
+          <strong>{{ initialCandidateCount }}</strong>
+          <span>initial candidates shown before phase selection; {{ eligibleCandidateCount }} pass the current screening filters.</span>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <div class="timeline">
+      <div class="phase-card" *ngFor="let phase of timelineRows; let i = index">
+        <div class="phase-color" [style.background]="phaseColor(i)"></div>
+        <span>{{ phase.label || phase.year }}</span>
+        <strong>{{ phase.new_connections || 0 }} new connections</strong>
+        <small>{{ phase.added_heat_kw || 0 | number:'1.0-0' }} kW load · {{ phase.capex_cad || 0 | currency:'CAD':'symbol':'1.0-0' }}</small>
+        <a *ngIf="phase.output_network_id" [routerLink]="['/pages/networks', phase.output_network_id]">Open phase network</a>
+      </div>
+    </div>
+
+    <nb-card class="map-card">
+      <nb-card-header>
+        <div class="map-title">
+          <h3>Scenario-Year Build-Out Map</h3>
+          <div class="map-controls">
+            <nb-select size="small" placeholder="Scenario" [(selected)]="selectedScenarioName" (selectedChange)="onPhaseViewChange()">
+              <nb-option *ngFor="let scenario of scenarioRows" [value]="scenario.name">
+                {{ scenario.name }} · {{ scenario.demand_multiplier | number:'1.2-2' }}x
+              </nb-option>
+            </nb-select>
+            <nb-select size="small" placeholder="Year" [(selected)]="selectedPhaseYear" (selectedChange)="onPhaseViewChange()">
+              <nb-option *ngFor="let year of planningYears" [value]="year">{{ year }}</nb-option>
+            </nb-select>
+            <nb-select size="small" placeholder="Connection view" [(selected)]="phasePathMode" (selectedChange)="onPhaseViewChange()">
+              <nb-option value="new">New in year</nb-option>
+              <nb-option value="cumulative">Cumulative</nb-option>
+            </nb-select>
+          </div>
+        </div>
+      </nb-card-header>
+      <nb-card-body>
+        <google-map #phaseMap height="620px" width="100%" [center]="center" [zoom]="zoom" [options]="mapOptions">
+          <map-polyline *ngFor="let route of mapRoutes" [path]="route.path" [options]="route | thermalLine:'halo'"></map-polyline>
+          <map-polyline *ngFor="let route of mapRoutes" [path]="route.path" [options]="route | thermalLine:'route'"></map-polyline>
+          <map-polyline
+            *ngFor="let connection of phaseConnectionRows; trackBy: trackByMapKey"
+            [path]="connection.service_path"
+            [options]="phasePathOptions(connection)">
+          </map-polyline>
+          <map-marker
+            *ngFor="let connection of phaseMapNodes; trackBy: trackByMapKey"
+            [position]="connection.position"
+            [options]="connection.markerOptions">
+          </map-marker>
+          <div class="phase-map-legend">
+            <div class="phase-map-legend-title">Phase connection colours</div>
+            <div class="phase-map-legend-row">
+              <i class="legend-line base"></i>
+              <span>Base network</span>
+            </div>
+            <div
+              class="phase-map-legend-row"
+              *ngFor="let phase of phaseLegendRows"
+              [class.active]="phase.active">
+              <i class="legend-line phase" [style.background]="phase.color"></i>
+              <span>{{ phase.label }}</span>
+              <small>{{ phase.newConnections }} new</small>
+            </div>
+            <div class="phase-map-legend-row">
+              <i class="legend-dot rejected-decision"></i>
+              <span>Rejected candidate</span>
+            </div>
+          </div>
+        </google-map>
+        <div class="phase-map-caption">
+          <strong>{{ phaseSelectedCount }}</strong>
+          <span>selected and {{ phaseRejectedCount }} rejected candidates shown for {{ selectedScenarioName || 'scenario' }} in {{ selectedPhaseYear || 'year' }}. {{ phasePathMode === 'new' ? 'Only new service routes are drawn.' : 'All connected service routes are drawn.' }}</span>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <div class="chart-grid insight-grid phase-story-grid">
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Phase Gate Utilization</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('phase-constraints', 'phasing-phase-gate-utilization.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('phase-constraints', 'phasing-phase-gate-utilization.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('phase-constraints', 'Phase Gate Utilization')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="phaseConstraintOption" (chartInit)="onChartInit('phase-constraints', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Heat Headroom Build-Out</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('heat-headroom', 'phasing-heat-headroom-buildout.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('heat-headroom', 'phasing-heat-headroom-buildout.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('heat-headroom', 'Heat Headroom Build-Out')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="heatHeadroomOption" (chartInit)="onChartInit('heat-headroom', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Phase Value Ladder</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('phase-value', 'phasing-phase-value-ladder.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('phase-value', 'phasing-phase-value-ladder.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('phase-value', 'Phase Value Ladder')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="phaseValueOption" (chartInit)="onChartInit('phase-value', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Next Best Candidate Queue</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('candidate-queue', 'phasing-next-best-candidate-queue.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('candidate-queue', 'phasing-next-best-candidate-queue.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('candidate-queue', 'Next Best Candidate Queue')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="candidateQueueOption" (chartInit)="onChartInit('candidate-queue', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+
+    <div class="chart-grid insight-grid chronology-grid">
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Chronology Carry-Forward Matrix</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('chronology-matrix', 'phasing-chronology-carry-forward-matrix.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('chronology-matrix', 'phasing-chronology-carry-forward-matrix.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('chronology-matrix', 'Chronology Carry-Forward Matrix')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="chronologyMatrixOption" (chartInit)="onChartInit('chronology-matrix', $event)" class="chart presentation-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Phase Composition</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('phase-composition', 'phasing-phase-composition.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('phase-composition', 'phasing-phase-composition.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('phase-composition', 'Phase Composition')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="phaseCompositionOption" (chartInit)="onChartInit('phase-composition', $event)" class="chart presentation-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Buildings Added by Phase</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('buildings-added', 'phasing-buildings-added-by-phase.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('buildings-added', 'phasing-buildings-added-by-phase.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('buildings-added', 'Buildings Added by Phase')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="buildingsAddedOption" (chartInit)="onChartInit('buildings-added', $event)" class="chart presentation-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Selection Frontier by Phase</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('phase-selection-frontier', 'phasing-selection-frontier-by-phase.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('phase-selection-frontier', 'phasing-selection-frontier-by-phase.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('phase-selection-frontier', 'Selection Frontier by Phase')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="phaseSelectionFrontierOption" (chartInit)="onChartInit('phase-selection-frontier', $event)" class="chart presentation-chart"></div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+
+    <div class="chart-grid insight-grid decision-grid">
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Candidate Screening Funnel</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('selection-funnel', 'phasing-candidate-screening-funnel.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('selection-funnel', 'phasing-candidate-screening-funnel.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('selection-funnel', 'Candidate Screening Funnel')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="selectionFunnelOption" (chartInit)="onChartInit('selection-funnel', $event)" class="chart presentation-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Scenario-Year Decision Matrix</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('phase-gate-matrix', 'phasing-scenario-year-decision-matrix.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('phase-gate-matrix', 'phasing-scenario-year-decision-matrix.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('phase-gate-matrix', 'Scenario-Year Decision Matrix')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="phaseGateMatrixOption" (chartInit)="onChartInit('phase-gate-matrix', $event)" class="chart presentation-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Phasing Driver Balance</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('phase-driver-balance', 'phasing-driver-balance.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('phase-driver-balance', 'phasing-driver-balance.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('phase-driver-balance', 'Phasing Driver Balance')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="phaseDriverBalanceOption" (chartInit)="onChartInit('phase-driver-balance', $event)" class="chart presentation-chart"></div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Cluster Scale vs Selection</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('cluster-scale', 'phasing-cluster-scale-vs-selection.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('cluster-scale', 'phasing-cluster-scale-vs-selection.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('cluster-scale', 'Cluster Scale vs Selection')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="clusterScaleOption" (chartInit)="onChartInit('cluster-scale', $event)" class="chart presentation-chart"></div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+
+    <div class="chart-grid insight-grid">
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Candidate Screening Sensitivity</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('candidate-screening', 'phasing-candidate-screening-sensitivity.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('candidate-screening', 'phasing-candidate-screening-sensitivity.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('candidate-screening', 'Candidate Screening Sensitivity')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="candidateScreeningOption" (chartInit)="onChartInit('candidate-screening', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Cost, Density, and Demand Sensitivity</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('candidate-economics', 'phasing-cost-density-demand-sensitivity.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('candidate-economics', 'phasing-cost-density-demand-sensitivity.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('candidate-economics', 'Cost, Density, and Demand Sensitivity')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="candidateEconomicsOption" (chartInit)="onChartInit('candidate-economics', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Heat Demand, Diameter, and Pumping Sensitivity</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('candidate-hydraulics', 'phasing-heat-diameter-pumping-sensitivity.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('candidate-hydraulics', 'phasing-heat-diameter-pumping-sensitivity.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('candidate-hydraulics', 'Heat Demand, Diameter, and Pumping Sensitivity')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="candidateHydraulicsOption" (chartInit)="onChartInit('candidate-hydraulics', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Scenario Demand Sensitivity</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('scenario-demand', 'phasing-scenario-demand-sensitivity.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('scenario-demand', 'phasing-scenario-demand-sensitivity.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('scenario-demand', 'Scenario Demand Sensitivity')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="scenarioHeatOption" (chartInit)="onChartInit('scenario-demand', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Timing Value by Scenario</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('scenario-value', 'phasing-timing-value-by-scenario.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('scenario-value', 'phasing-timing-value-by-scenario.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('scenario-value', 'Timing Value by Scenario')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="scenarioValueOption" (chartInit)="onChartInit('scenario-value', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>CAPEX by Phase</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('capex-phase', 'phasing-capex-by-phase.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('capex-phase', 'phasing-capex-by-phase.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('capex-phase', 'CAPEX by Phase')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="capexOption" (chartInit)="onChartInit('capex-phase', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+      <nb-card>
+        <nb-card-header>
+          <div class="chart-card-header">
+            <h3>Connections and Heat Load</h3>
+            <div class="chart-actions">
+              <button type="button" class="copy-button" (click)="copyChart('connections-heat', 'phasing-connections-and-heat-load.png')">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Copy HD
+              </button>
+              <button type="button" class="copy-button secondary" (click)="downloadChart('connections-heat', 'phasing-connections-and-heat-load.png')">
+                <nb-icon icon="download-outline"></nb-icon>
+                PNG
+              </button>
+              <button type="button" class="copy-button secondary" (click)="expandChart('connections-heat', 'Connections and Heat Load')">
+                <nb-icon icon="expand-outline"></nb-icon>
+                Expand
+              </button>
+            </div>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div echarts [options]="heatOption" (chartInit)="onChartInit('connections-heat', $event)" class="chart tall-chart"></div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+
+    <nb-card class="comparison-card" [nbSpinner]="isLoadingComparison">
+      <nb-card-header>
+        <div class="chart-card-header">
+          <div>
+            <h3>Output Phase Comparison</h3>
+            <p>Compare phase outputs from the same study or across different studies.</p>
+          </div>
+        </div>
+      </nb-card-header>
+      <nb-card-body>
+        <div class="comparison-controls">
+          <label>
+            <span>Studies</span>
+            <nb-select fullWidth multiple placeholder="Select phasing studies" [selected]="comparisonStudyIds" (selectedChange)="onComparisonStudiesChange($event)">
+              <nb-option *ngFor="let study of studies; trackBy: trackById" [value]="study.id">
+                {{ study.name }} · {{ study.status }}
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <label>
+            <span>Output phases</span>
+            <nb-select fullWidth multiple placeholder="Select two or more phases" [selected]="selectedComparisonPhaseKeys" (selectedChange)="onComparisonPhasesChange($event)">
+              <nb-option *ngFor="let phase of comparisonPhaseOptions; trackBy: trackByKey" [value]="phase.key">
+                {{ phase.study_name }} · {{ phase.label || phase.year }} · {{ phase.new_connections }} connections
+              </nb-option>
+            </nb-select>
+          </label>
+        </div>
+
+        <nb-alert status="warning" *ngIf="!selectedComparisonRows.length && !isLoadingComparison">
+          Select one or more phasing studies, then choose at least two output phases to compare.
+        </nb-alert>
+        <nb-alert status="danger" *ngIf="comparisonError">{{ comparisonError }}</nb-alert>
+
+        <ng-container *ngIf="selectedComparisonRows.length">
+          <div class="compare-summary">
+            <div>
+              <span>Phases Compared</span>
+              <strong>{{ selectedComparisonRows.length }}</strong>
+            </div>
+            <div>
+              <span>Total Added Heat</span>
+              <strong>{{ comparisonAddedHeatKw | number:'1.0-0' }} kW</strong>
+            </div>
+            <div>
+              <span>Total Phase CAPEX</span>
+              <strong>{{ comparisonPhaseCapexCad | currency:'CAD':'symbol':'1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Service Length</span>
+              <strong>{{ comparisonServiceLengthM | number:'1.0-0' }} m</strong>
+            </div>
+          </div>
+
+          <div class="chart-grid insight-grid">
+            <nb-card>
+              <nb-card-header>
+                <div class="chart-card-header">
+                  <h3>Phase Scale and Cost</h3>
+                  <div class="chart-actions">
+                    <button type="button" class="copy-button" (click)="copyChart('phase-comparison', 'phasing-output-phase-comparison.png')">
+                      <nb-icon icon="copy-outline"></nb-icon>
+                      Copy HD
+                    </button>
+                    <button type="button" class="copy-button secondary" (click)="downloadChart('phase-comparison', 'phasing-output-phase-comparison.png')">
+                      <nb-icon icon="download-outline"></nb-icon>
+                      PNG
+                    </button>
+                    <button type="button" class="copy-button secondary" (click)="expandChart('phase-comparison', 'Phase Scale and Cost')">
+                      <nb-icon icon="expand-outline"></nb-icon>
+                      Expand
+                    </button>
+                  </div>
+                </div>
+              </nb-card-header>
+              <nb-card-body>
+                <div echarts [options]="phaseComparisonOption" (chartInit)="onChartInit('phase-comparison', $event)" class="chart tall-chart"></div>
+              </nb-card-body>
+            </nb-card>
+
+            <nb-card>
+              <nb-card-header>
+                <div class="chart-card-header">
+                  <h3>Expansion Efficiency</h3>
+                  <div class="chart-actions">
+                    <button type="button" class="copy-button" (click)="copyChart('phase-efficiency', 'phasing-output-phase-efficiency.png')">
+                      <nb-icon icon="copy-outline"></nb-icon>
+                      Copy HD
+                    </button>
+                    <button type="button" class="copy-button secondary" (click)="downloadChart('phase-efficiency', 'phasing-output-phase-efficiency.png')">
+                      <nb-icon icon="download-outline"></nb-icon>
+                      PNG
+                    </button>
+                    <button type="button" class="copy-button secondary" (click)="expandChart('phase-efficiency', 'Expansion Efficiency')">
+                      <nb-icon icon="expand-outline"></nb-icon>
+                      Expand
+                    </button>
+                  </div>
+                </div>
+              </nb-card-header>
+              <nb-card-body>
+                <div echarts [options]="phaseEfficiencyOption" (chartInit)="onChartInit('phase-efficiency', $event)" class="chart tall-chart"></div>
+              </nb-card-body>
+            </nb-card>
+          </div>
+
+          <div class="phase-compare-table">
+            <div class="phase-compare-row header">
+              <span>Study / phase</span>
+              <span>Network</span>
+              <span>New</span>
+              <span>Added heat</span>
+              <span>Phase CAPEX</span>
+              <span>LHD</span>
+              <span>CAPEX / annual MWh</span>
+            </div>
+            <div class="phase-compare-row" *ngFor="let phase of selectedComparisonRows; trackBy: trackByKey">
+              <strong>{{ phase.study_name }} · {{ phase.label || phase.year }}</strong>
+              <span>{{ phase.output_network_id || '-' }}</span>
+              <span>{{ phase.new_connections }}</span>
+              <span>{{ phase.added_heat_kw | number:'1.0-0' }} kW</span>
+              <span>{{ phase.phase_capex_cad | currency:'CAD':'symbol':'1.0-0' }}</span>
+              <span>{{ phase.avg_lhd | number:'1.2-2' }} MWh/m/y</span>
+              <span>{{ phase.capex_per_annual_mwh | currency:'CAD':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header><h3>Candidate Connections</h3></nb-card-header>
+      <nb-card-body>
+        <div class="candidate-table">
+          <div class="candidate-row header">
+            <span>Status</span>
+            <span>Selected</span>
+            <span>Candidate</span>
+            <span>Buildings</span>
+            <span>Role</span>
+            <span>Score</span>
+            <span>Peak Heat</span>
+            <span>Linear Heat Density</span>
+            <span>Distance</span>
+            <span>Connection CAPEX</span>
+          </div>
+          <div class="candidate-row" *ngFor="let candidate of candidateRows" [class.rejected]="candidate.status === 'rejected'">
+            <span class="status-pill" [class.selected]="candidate.selected || candidate.status === 'selected'">{{ candidate.status }}</span>
+            <span>{{ candidate.selected_year || '-' }}</span>
+            <strong>{{ candidate.name }}</strong>
+            <span>{{ candidateBuildingCount(candidate) || '-' }}</span>
+            <span>{{ candidate.candidate_role }}</span>
+            <span>{{ candidate.suitability_score || 0 | number:'1.0-1' }}</span>
+            <span>{{ candidate.peak_heat_kw || 0 | number:'1.0-0' }} kW</span>
+            <span>{{ candidate.linear_heat_density_mwh_per_m_year || 0 | number:'1.2-2' }} MWh/m/y</span>
+            <span>{{ candidate.distance_to_trunk_m || 0 | number:'1.0-0' }} m</span>
+            <span>{{ candidate.estimated_connection_cost_cad || 0 | currency:'CAD':'symbol':'1.0-0' }}</span>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+  </ng-container>
+
+  <div class="chart-expand-overlay" *ngIf="expandedChartKey" (click)="closeExpandedChart()">
+    <div class="chart-expand-panel" (click)="$event.stopPropagation()">
+      <div class="chart-expand-header">
+        <h3>{{ expandedChartTitle }}</h3>
+        <div class="chart-actions">
+          <button type="button" class="copy-button" (click)="copyChart(expandedChartKey, expandedChartKey + '.png')">
+            <nb-icon icon="copy-outline"></nb-icon>
+            Copy HD
+          </button>
+          <button type="button" class="copy-button secondary" (click)="downloadChart(expandedChartKey, expandedChartKey + '.png')">
+            <nb-icon icon="download-outline"></nb-icon>
+            PNG
+          </button>
+          <button type="button" class="copy-button secondary" (click)="closeExpandedChart()">
+            <nb-icon icon="close-outline"></nb-icon>
+            Close
+          </button>
+        </div>
+      </div>
+      <div
+        echarts
+        [options]="expandedChartOption"
+        (chartInit)="onChartInit('expanded-' + expandedChartKey, $event)"
+        class="expanded-chart">
+      </div>
+    </div>
+  </div>
+</div>

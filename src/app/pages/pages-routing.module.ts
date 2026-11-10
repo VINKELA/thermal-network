@@ -1,3 +1,4 @@
+import { PipeSensitivityComponent } from './networks/pipe-sensitivity/pipe-sensitivity.component';
 import { RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
 
@@ -39,6 +40,7 @@ import { EdgeConnectionAlgorithmComponent } from './networks/edge-connection-alg
 import { EdgeConnectionAlgorithmsComponent } from './networks/edge-connection-algorithms/edge-connection-algorithms.component';
 import { RouteComponent } from './networks/route/route.component';
 import { LoadProfileComponent } from './networks/load-profile/load-profile.component';
+import { LoadProfileComparisonComponent } from './networks/load-profile-comparison/load-profile-comparison.component';
 import { DataUploadComponent } from './data-upload/data-upload.component';
 import { MapImporterComponent } from './map-importer/map-importer.component';
 import { NetworkComparisonComponent } from './networks/network-comparison/network-comparison.component';
@@ -59,7 +61,10 @@ import { NetworkEmissionsComponent } from './networks/network-emissions/network-
 import { NetworkEmissionsCompareComponent } from './networks/network-emissions-compare/network-emissions-compare.component';
 import { NetworkDemandMapComponent } from './networks/network-demand-map/network-demand-map.component';
 import { NetworkEvolutionComponent } from './networks/network-evolution/network-evolution.component';
+import { NetworkPhasingComponent } from './networks/network-phasing/network-phasing.component';
+import { NetworkTradeoffsComponent } from './networks/network-tradeoffs/network-tradeoffs.component';
 import { PipeSectionAnalysisComponent } from './networks/pipe-section-analysis/pipe-section-analysis.component';
+import { PipeSectionSensitivityComponent } from './networks/pipe-section-sensitivity/pipe-section-sensitivity.component';
 import { NetworkAnalysisDashboardComponent } from './networks/network-analysis/network-analysis-dashboard.component';
 import { NetworkAnalysisCompareComponent } from './networks/network-analysis/network-analysis-compare.component';
 
@@ -78,6 +83,14 @@ const routes: Routes = [{
     {
       path: 'networks/evolution',
       component: NetworkEvolutionComponent,
+    },
+    {
+      path: 'networks/phasing',
+      component: NetworkPhasingComponent,
+    },
+    {
+      path: 'networks/tradeoffs',
+      component: NetworkTradeoffsComponent,
     },
     {
       path: 'networks/analysis/compare',
@@ -127,6 +140,13 @@ const routes: Routes = [{
     {
       path: 'load-profiles',
       component: LoadProfileComponent,
+    },
+    {
+      path: 'pipe-sensitivity', component: PipeSensitivityComponent,
+    },
+    {
+      path: 'load-profile-comparison',
+      component: LoadProfileComparisonComponent,
     },
       {
       path: 'data-upload',
@@ -261,6 +281,10 @@ const routes: Routes = [{
     {
       path: 'pipes/compare',
       component: PipeSizesCompareComponent,
+    },
+    {
+      path: 'pipe-section-sensitivity',
+      component: PipeSectionSensitivityComponent,
     },
     {
       path: 'pipe-sizes/:id',

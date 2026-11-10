@@ -5,11 +5,13 @@ import {catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ProjectContextService } from './project-context.service';
 
+const DEFAULT_API_URL = 'http://127.0.0.1:8000/api';
+
 @Injectable({
   providedIn: 'root'
 })
 export class RestApiService {
-  apiUrl = environment?.appUrl + '/'
+  apiUrl = `${(environment as any).appUrl || DEFAULT_API_URL}/`
   constructor(
     private http: HttpClient,
     private projectContext: ProjectContextService,
@@ -106,7 +108,8 @@ private handleHttpError<T>(error: any): Observable<T> {
     const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.href = `/auth/login?returnUrl=${returnUrl}`;
   }
-  return throwError(() => error);
+  // RxJS 6 takes the error value, not the RxJS 7 error factory.
+  return throwError(error);
 }
 private authorizeRequest(token:string|undefined){
   if(token)
@@ -137,8 +140,6 @@ handleError(error: any) {
     errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
   }
 console.log(errorMessage);
-  return throwError(() => {
-    return errorMessage;
-  });
+  return throwError(errorMessage);
 }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-export type BackgroundOperationType = 'network-evolution' | 'route-tracing';
+export type BackgroundOperationType = 'network-evolution' | 'network-phasing' | 'route-tracing';
 
 export interface BackgroundOperation {
   taskId: string;

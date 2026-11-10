@@ -49,7 +49,9 @@ settings = {
           config: {
             list: [
               { value: 'mst', title: 'Minimum Spanning Tree (MST)' },
-              { value: 'custom', title: 'Use All Candidate Edges' },
+              { value: 'shortest_path_tree', title: 'Source-Rooted Shortest Path Tree' },
+              { value: 'steiner_tree', title: 'Approximate Steiner Tree' },
+              { value: 'redundant_mst', title: 'Reliability-Augmented MST' },
             ],
           },
         },

@@ -1,16 +1,237 @@
-<nb-card>
-  <nb-card-header class="d-flex justify-content-between align-items-center">
-    <h3>Clusters</h3>
-    
-    <div class="header-actions">
-      <button nbButton size="small" status="info" (click)="goToComparison()">
-        <nb-icon icon="bar-chart-2-outline"></nb-icon> Compare Clusters
-      </button>
-    </div>
-  </nb-card-header>
+<section class="cluster-workspace">
+  <nb-card class="cluster-create-card">
+    <nb-card-header>
+      <div>
+        <h3>Create Clusters</h3>
+        <p>Group project buildings around available waste-heat sources, then save the result as a cluster configuration.</p>
+      </div>
+      <div class="header-actions">
+        <button nbButton size="small" status="basic" outline (click)="loadClusterWorkspace()" [disabled]="!selectedProjectId || isLoadingWorkspace">
+          <nb-icon icon="refresh-outline"></nb-icon>
+          Refresh
+        </button>
+        <button nbButton size="small" status="info" (click)="goToComparison()">
+          <nb-icon icon="bar-chart-2-outline"></nb-icon>
+          Compare
+        </button>
+      </div>
+    </nb-card-header>
 
-  <nb-card-body>
-    <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)" (editConfirm)="onEditConfirm($event)" (createConfirm)="onCreateConfirm($event)">>
-    </ng2-smart-table>
-  </nb-card-body>
-</nb-card>
+    <nb-card-body>
+      <div class="create-grid">
+        <label class="field">
+          <span>Project</span>
+          <nb-select fullWidth placeholder="Select project" [selected]="selectedProjectId" (selectedChange)="onProjectChange($event)" [disabled]="isLoadingProjects">
+            <nb-option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</nb-option>
+          </nb-select>
+        </label>
+
+        <label class="field">
+          <span>Configuration name</span>
+          <input nbInput fullWidth placeholder="e.g. Source anchored 500 m" [(ngModel)]="createForm.name">
+        </label>
+
+        <label class="field compact">
+          <span>Maximum radius</span>
+          <div class="radius-control">
+            <input nbInput type="number" min="0.1" step="0.1" [(ngModel)]="createForm.maxRadiusKm">
+            <span>km</span>
+          </div>
+        </label>
+
+        <div class="create-action">
+          <button nbButton status="success" (click)="createClusters()" [disabled]="!selectedProjectId || isCreating">
+            <nb-icon icon="layers-outline"></nb-icon>
+            Create clusters
+          </button>
+        </div>
+      </div>
+
+      <div class="complementary-panel" *ngIf="configurations.length && networks.length">
+        <div class="panel-title">
+          <h4>Complementary Cluster Configuration</h4>
+          <p>Create a network-relative configuration containing only buildings not yet in the selected network.</p>
+        </div>
+
+        <div class="complementary-grid">
+          <label class="field">
+            <span>Base network</span>
+            <nb-select fullWidth placeholder="Select network" [(selected)]="complementaryForm.networkId">
+              <nb-option *ngFor="let network of networks; trackBy: trackById" [value]="network.id">
+                {{ network.name }} · {{ network.route_count || 0 }} routes
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <label class="field">
+            <span>Grouping radius (km)</span>
+            <input nbInput fullWidth type="number" min="0.05" step="0.05" [(ngModel)]="complementaryForm.maxRadiusKm">
+          </label>
+
+          <label class="field">
+            <span>Source configuration optional</span>
+            <nb-select fullWidth placeholder="Cluster all unconnected buildings" [(selected)]="complementaryForm.sourceConfigurationId">
+              <nb-option [value]="null">None - cluster all unconnected buildings</nb-option>
+              <nb-option *ngFor="let config of standardConfigurations; trackBy: trackById" [value]="config.id">
+                {{ config.name || ('Configuration ' + config.id) }} · {{ config.cluster_count || 0 }} clusters
+              </nb-option>
+            </nb-select>
+          </label>
+
+          <label class="field">
+            <span>Output name</span>
+            <input nbInput fullWidth placeholder="Optional" [(ngModel)]="complementaryForm.name">
+          </label>
+
+          <div class="create-action">
+            <button
+              nbButton
+              status="primary"
+              (click)="createComplementaryConfiguration()"
+              [disabled]="!complementaryForm.networkId || isCreatingComplementary">
+              <nb-icon icon="copy-outline"></nb-icon>
+              Create complementary
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <nb-alert *ngIf="!selectedProjectId && !isLoadingProjects" status="warning" outline="basic">
+        Select a project before creating or viewing clusters.
+      </nb-alert>
+
+      <nb-alert *ngIf="errorMessage" status="danger" outline="basic">
+        {{ errorMessage }}
+      </nb-alert>
+    </nb-card-body>
+  </nb-card>
+
+  <div class="summary-grid" *ngIf="selectedProjectId">
+    <div class="summary-card">
+      <span>Configurations</span>
+      <strong>{{ summary.configurations }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Visible clusters</span>
+      <strong>{{ summary.clusters }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Buildings grouped</span>
+      <strong>{{ summary.buildings }}</strong>
+    </div>
+    <div class="summary-card status-mix">
+      <span>Balance</span>
+      <strong>{{ summary.excess }} / {{ summary.deficit }} / {{ summary.balanced }}</strong>
+      <small>excess / deficit / balanced</small>
+    </div>
+  </div>
+
+  <div class="cluster-grid" *ngIf="selectedProjectId">
+    <nb-card class="map-card" [nbSpinner]="isLoadingWorkspace || isCreating" nbSpinnerStatus="primary">
+      <nb-card-header>
+        <div>
+          <h4>Cluster Map</h4>
+          <p>{{ activeConfiguration?.name || 'All configurations' }} for {{ selectedProjectName }}</p>
+        </div>
+        <nb-select size="small" [selected]="selectedConfigurationId" (selectedChange)="onConfigurationChange($event)">
+          <nb-option value="all">All configurations</nb-option>
+          <nb-option *ngFor="let config of configurations" [value]="config.id">{{ config.name || ('Configuration ' + config.id) }}</nb-option>
+        </nb-select>
+      </nb-card-header>
+      <nb-card-body>
+        <google-map height="100%" width="100%" [center]="center" [zoom]="zoom" [options]="mapOptions">
+          <ng-container *ngFor="let cluster of visibleClusters; trackBy: trackById">
+            <map-circle
+              *ngIf="cluster.latitude !== undefined && cluster.longitude !== undefined"
+              [center]="{ lat: cluster.latitude, lng: cluster.longitude }"
+              [radius]="cluster.effective_radius || 100"
+              [options]="getClusterCircleOptions(cluster)">
+            </map-circle>
+            <map-marker
+              *ngIf="cluster.latitude !== undefined && cluster.longitude !== undefined"
+              [position]="{ lat: cluster.latitude, lng: cluster.longitude }"
+              [options]="getClusterMarkerOptions(cluster)"
+              (mapClick)="openCluster(cluster)">
+            </map-marker>
+          </ng-container>
+        </google-map>
+
+        <div class="map-legend">
+          <div><span class="dot excess_heat"></span> Excess heat</div>
+          <div><span class="dot heat_deficit"></span> Heat deficit</div>
+          <div><span class="dot balanced"></span> Balanced</div>
+          <div><span class="dot unknown"></span> Unknown</div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <div class="side-stack">
+      <nb-card class="config-card">
+        <nb-card-header>
+          <div>
+            <h4>Saved Configurations</h4>
+            <p>Cluster runs available in this project.</p>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div class="empty-state" *ngIf="!isLoadingWorkspace && configurations.length === 0">
+            No cluster configurations yet. Create one from the form above.
+          </div>
+
+          <div
+            class="config-row"
+            *ngFor="let config of configurations; trackBy: trackById"
+            [class.active]="selectedConfigurationId === config.id"
+            (click)="onConfigurationChange(config.id)">
+            <div>
+              <strong>
+                {{ config.name || ('Configuration ' + config.id) }}
+                <em class="config-type" [class.complementary]="config.cluster_type === 'complementary'">
+                  {{ config.cluster_type === 'complementary' ? 'Complementary' : 'Standard' }}
+                </em>
+              </strong>
+              <span>{{ config.cluster_count || 0 }} clusters • {{ config.total_buildings || 0 }} buildings</span>
+              <small *ngIf="config.cluster_type === 'complementary' && config.base_network_name">
+                Complements {{ config.base_network_name }}
+              </small>
+            </div>
+            <div class="row-actions">
+              <button nbButton size="tiny" status="primary" ghost (click)="openConfiguration(config); $event.stopPropagation()">
+                Open
+              </button>
+              <button nbButton size="tiny" status="success" ghost (click)="createNetworkFromConfiguration(config); $event.stopPropagation()" [disabled]="isCreatingNetwork">
+                Network
+              </button>
+            </div>
+          </div>
+        </nb-card-body>
+      </nb-card>
+
+      <nb-card class="cluster-list-card">
+        <nb-card-header>
+          <div>
+            <h4>Clusters</h4>
+            <p>{{ visibleClusters.length }} visible cluster{{ visibleClusters.length === 1 ? '' : 's' }}</p>
+          </div>
+        </nb-card-header>
+        <nb-card-body>
+          <div class="empty-state" *ngIf="!isLoadingWorkspace && visibleClusters.length === 0">
+            No clusters to show for this selection.
+          </div>
+
+          <button type="button" class="cluster-row" *ngFor="let cluster of visibleClusters; trackBy: trackById" (click)="openCluster(cluster)">
+            <span class="status-dot" [class]="statusClass(cluster.energy_balance_status)"></span>
+            <div class="cluster-main">
+              <strong>{{ cluster.name || ('Cluster ' + cluster.id) }}</strong>
+              <span>{{ cluster.no_of_buildings || 0 }} buildings • {{ statusLabel(cluster.energy_balance_status) }}</span>
+            </div>
+            <div class="cluster-energy">
+              <span>{{ cluster.heating_demand || 0 | number:'1.0-0' }}</span>
+              <small>heat kWh</small>
+            </div>
+          </button>
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</section>

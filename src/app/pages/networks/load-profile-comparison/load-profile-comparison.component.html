@@ -1,0 +1,149 @@
+<div class="page-heading">
+  <div><span class="eyebrow">DISTRICT HEATING · CANADIAN DATA</span>
+    <h3>Compare load-profile models</h3>
+    <p>Explore how modelling assumptions change coincident peaks and pipe-flow requirements.</p>
+  </div>
+  <div class="actions"><a nbButton status="info" routerLink="/pages/pipe-sensitivity">Branch sensitivity study</a><button nbButton status="primary" *ngIf="result" (click)="togglePresentation()">{{ presentationMode ? 'Edit study' : 'Present results' }}</button><a nbButton status="basic" *ngIf="!presentationMode" href="/pages/load-profiles">View saved profiles</a></div>
+</div>
+
+<nb-alert status="danger" *ngIf="error" role="alert">{{ error }}</nb-alert>
+<nb-alert status="success" *ngIf="notice" role="status">{{ notice }}</nb-alert>
+
+<nb-card *ngIf="!presentationMode">
+  <nb-card-header>1. Choose the study and common inputs</nb-card-header>
+  <nb-card-body>
+    <fieldset [disabled]="applying">
+      <div class="input-grid">
+        <label>Project
+          <select [ngModel]="options.project_id" (ngModelChange)="selectProject($event)">
+            <option [ngValue]="null">Select a project</option>
+            <option *ngFor="let project of projects" [ngValue]="project.id">{{ project.name }}</option>
+          </select>
+        </label>
+        <label>Consumer scope
+          <select [(ngModel)]="options.network_id" (ngModelChange)="changeScope()">
+            <option [ngValue]="null">All ten comparison buildings in project</option>
+            <option *ngFor="let network of networks" [ngValue]="network.id">{{ network.name }}</option>
+          </select>
+        </label>
+        <label>Stored Burlington weather year
+          <select [(ngModel)]="options.year" (ngModelChange)="invalidateResult()"><option [ngValue]="2021">2021</option><option [ngValue]="2022">2022</option><option [ngValue]="2023">2023</option></select>
+        </label>
+        <label>Optional sample building IDs
+          <input placeholder="Blank: all ten sample buildings" [(ngModel)]="buildingIds" (ngModelChange)="invalidateResult()">
+        </label>
+        <label>Supply–return temperature difference (°C)
+          <input type="number" min="1" max="80" [(ngModel)]="options.delta_t_c" (ngModelChange)="invalidateResult()">
+        </label>
+      </div>
+      <details>
+        <summary>Choose buildings by name (optional)</summary>
+        <div class="actions"><label>Find eligible consumer buildings<input [(ngModel)]="buildingSearch" placeholder="Name contains…"></label>
+          <button nbButton size="small" (click)="findBuildings()" [disabled]="!options.project_id">Find buildings</button>
+          <button nbButton size="small" (click)="selectVisibleBuildings()" [disabled]="!buildingMatches.length">Use displayed buildings</button></div>
+        <p *ngIf="buildingMatchCount">Showing {{ buildingMatches.length }} of {{ buildingMatchCount }} matches. Search to narrow the list; selection is retained across searches.</p>
+        <div class="building-picker"><label class="check-label" *ngFor="let building of buildingMatches"><input type="checkbox" [checked]="isBuildingSelected(building.id)" (change)="selectBuilding(building.id, $any($event.target).checked)">{{ building.name || 'Building' }} ({{ building.id }}) · {{ building.floor_area | number:'1.0-0' }} m²</label></div>
+      </details>
+      <label class="check-label"><input type="checkbox" [(ngModel)]="options.normalize_physical" (ngModelChange)="invalidateResult()"> Equal annual energy: compare shapes using each building’s peak-scaled annual energy</label>
+      <label>Peak threshold / reference peak<input type="number" min="0.01" max="1" step="0.05" [(ngModel)]="options.peak_threshold_fraction" (ngModelChange)="invalidateResult()"></label>
+      <p class="note">Six residential + four commercial buildings with positive source peaks · three imported models · 2021–2023 · 8,760 hours per year. Original generated values are used by default. Source peaks are assumed W, not verified. U-values are literature proxies. These are synthetic profiles, not measured demand.</p>
+    </fieldset>
+  </nb-card-body>
+</nb-card>
+
+<nb-card *ngIf="!presentationMode">
+  <nb-card-header>2. Select alternatives</nb-card-header>
+  <nb-card-body>
+    <div class="model-grid">
+      <article *ngFor="let model of models" [class.active]="options.models.includes(model.id)">
+        <label class="check-label"><input type="checkbox" [checked]="options.models.includes(model.id)" (change)="selectModel(model.id, $any($event.target).checked)" [disabled]="applying"><strong>{{ model.name }}</strong></label>
+        <details><summary>Method and best use</summary><p>{{ model.description }}</p>
+        <p><b>Useful for:</b> {{ model.use_case }}</p>
+        <p class="note">{{ model.limitation }}</p>
+        <p class="note" *ngIf="model.source_label">{{ model.source_label }}</p>
+        <a *ngIf="model.source" [href]="model.source" target="_blank" rel="noopener noreferrer">Method / data source ↗</a>
+      </details></article>
+    </div>
+    <div class="actions">
+      <label>Comparison reference
+        <select [(ngModel)]="options.reference" (ngModelChange)="compare()" [disabled]="applying">
+          <ng-container *ngFor="let model of models"><option *ngIf="options.models.includes(model.id)" [value]="model.id">{{ model.name }}</option></ng-container>
+
+        </select>
+      </label>
+      <button nbButton status="primary" (click)="compare()" [disabled]="!options.project_id || !options.models.length || busy || applying">{{ busy ? 'Calculating…' : 'Compare models' }}</button>
+    </div>
+    <p class="note">Model and reference selections refresh the comparison automatically. Other input edits clear stale results; use Compare models to recalculate. Comparison reads the imported alternatives without replacing active load profiles.</p>
+    <p *ngIf="busy" role="status">Loading stored hourly profiles and calculating metrics…</p>
+  </nb-card-body>
+</nb-card>
+
+<ng-container *ngIf="result">
+  <section class="study-summary" aria-label="Study summary">
+    <div><span class="eyebrow">SAME BUILDINGS · SAME WEATHER</span><h4>{{ result.building_count }} buildings in {{ result.weather.location.name }}</h4><span>{{ result.weather.year }} · {{ result.weather.hours | number }} hourly weather values</span></div>
+    <div class="headline-number">{{ peakSpreadPercent === null ? 'N/A' : (peakSpreadPercent | number:'1.1-1') }}<span *ngIf="peakSpreadPercent !== null">%</span><small>peak spread from lowest to highest model</small></div>
+  </section>
+  <p class="note">{{ result.reference_label }}. {{ result.options.normalize_physical ? 'Equal annual energy is imposed; peak differences come from profile shape.' : 'Physical-model annual energy is calculated independently.' }}</p>
+  <nb-card *ngIf="result.options.energy_basis === 'canadian_scenario'"><nb-card-header>From total energy to useful heat · {{ result.options.energy_scenario }} scenario</nb-card-header><nb-card-body><div echarts [options]="energyFlowChart" class="energy-chart"></div><p class="chart-caption">Input energy and useful heat are different quantities. Each selected profile receives the same space-heating and hot-water energy targets.</p></nb-card-body></nb-card>
+  <div class="visual-grid">
+    <nb-card><nb-card-header>How large is the peak?</nb-card-header><nb-card-body><div echarts [options]="peakChart" class="metric-chart"></div></nb-card-body></nb-card>
+    <nb-card><nb-card-header>What flow must the feeder carry?</nb-card-header><nb-card-body><div echarts [options]="flowChart" class="metric-chart"></div><p class="chart-caption">Shared temperature difference: {{ result.options.delta_t_c }} °C</p></nb-card-body></nb-card>
+  </div>
+  <nb-card>
+    <nb-card-header class="actions"><span>3. Compare the profiles</span>
+      <div class="actions"><button nbButton size="small" (click)="exportHourlyCsv()">Hourly CSV</button><button nbButton size="small" (click)="exportStudy()">Study JSON</button></div>
+    </nb-card-header>
+    <nb-card-body>
+      <p><b>{{ result.building_count }} buildings · {{ result.weather.location.name }} · {{ result.weather.year }} · {{ result.weather.hours | number }} hours</b></p>
+      <p>{{ result.reference_label }}</p>
+      <label>Chart
+        <select [(ngModel)]="chartView" (ngModelChange)="renderChart()"><option value="peakWeek">Week around the reference peak</option><option value="chronological">Full year hourly demand</option><option value="duration">Load-duration curve</option><option value="resolution">Peak sensitivity to averaging</option></select>
+      </label>
+      <div echarts [options]="chartOptions" class="profile-chart"></div>
+      <p class="note">{{ result.weather.timezone }}. Threshold: {{ result.threshold_kw | number:'1.0-2' }} kW for every model. Positive signed differences mean higher than the reference. N/A indicates an undefined zero-reference ratio.</p>
+      <details *ngIf="!presentationMode"><summary>All numerical metrics</summary><div class="table-scroll"><table>
+        <thead><tr><th>Metric</th><th>Unit</th><th *ngFor="let row of result.results">{{ row.name }}</th></tr></thead>
+        <tbody><tr *ngFor="let metric of metrics"><th>{{ metric.label }}</th><td>{{ metric.unit }}</td><td *ngFor="let row of result.results">{{ metricValue(row, metric.key) }}</td></tr></tbody>
+      </table></div></details>
+    </nb-card-body>
+  </nb-card>
+
+  <nb-card>
+    <nb-card-header>Equivalent feeder sizing — screening only</nb-card-header>
+    <nb-card-body>
+      <div class="pipe-grid"><article class="pipe-card" *ngFor="let row of result.results" [style.border-top-color]="modelVisual(row.model).color">
+        <h5>{{ modelVisual(row.model).name }}</h5><div class="pipe-diameter">{{ row.feeder.dn === null ? 'No fit' : 'DN ' + row.feeder.dn }}</div>
+        <div class="pipe-symbol" [style.border-color]="modelVisual(row.model).color" aria-hidden="true"></div>
+        <p><strong>{{ row.feeder.reference_violation_hours === null ? 'N/A' : row.feeder.reference_violation_hours }}</strong> reference constraint-violation hours</p>
+        <small>{{ row.feeder.catalog_cost_cad_per_m === null ? 'Cost unavailable' : (row.feeder.catalog_cost_cad_per_m | number:'1.0-0') + ' CAD/m catalog pipe cost' }}</small>
+      </article></div>
+      <p class="chart-caption">Each pipe is sized from its model, then checked against the same reference. Circle symbols are illustrative, not to scale.</p>
+      <p class="note">This is not a branch-by-branch hydraulic simulation. Catalog cost is not installed network cost. Terminal pressure, unserved energy, distribution losses and full-network cost are not assessed here. Topology-specific sizing requires a connected network and a compatible active profile selection.</p>
+      <details><summary>Design constants used</summary><pre>{{ result.design | json }}</pre></details>
+    </nb-card-body>
+  </nb-card>
+
+  <div class="visual-grid">
+    <nb-card><nb-card-header>How different are the hourly shapes?</nb-card-header><nb-card-body><div echarts [options]="differenceChart" class="metric-chart"></div><p class="chart-caption">Difference from the chosen reference; not measured accuracy.</p></nb-card-body></nb-card>
+    <nb-card><nb-card-header>How often is demand near the reference peak?</nb-card-header><nb-card-body><div echarts [options]="eventChart" class="metric-chart"></div><p class="chart-caption">Shared threshold {{ result.threshold_kw | number:'1.0-1' }} kW</p></nb-card-body></nb-card>
+  </div>
+  <nb-card *ngIf="!presentationMode">
+    <nb-card-header>Data provenance and assumptions</nb-card-header>
+    <nb-card-body>
+      <details><summary>Inspect data sources and modelling assumptions</summary><p>{{ result.weather.provider }}. {{ result.weather.note }}</p>
+      <p>Complete imported comparison profiles: {{ result.existing_coverage.complete_buildings }} / {{ result.existing_coverage.selected_buildings }} buildings.</p>
+      <ul><li *ngFor="let source of result.energy_sources | keyvalue">{{ source.value }} buildings: {{ source.key }}</li></ul>
+      <ul><li *ngFor="let assumption of result.assumptions">{{ assumption }}</li></ul>
+      <details><summary>Source links, weather checksum and stored-profile provenance</summary>
+        <ul><li *ngFor="let source of result.sources"><a [href]="source" target="_blank" rel="noopener noreferrer">{{ source }}</a></li></ul>
+        <p class="checksum">Imported weather-weight file SHA-256: {{ result.weather.sha256 }}</p>
+        <pre>{{ result.existing_coverage.sources | json }}</pre>
+      </details>
+      <details *ngIf="result.options.models.includes('thermo_rc_ca_v1')"><summary>THERMO parameters and numerical interpretation</summary><pre>{{ result.thermo_provenance | json }}</pre></details>
+      <details><summary>Per-building inputs and peak results</summary><pre>{{ result.building_inputs | json }}</pre>
+        <div *ngFor="let row of result.results"><h6>{{ row.name }}</h6><div class="table-scroll"><table><thead><tr><th>Building</th><th>Annual kWh</th><th>Peak kW</th></tr></thead><tbody><tr *ngFor="let building of row.buildings"><th>{{ building.name }} ({{ building.id }})</th><td>{{ building.annual_kwh | number:'1.0-1' }}</td><td>{{ building.peak_kw | number:'1.0-2' }}</td></tr></tbody></table></div></div>
+      </details></details>
+    </nb-card-body>
+  </nb-card>
+
+</ng-container>

@@ -19,16 +19,339 @@ For more info see: https://angular.io/guide/build#configuring-commonjs-dependenc
 √ Browser application bundle generation complete.
 √ Browser application bundle generation complete.
 √ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
 
-Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:362:10 - error TS2551: Property 'buildDesignInsights' does not exist on type 'PipeSectionAnalysisComponent'. Did you mean 'designInsights'?
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:368:34 - error TS2339: Property 'chartDataUrl' does not exist on type 'PipeSectionSensitivityComponent'.
 
-362     this.buildDesignInsights();
-             ~~~~~~~~~~~~~~~~~~~
+368       const dataUrl = await this.chartDataUrl(key);
+                                     ~~~~~~~~~~~~
 
-  src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:165:3
-    165   designInsights: DesignInsight[] = [];
-          ~~~~~~~~~~~~~~
-    'designInsights' is declared here.
+
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:370:31 - error TS2339: Property 'dataUrlToBlob' does not exist on type 'PipeSectionSensitivityComponent'.
+
+370       const blob = await this.dataUrlToBlob(dataUrl);
+                                  ~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/pipe-section-sensitivity/pipe-section-sensitivity.component.ts:385:32 - error TS2339: Property 'chartDataUrl' does not exist on type 'PipeSectionSensitivityComponent'.
+
+385     const dataUrl = await this.chartDataUrl(key);
+                                   ~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:163:34 - error TS2339: Property 'chartDataUrl' does not exist on type 'NetworkPhasingComponent'.
+
+163       const dataUrl = await this.chartDataUrl(key);
+                                     ~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:165:31 - error TS2339: Property 'dataUrlToBlob' does not exist on type 'NetworkPhasingComponent'.
+
+165       const blob = await this.dataUrlToBlob(dataUrl);
+                                  ~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:180:32 - error TS2339: Property 'chartDataUrl' does not exist on type 'NetworkPhasingComponent'.
+
+180     const dataUrl = await this.chartDataUrl(key);
+                                   ~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:573:14 - error TS2339: Property 'applyStudyParameters' does not exist on type 'NetworkPhasingComponent'.
+
+573         this.applyStudyParameters(report?.parameters || {});
+                 ~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:573:14 - error TS2339: Property 'applyStudyParameters' does not exist on type 'NetworkPhasingComponent'.
+
+573         this.applyStudyParameters(report?.parameters || {});
+                 ~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:356:61 - error TS2551: Property 'comparisonPhaseRow' does not exist on type 'NetworkPhasingComponent'. Did you mean 'comparisonError'?
+
+356           ...phases.map((phase: any, index: number) => this.comparisonPhaseRow(report, phase, index)),
+                                                                ~~~~~~~~~~~~~~~~~~
+
+  src/app/pages/networks/network-phasing/network-phasing.component.ts:143:3
+    143   comparisonError = '';
+          ~~~~~~~~~~~~~~~
+    'comparisonError' is declared here.
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:615:14 - error TS2339: Property 'updatePhaseComparisonCharts' does not exist on type 'NetworkPhasingComponent'.
+
+615         this.updatePhaseComparisonCharts();
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:767:10 - error TS2339: Property 'updatePhaseComparisonCharts' does not exist on type 'NetworkPhasingComponent'.
+
+767     this.updatePhaseComparisonCharts();
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:776:12 - error TS2339: Property 'updatePhaseComparisonCharts' does not exist on type 'NetworkPhasingComponent'.
+
+776       this.updatePhaseComparisonCharts();
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:793:14 - error TS2339: Property 'updatePhaseComparisonCharts' does not exist on type 'NetworkPhasingComponent'.
+
+793         this.updatePhaseComparisonCharts();
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:800:14 - error TS2339: Property 'updatePhaseComparisonCharts' does not exist on type 'NetworkPhasingComponent'.
+
+800         this.updatePhaseComparisonCharts();
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1081:10 - error TS2339: Property 'updateCandidateSensitivityCharts' does not exist on type 'NetworkPhasingComponent'.
+
+1081     this.updateCandidateSensitivityCharts(data);
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1082:10 - error TS2339: Property 'updatePhaseComparisonCharts' does not exist on type 'NetworkPhasingComponent'.
+
+1082     this.updatePhaseComparisonCharts();
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:365:29 - error TS2551: Property 'phaseDecisionMarkerOptions' does not exist on type 'NetworkPhasingComponent'. Did you mean 'phaseMarkerOptions'?
+
+365         markerOptions: this.phaseDecisionMarkerOptions(row),
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  src/app/pages/networks/network-phasing/network-phasing.component.ts:882:11
+    882   private phaseMarkerOptions(row: any): google.maps.MarkerOptions {
+                  ~~~~~~~~~~~~~~~~~~
+    'phaseMarkerOptions' is declared here.
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1280:27 - error TS2339: Property 'truncateLabel' does not exist on type 'NetworkPhasingComponent'.
+
+1280           shortName: this.truncateLabel(candidate.name || 'Candidate', 26),
+                               ~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1289:31 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1289           buildingCount: this.candidateBuildingCount(candidate),
+                                   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1289:31 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1289           buildingCount: this.candidateBuildingCount(candidate),
+                                   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1289:31 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1289           buildingCount: this.candidateBuildingCount(candidate),
+                                   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1289:31 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1289           buildingCount: this.candidateBuildingCount(candidate),
+                                   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1289:31 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1289           buildingCount: this.candidateBuildingCount(candidate),
+                                   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1289:31 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1289           buildingCount: this.candidateBuildingCount(candidate),
+                                   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1289:31 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1289           buildingCount: this.candidateBuildingCount(candidate),
+                                   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1114:29 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1114         buildingCount: this.candidateBuildingCount(candidate),
+                                 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1289:31 - error TS2339: Property 'candidateBuildingCount' does not exist on type 'NetworkPhasingComponent'.
+
+1289           buildingCount: this.candidateBuildingCount(candidate),
+                                   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+√ Browser application bundle generation complete.
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:193:10 - error TS2339: Property 'syncPhaseControlsFromYears' does not exist on type 'NetworkPhasingComponent'.
+
+193     this.syncPhaseControlsFromYears();
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:776:10 - error TS2339: Property 'syncPhaseControlsFromYears' does not exist on type 'NetworkPhasingComponent'.
+
+776     this.syncPhaseControlsFromYears();
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:918:10 - error TS2339: Property 'syncPhaseControlsFromYears' does not exist on type 'NetworkPhasingComponent'.
+
+918     this.syncPhaseControlsFromYears(periods.length ? periods : parameters.periods || []);
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -40,65 +363,10 @@ Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.compon
 √ Browser application bundle generation complete.
 √ Browser application bundle generation complete.
 
-Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:301:12 - error TS2339: Property 'downloadChart' does not exist on type 'PipeSectionAnalysisComponent'.
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:1267:10 - error TS2339: Property 'updatePhaseStoryCharts' does not exist on type 'NetworkPhasingComponent'.
 
-301       this.downloadChart(dataUrl, filename);
-               ~~~~~~~~~~~~~
-
-
-Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:652:5 - error TS2322: Type '{ label: string; diameterMm: number; velocityPct: number; pressurePct: number; pumpPct: number; pipeBodyPct: number; velocityStatus: string; pressureStatus: string; isCurrent: boolean; }[]' is not assignable to type 'DiameterTradeoffRow[]'.
-  Type '{ label: string; diameterMm: number; velocityPct: number; pressurePct: number; pumpPct: number; pipeBodyPct: number; velocityStatus: string; pressureStatus: string; isCurrent: boolean; }' is missing the following properties from type 'DiameterTradeoffRow': velocityMS, pressureGradientPaM, pumpingPowerKw, relativePipeArea
-
-652     return this.diameterOptions.map((pipe) => {
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-653       const row = this.evaluateGuide(pipe.label, { diameterMm: pipe.diameterMm });
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-... 
-664       };
-    ~~~~~~~~
-665     });
-    ~~~~~~~
-
-
-
-√ Browser application bundle generation complete.
-
-Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:301:12 - error TS2339: Property 'downloadChart' does not exist on type 'PipeSectionAnalysisComponent'.
-
-301       this.downloadChart(dataUrl, filename);
-               ~~~~~~~~~~~~~
-
-
-Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:652:5 - error TS2322: Type '{ label: string; diameterMm: number; velocityPct: number; pressurePct: number; pumpPct: number; pipeBodyPct: number; velocityStatus: string; pressureStatus: string; isCurrent: boolean; }[]' is not assignable to type 'DiameterTradeoffRow[]'.
-  Type '{ label: string; diameterMm: number; velocityPct: number; pressurePct: number; pumpPct: number; pipeBodyPct: number; velocityStatus: string; pressureStatus: string; isCurrent: boolean; }' is missing the following properties from type 'DiameterTradeoffRow': velocityMS, pressureGradientPaM, pumpingPowerKw, relativePipeArea
-
-652     return this.diameterOptions.map((pipe) => {
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-653       const row = this.evaluateGuide(pipe.label, { diameterMm: pipe.diameterMm });
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-... 
-664       };
-    ~~~~~~~~
-665     });
-    ~~~~~~~
-
-
-
-√ Browser application bundle generation complete.
-
-Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:301:12 - error TS2339: Property 'downloadChart' does not exist on type 'PipeSectionAnalysisComponent'.
-
-301       this.downloadChart(dataUrl, filename);
-               ~~~~~~~~~~~~~
-
-
-
-√ Browser application bundle generation complete.
-
-Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:301:12 - error TS2339: Property 'downloadChart' does not exist on type 'PipeSectionAnalysisComponent'.
-
-301       this.downloadChart(dataUrl, filename);
-               ~~~~~~~~~~~~~
+1267     this.updatePhaseStoryCharts(data);
+              ~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -108,67 +376,16 @@ Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.compon
 √ Browser application bundle generation complete.
 √ Browser application bundle generation complete.
 √ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
 
-Error: src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:396:38 - error TS2551: Property 'buildFeasibleCombinations' does not exist on type 'PipeSectionAnalysisComponent'. Did you mean 'feasibleCombinations'?
+Error: src/app/pages/networks/network-phasing/network-phasing.component.ts:362:17 - error TS2339: Property 'timelineForScenario' does not exist on type 'NetworkPhasingComponent'.
 
-396     this.feasibleCombinations = this.buildFeasibleCombinations();
-                                         ~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  src/app/pages/networks/pipe-section-analysis/pipe-section-analysis.component.ts:169:3
-    169   feasibleCombinations: FeasibleCombination[] = [];
-          ~~~~~~~~~~~~~~~~~~~~
-    'feasibleCombinations' is declared here.
+362     return this.timelineForScenario(this.currentData);
+                    ~~~~~~~~~~~~~~~~~~~
 
 
 
 √ Browser application bundle generation complete.
 √ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-
-Error: src/app/pages/networks/network-emissions-compare/network-emissions-compare.component.ts:371:36 - error TS1005: ')' expected.
-
-371           return lines.join('<br/>';
-                                       ~
-
-
-
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-√ Browser application bundle generation complete.
-
-Error: src/app/pages/networks/network-emissions-compare/network-emissions-compare.component.ts:142:19 - error TS2339: Property 'detail' does not exist on type 'never'.
-
-142             data?.detail || data?.error || 'Choose networks from the same project and try again.',
-                      ~~~~~~
-
-
-Error: src/app/pages/networks/network-emissions-compare/network-emissions-compare.component.ts:142:35 - error TS2339: Property 'error' does not exist on type 'never'.
-
-142             data?.detail || data?.error || 'Choose networks from the same project and try again.',
-                                      ~~~~~
-
-
-
 √ Browser application bundle generation complete.
 √ Browser application bundle generation complete.
 √ Browser application bundle generation complete.

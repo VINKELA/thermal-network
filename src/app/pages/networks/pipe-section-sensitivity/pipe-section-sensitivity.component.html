@@ -1,0 +1,284 @@
+<div class="pipe-sensitivity-page">
+  <nb-card class="control-card" [nbSpinner]="isLoading || isAnalyzing">
+    <nb-card-header>
+      <div>
+        <span class="eyebrow">Network design sensitivity</span>
+        <h5>Design Pressure, Pumping Power, and Lifecycle Cost</h5>
+        <p>Compare pressure-drop targets and see how pipe diameter, pumping power, and lifecycle cost respond for the selected network.</p>
+      </div>
+      <button nbButton status="basic" outline (click)="resetAssumptions()" [disabled]="!sections.length">
+        <nb-icon icon="refresh-outline"></nb-icon>
+        Reset Assumptions
+      </button>
+    </nb-card-header>
+
+    <nb-card-body>
+      <section class="selector-grid">
+        <label>
+          <span>Network</span>
+          <nb-select fullWidth [selected]="selectedNetworkId" (selectedChange)="onNetworkChange($event)">
+            <nb-option *ngFor="let network of networks" [value]="network.id">
+              {{ network.name }}
+            </nb-option>
+          </nb-select>
+        </label>
+
+        <label>
+          <span>Pipe sizing run</span>
+          <nb-select fullWidth [selected]="selectedPipeSizingId" (selectedChange)="onRunChange($event)">
+            <nb-option *ngFor="let run of filteredRuns" [value]="run.id">
+              {{ run.name }} · {{ run.topology_source_name || run.network_name || 'Network' }}
+            </nb-option>
+          </nb-select>
+        </label>
+
+        <label>
+          <span>Design load multiplier</span>
+          <div class="range-control">
+            <input type="range" min="0.25" max="2" step="0.05" [ngModel]="loadMultiplier" (ngModelChange)="setLoadMultiplier($event)">
+            <strong>{{ formatPercent(loadMultiplier) }}</strong>
+          </div>
+        </label>
+      </section>
+
+      <section class="assumption-grid">
+        <label>
+          <span>Electricity cost (CAD/kWh)</span>
+          <input nbInput type="number" min="0" step="0.01" [(ngModel)]="electricityCost" (ngModelChange)="onAssumptionChange()">
+        </label>
+        <label>
+          <span>Equivalent full-load hours / year</span>
+          <input nbInput type="number" min="0" step="100" [(ngModel)]="hoursPerYear" (ngModelChange)="onAssumptionChange()">
+        </label>
+        <label>
+          <span>Project life (years)</span>
+          <input nbInput type="number" min="1" step="1" [(ngModel)]="lifespanYears" (ngModelChange)="onAssumptionChange()">
+        </label>
+        <label>
+          <span>Network delta T</span>
+          <strong>{{ formatNumber(constants.supply_temperature_c - constants.return_temperature_c, 1) }} C</strong>
+        </label>
+        <label>
+          <span>Velocity window</span>
+          <strong>{{ formatNumber(constants.min_velocity, 1) }}-{{ formatNumber(constants.max_velocity, 1) }} m/s</strong>
+        </label>
+        <label>
+          <span>Design target</span>
+          <strong>{{ formatNumber(constants.target_pressure_drop, 0) }} Pa/m</strong>
+        </label>
+      </section>
+
+      <nb-alert status="danger" outline="danger" *ngIf="error">{{ error }}</nb-alert>
+    </nb-card-body>
+  </nb-card>
+
+  <ng-container *ngIf="currentScenario && targetScenarios.length">
+    <section class="charts-grid">
+      <article class="chart-card wide">
+        <header>
+          <div>
+            <span class="eyebrow">Design pressure economics</span>
+            <h2>Pressure Target, Pumping, and Lifecycle Cost</h2>
+          </div>
+          <div class="chart-actions compact">
+            <button type="button" class="copy-button" (click)="copyChart('lifecycle', 'design-pressure-pumping-lifecycle.png')">
+              <nb-icon icon="copy-outline"></nb-icon>
+              Copy HD
+            </button>
+            <button type="button" class="copy-button secondary" (click)="downloadChart('lifecycle', 'design-pressure-pumping-lifecycle.png')">
+              <nb-icon icon="download-outline"></nb-icon>
+              PNG
+            </button>
+          </div>
+        </header>
+        <div class="chart" echarts [options]="lifecycleTradeoffOption" (chartInit)="onChartInit('lifecycle', $event)"></div>
+      </article>
+
+      <article class="chart-card">
+        <header>
+          <div>
+            <span class="eyebrow">Hydraulic response</span>
+            <h2>Actual Pressure Drop and Pump Power</h2>
+          </div>
+          <div class="chart-actions compact">
+            <button type="button" class="copy-button" (click)="copyChart('diameter-pump', 'design-pressure-hydraulic-response.png')">
+              <nb-icon icon="copy-outline"></nb-icon>
+              Copy HD
+            </button>
+            <button type="button" class="copy-button secondary" (click)="downloadChart('diameter-pump', 'design-pressure-hydraulic-response.png')">
+              <nb-icon icon="download-outline"></nb-icon>
+              PNG
+            </button>
+          </div>
+        </header>
+        <div class="chart" echarts [options]="diameterPumpOption" (chartInit)="onChartInit('diameter-pump', $event)"></div>
+      </article>
+
+      <article class="chart-card">
+        <header>
+          <div>
+            <span class="eyebrow">Network composition</span>
+            <h2>Pipe Length by Diameter</h2>
+          </div>
+          <div class="chart-actions compact">
+            <button type="button" class="copy-button" (click)="copyChart('dn-distribution', 'network-dn-distribution.png')">
+              <nb-icon icon="copy-outline"></nb-icon>
+              Copy HD
+            </button>
+            <button type="button" class="copy-button secondary" (click)="downloadChart('dn-distribution', 'network-dn-distribution.png')">
+              <nb-icon icon="download-outline"></nb-icon>
+              PNG
+            </button>
+          </div>
+        </header>
+        <div class="chart" echarts [options]="dnDistributionOption" (chartInit)="onChartInit('dn-distribution', $event)"></div>
+      </article>
+
+      <article class="chart-card wide">
+        <header>
+          <div>
+            <span class="eyebrow">Diameter-coded network</span>
+            <h2>Pipe Diameter and Section Pressure</h2>
+          </div>
+          <div class="chart-actions">
+            <label class="scenario-picker">
+              <span>Map sizing</span>
+              <nb-select size="small" [selected]="selectedNetworkDiameterScenarioKey" (selectedChange)="selectedNetworkDiameterScenarioKey = $event; onNetworkDiameterScenarioChange()">
+                <nb-option *ngFor="let option of networkDiameterScenarioOptions" [value]="option.key">
+                  {{ option.label }}
+                </nb-option>
+              </nb-select>
+            </label>
+            <button type="button" class="copy-button" (click)="copyChart('network-diameter', 'network-diameter-sections.png')">
+              <nb-icon icon="copy-outline"></nb-icon>
+              Copy HD
+            </button>
+            <button type="button" class="copy-button secondary" (click)="downloadChart('network-diameter', 'network-diameter-sections.png')">
+              <nb-icon icon="download-outline"></nb-icon>
+              PNG
+            </button>
+          </div>
+        </header>
+        <div class="chart network-layout-chart" echarts [options]="networkDiameterOption" (chartInit)="onChartInit('network-diameter', $event)"></div>
+      </article>
+
+      <article class="chart-card">
+        <header>
+          <div>
+            <span class="eyebrow">Section economics</span>
+            <h2>Where Upsizing Pays Back</h2>
+          </div>
+          <div class="chart-actions compact">
+            <button type="button" class="copy-button" (click)="copyChart('segment-economics', 'network-section-upsizing-payback.png')">
+              <nb-icon icon="copy-outline"></nb-icon>
+              Copy HD
+            </button>
+            <button type="button" class="copy-button secondary" (click)="downloadChart('segment-economics', 'network-section-upsizing-payback.png')">
+              <nb-icon icon="download-outline"></nb-icon>
+              PNG
+            </button>
+          </div>
+        </header>
+        <div class="chart" echarts [options]="segmentEconomicsOption" (chartInit)="onChartInit('segment-economics', $event)"></div>
+      </article>
+    </section>
+
+    <section class="tables-grid">
+      <article class="table-card">
+        <header>
+          <div>
+            <span class="eyebrow">Network policies</span>
+            <h2>Scenario Summary</h2>
+          </div>
+          <strong>{{ scenarioRows.length }} policies</strong>
+        </header>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Policy</th>
+                <th>Pipe CAPEX</th>
+                <th>Lifetime Pumping</th>
+                <th>Lifetime Heat Loss</th>
+                <th>Total Lifecycle</th>
+                <th>Pump kW</th>
+                <th>Heat Loss kW</th>
+                <th>Average DN</th>
+                <th>Average Pa/m</th>
+                <th>Max Velocity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of scenarioRows">
+                <td>
+                  <strong>{{ row.label }}</strong>
+                  <small>{{ row.description }}</small>
+                </td>
+                <td>{{ formatCurrency(row.capexCad) }}</td>
+                <td>{{ formatCurrency(row.lifetimePumpCad) }}</td>
+                <td>{{ formatCurrency(row.lifetimeHeatLossCad) }}</td>
+                <td>{{ formatCurrency(row.lifecycleCad) }}</td>
+                <td>{{ formatNumber(row.pumpingPowerKw, 2) }}</td>
+                <td>{{ formatNumber(row.heatLossKw, 2) }}</td>
+                <td>DN{{ formatNumber(row.averageDn, 0) }}</td>
+                <td>{{ formatNumber(row.averagePressurePaM, 0) }}</td>
+                <td>{{ formatNumber(row.maxVelocityMS, 2) }} m/s</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="table-card">
+        <header>
+          <div>
+            <span class="eyebrow">Pipe sections</span>
+            <h2>Most Important Diameter Decisions</h2>
+          </div>
+          <strong>{{ segmentInsights.length }} sections</strong>
+        </header>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Saved DN</th>
+                <th>Compared DN</th>
+                <th>Pressure Change</th>
+                <th>Pump Change</th>
+                <th>Extra CAPEX</th>
+                <th>Pump Saving</th>
+                <th>Net Saving</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of topSegmentInsights">
+                <td>
+                  <strong>{{ row.sectionName }}</strong>
+                  <small>{{ formatNumber(row.lengthM, 0) }} m · {{ formatNumber(row.peakLoadKw, 0) }} kW · {{ row.decision }}</small>
+                </td>
+                <td>DN{{ row.currentDn }}<br><small>{{ formatNumber(row.currentVelocity, 2) }} m/s</small></td>
+                <td>DN{{ row.economicDn }}<br><small>{{ formatNumber(row.economicVelocity, 2) }} m/s</small></td>
+                <td>{{ formatNumber(row.currentPressurePaM, 0) }} to {{ formatNumber(row.economicPressurePaM, 0) }} Pa/m</td>
+                <td>{{ formatNumber(row.currentPumpKw, 2) }} to {{ formatNumber(row.economicPumpKw, 2) }} kW</td>
+                <td>{{ formatCurrency(row.extraPipeCapexCad) }}</td>
+                <td>{{ formatCurrency(row.lifetimePumpSavingCad) }}</td>
+                <td [ngClass]="statusClass(row.netLifecycleSavingCad)">{{ formatCurrency(row.netLifecycleSavingCad) }}</td>
+                <td>
+                  <button nbButton ghost size="small" status="info" (click)="openDetailedSection(row.sectionId)">
+                    Open
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </ng-container>
+
+  <div class="empty-state" *ngIf="!isLoading && !isAnalyzing && !currentScenario">
+    Select a network with a completed pipe sizing run to see the diameter and pumping-power tradeoff.
+  </div>
+</div>

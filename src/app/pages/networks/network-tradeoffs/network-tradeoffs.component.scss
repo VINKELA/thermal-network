@@ -1,0 +1,281 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 4.75rem);
+  background: #edf1f7;
+  color: #0f172a;
+}
+
+.tradeoffs-page {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.selector-card,
+.kpi-grid article,
+.insight-card,
+.chart-card,
+.table-card {
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
+}
+
+.selector-card nb-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h5 {
+    margin: 0.1rem 0 0;
+    color: #0f172a;
+    font-size: 1.45rem;
+    font-weight: 950;
+  }
+
+  p {
+    margin: 0.25rem 0 0;
+    color: #64748b;
+    font-weight: 850;
+  }
+}
+
+.eyebrow {
+  display: block;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.selector-grid {
+  display: grid;
+  grid-template-columns: minmax(18rem, 1fr) minmax(20rem, 1.25fr) minmax(9rem, 0.35fr);
+  gap: 1rem;
+  align-items: end;
+
+  label {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+  }
+
+  span {
+    color: #64748b;
+    font-size: 0.7rem;
+    font-weight: 950;
+    text-transform: uppercase;
+  }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+
+  article {
+    min-width: 0;
+    padding: 1rem;
+  }
+
+  span,
+  small {
+    display: block;
+  }
+
+  span {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 950;
+    text-transform: uppercase;
+  }
+
+  strong {
+    display: block;
+    margin-top: 0.24rem;
+    color: #0f172a;
+    font-size: clamp(1.35rem, 2vw, 2rem);
+    font-weight: 950;
+    line-height: 1.05;
+  }
+
+  small {
+    margin-top: 0.25rem;
+    color: #64748b;
+    font-weight: 850;
+  }
+}
+
+.insight-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1.1rem 1.2rem;
+
+  h2 {
+    margin: 0.1rem 0 0;
+    color: #0f172a;
+    font-size: clamp(1.45rem, 2vw, 2.2rem);
+    font-weight: 950;
+  }
+
+  p {
+    margin: 0.35rem 0 0;
+    color: #334155;
+    font-size: 0.95rem;
+    font-weight: 850;
+    line-height: 1.45;
+  }
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.chart-card,
+.table-card {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.chart-card.wide {
+  grid-column: span 2;
+}
+
+.chart-card header,
+.table-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+
+  h2 {
+    margin: 0.1rem 0 0;
+    color: #0f172a;
+    font-size: 1.12rem;
+    font-weight: 950;
+  }
+
+  strong {
+    color: #334155;
+    font-weight: 950;
+  }
+}
+
+.chart {
+  width: 100%;
+  min-height: 390px;
+  height: min(48vh, 460px);
+}
+
+.pair-card h2 {
+  font-size: 1rem;
+}
+
+.pair-chart {
+  min-height: 330px;
+  height: min(40vh, 380px);
+}
+
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 34px;
+  padding: 0 0.75rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.8rem;
+  font-weight: 950;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: #dbeafe;
+  }
+}
+
+.table-scroll {
+  max-height: 50vh;
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  min-width: 1120px;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+
+  th,
+  td {
+    padding: 0.78rem 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 950;
+    text-transform: uppercase;
+  }
+
+  td {
+    color: #1e293b;
+    font-weight: 850;
+  }
+
+  td strong {
+    color: #0f172a;
+    font-weight: 950;
+  }
+
+  tr.selected-row {
+    background: #f0fdf4;
+  }
+}
+
+@media (max-width: 1450px) {
+  .selector-grid,
+  .kpi-grid,
+  .insight-card,
+  .charts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chart-card.wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 840px) {
+  .tradeoffs-page {
+    padding: 0.75rem;
+  }
+
+  .selector-grid,
+  .kpi-grid,
+  .insight-card,
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card.wide {
+    grid-column: span 1;
+  }
+}

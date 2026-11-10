@@ -4,6 +4,8 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
+const DEFAULT_API_URL = 'http://127.0.0.1:8000/api';
+
 export interface AuthUser {
   id: number;
   username: string;
@@ -39,7 +41,7 @@ export interface ProjectMembership {
 
 @Injectable({ providedIn: 'root' })
 export class AppAuthService {
-  private readonly apiUrl = `${environment.appUrl}/`;
+  private readonly apiUrl = `${(environment as any).appUrl || DEFAULT_API_URL}/`;
   private readonly tokenKey = 'thermalNetworkToken';
   private readonly legacyTokenKey = 'jwt';
   private readonly currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
@@ -50,7 +52,8 @@ export class AppAuthService {
 
   constructor(private http: HttpClient) {
     if (this.token) {
-      this.refreshMe().subscribe();
+      // Let dependency injection finish before a request constructs the auth interceptor.
+      Promise.resolve().then(() => this.refreshMe().subscribe());
     }
   }
 
@@ -67,6 +70,7 @@ export class AppAuthService {
   }
 
   login(username: string, password: string): Observable<AuthPayload> {
+    this.clearSession();
     return this.http.post<AuthPayload>(`${this.apiUrl}auth/login/`, { username, password })
       .pipe(tap(payload => this.storeSession(payload)));
   }
@@ -93,10 +97,21 @@ export class AppAuthService {
   }
 
   refreshMe(): Observable<AuthPayload | null> {
+    const tokenAtRequestStart = this.token;
+    if (!tokenAtRequestStart) {
+      return of(null);
+    }
+
     return this.http.get<AuthPayload>(`${this.apiUrl}auth/me/`).pipe(
-      tap(payload => this.storeSession(payload)),
+      tap(payload => {
+        if (this.token === tokenAtRequestStart) {
+          this.storeSession(payload);
+        }
+      }),
       catchError(() => {
-        this.clearSession();
+        if (this.token === tokenAtRequestStart) {
+          this.clearSession();
+        }
         return of(null);
       }),
     );

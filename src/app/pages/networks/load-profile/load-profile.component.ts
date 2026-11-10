@@ -26,6 +26,15 @@ interface ChartLegendItem {
 })
 export class LoadProfileComponent implements OnInit, OnDestroy {
   private alive = true;
+  importedInventory = false;
+
+  importedProfileUrl(action: string): string {
+    const state = this.filterState$.getValue();
+    let url = `imported-heating/?action=${action}&project_id=${state.project}&year=${this.selectedYear}`;
+    if (state.network && state.network !== 'all') url += `&network_id=${state.network}`;
+    return url;
+  }
+
 
   // --- 1. REACTIVE STATE MANAGEMENT ---
   // The single source of truth for our UI filters
@@ -133,7 +142,10 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
         if (filters.project) params += `&network__project=${filters.project}`;
         if (filters.network && filters.network !== 'all') params += `&network=${filters.network}`;
         if (filters.search) params += `&search=${encodeURIComponent(filters.search)}`;
-        return this.api.get<any>(`nodes/${params}`).pipe(
+        const directoryUrl = this.importedInventory
+          ? this.importedProfileUrl('directory') + `&type=${filters.type}&page=${filters.page}&search=${encodeURIComponent(filters.search)}`
+          : `nodes/${params}`;
+        return this.api.get<any>(directoryUrl).pipe(
           map(res => {
             // 1. Extract the raw array from the DRF pagination wrapper
             const rawArray = res.results || (Array.isArray(res) ? res : []);
@@ -176,6 +188,15 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
   
   // Triggers when Project dropdown changes
   onProjectChange(projectId: number) {
+    this.importedInventory = !!this.projects.find(p => p.id === projectId)?.has_imported_hdd;
+    if (this.importedInventory) {
+      this.availableYears = [2023, 2022, 2021];
+      if (!this.availableYears.includes(this.selectedYear)) this.selectedYear = 2023;
+      this.selectedChartView = 'trend';
+    } else {
+      const current = new Date().getFullYear();
+      this.availableYears = Array.from({length: 7}, (_, i) => current + 1 - i);
+    }
     const state = this.filterState$.getValue();
     this.filterState$.next({ ...state, project: projectId, network: 'all', page: 1 });
     this.resetSelectionScope();
@@ -260,6 +281,7 @@ export class LoadProfileComponent implements OnInit, OnDestroy {
     let url = `aggregate-profile/?project_id=${state.project}&start_date__gte=${start}&end_date__lte=${end}`;
     if (state.network && state.network !== 'all') url += `&network_id=${state.network}`;
 
+    if (this.importedInventory) url = this.importedProfileUrl('aggregate');
     this.api.get<any>(url).subscribe({
       next: (data) => {
         this.aggregateSystemData = data.results || data || [];
@@ -376,7 +398,9 @@ toggleNodeSelection(node: any) {
     else if (node.boiler) param = `boiler=${node.boiler}`;
     else param = `node=${node.id}`; // Fallback
 
-    const url = `load-profiles/?${param}&start_date__gte=${start}&end_date__lte=${end}&ordering=start_date`;
+    const url = this.importedInventory
+      ? this.importedProfileUrl('individual') + `&building=${node.building}`
+      : `load-profiles/?${param}&start_date__gte=${start}&end_date__lte=${end}&ordering=start_date`;
 
     this.api.get<any>(url).subscribe({
       next: (data) => {

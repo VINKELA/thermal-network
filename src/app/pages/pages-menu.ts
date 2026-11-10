@@ -44,6 +44,16 @@ export const MENU_ITEMS: NbMenuItem[] = [
     link: '/pages/load-profiles'
   },
   {
+    title: 'Pipe Sizing Sensitivity',
+    icon: 'activity-outline',
+    link: '/pages/pipe-sensitivity',
+  },
+  {
+    title: 'Compare Load Models',
+    icon: 'bar-chart-outline',
+    link: '/pages/load-profile-comparison',
+  },
+  {
     title: 'Network Demand Map',
     icon: 'map-outline',
     link: '/pages/networks/demand-map',
@@ -52,6 +62,16 @@ export const MENU_ITEMS: NbMenuItem[] = [
     title: 'Network Evolution',
     icon: 'trending-up-outline',
     link: '/pages/networks/evolution',
+    },
+    {
+    title: 'Network Phasing',
+    icon: 'calendar-outline',
+    link: '/pages/networks/phasing',
+    },
+    {
+    title: 'Network Tradeoffs',
+    icon: 'swap-outline',
+    link: '/pages/networks/tradeoffs',
     },
     {
     title: 'Techno-Economic Analysis',
@@ -103,10 +123,15 @@ export const MENU_ITEMS: NbMenuItem[] = [
     icon: 'map-outline',
     link: '/pages/routes',
     },
-    {
+  {
     title: 'Pipe Sizes',
     icon: 'droplet-outline',
     link: '/pages/pipes',
+  },
+  {
+    title: 'Pipe Sensitivity Analysis',
+    icon: 'activity-outline',
+    link: '/pages/pipe-section-sensitivity',
   },
   {
     title: 'Network Costs',

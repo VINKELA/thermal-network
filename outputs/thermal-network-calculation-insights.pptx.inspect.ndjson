@@ -1,0 +1,277 @@
+{"kind":"deck","id":"pr/qsu1nx","name":"Deck"}
+{"kind":"layout","layoutId":"8987d422-a861-4704-bf19-f7ec547bb9b4","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"f614969b-8e27-4271-afe5-d249b613f700","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/vdx9l4","slide":1,"title":"District Heat Network","textShapes":10}
+{"kind":"textbox","id":"sh/pgnml8rq","slide":1,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,42,600,48]}
+{"kind":"textbox","id":"sh/2dw3qt8z","slide":1,"text":"Pipe Sizing Metrics Explained","textPreview":"Pipe Sizing Metrics Explained","textChars":29,"textLines":1,"bbox":[42,190,940,170]}
+{"kind":"textbox","id":"sh/3e54jy9k","slide":1,"text":"How heat demand becomes flow, diameter, head loss, pumping cost, heat loss, and lifecycle economics.","textPreview":"How heat demand becomes flow, diameter, head loss, pumping cost, heat loss, and lifecycle economics.","textChars":100,"textLines":1,"bbox":[42,410,760,76]}
+{"kind":"shape","id":"sh/c3elwnqh","slide":1,"bbox":[880,106,270,420]}
+{"kind":"textbox","id":"sh/d4nmp8rm","slide":1,"text":"CAPEX","textPreview":"CAPEX","textChars":5,"textLines":1,"bbox":[930,150,180,44]}
+{"kind":"textbox","id":"sh/qhw3ud8b","slide":1,"text":"+","textPreview":"+","textChars":1,"textLines":1,"bbox":[930,215,180,44]}
+{"kind":"textbox","id":"sh/bi54ni9w","slide":1,"text":"PUMPING","textPreview":"PUMPING","textChars":7,"textLines":1,"bbox":[910,276,220,44]}
+{"kind":"textbox","id":"sh/snulkjqx","slide":1,"text":"+","textPreview":"+","textChars":1,"textLines":1,"bbox":[930,338,180,44]}
+{"kind":"textbox","id":"sh/t83mdori","slide":1,"text":"HEAT LOSS","textPreview":"HEAT LOSS","textChars":9,"textLines":1,"bbox":[900,400,230,44]}
+{"kind":"textbox","id":"sh/9knmtcny","slide":1,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/8ze5k76d","slide":1,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"notes","id":"nt/vdx9l4","slide":1,"text":""}
+{"kind":"slide","id":"sl/s5tlwp","slide":2,"title":"The model is a chain from thermal load to lifecycle cost","textShapes":26}
+{"kind":"textbox","id":"sh/76psrmtc","slide":2,"text":"The model is a chain from thermal load to lifecycle cost","textPreview":"The model is a chain from thermal load to lifecycle cost","textChars":56,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/s7y9kruh","slide":2,"text":"Each metric answers one step in the design question: how much heat, through what pipe, at what operating cost.","textPreview":"Each metric answers one step in the design question: how much heat, through what pipe, at what operating cost.","textChars":110,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/t87atcb2","slide":2,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/ihwrexcf","slide":2,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/ji58n2t0","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/kje9g7ul","slide":2,"bbox":[54,260,142,126]}
+{"kind":"shape","id":"sh/5k7qpcb6","slide":2,"bbox":[54,260,142,8]}
+{"kind":"textbox","id":"sh/2d0rq1cz","slide":2,"text":"Heat load","textPreview":"Heat load","textChars":9,"textLines":1,"bbox":[67,286,116,32]}
+{"kind":"textbox","id":"sh/3e9sz6t4","slide":2,"text":"kW demand","textPreview":"kW demand","textChars":9,"textLines":1,"bbox":[67,326,116,36]}
+{"kind":"textbox","id":"sh/f6xwfyps","slide":2,"text":">","textPreview":">","textChars":1,"textLines":1,"bbox":[202,300,28,46]}
+{"kind":"shape","id":"sh/e5ofmt87","slide":2,"bbox":[224,260,142,126]}
+{"kind":"shape","id":"sh/18feh87y","slide":2,"bbox":[224,260,142,8]}
+{"kind":"textbox","id":"sh/g76xo3qd","slide":2,"text":"Mass flow","textPreview":"Mass flow","textChars":9,"textLines":1,"bbox":[237,286,116,32]}
+{"kind":"textbox","id":"sh/3uxwjyp4","slide":2,"text":"kg/s water","textPreview":"kg/s water","textChars":10,"textLines":1,"bbox":[237,326,116,36]}
+{"kind":"textbox","id":"sh/29ofqd8j","slide":2,"text":">","textPreview":">","textChars":1,"textLines":1,"bbox":[372,300,28,46]}
+{"kind":"shape","id":"sh/pwzel87u","slide":2,"bbox":[394,260,142,126]}
+{"kind":"shape","id":"sh/ov6xs3qp","slide":2,"bbox":[394,260,142,8]}
+{"kind":"textbox","id":"sh/byhwnip0","slide":2,"text":"Diameter","textPreview":"Diameter","textChars":8,"textLines":1,"bbox":[407,286,116,32]}
+{"kind":"textbox","id":"sh/qx8fud8f","slide":2,"text":"catalog DN","textPreview":"catalog DN","textChars":10,"textLines":1,"bbox":[407,326,116,36]}
+{"kind":"textbox","id":"sh/mtszmhsn","slide":2,"text":">","textPreview":">","textChars":1,"textLines":1,"bbox":[542,300,28,46]}
+{"kind":"shape","id":"sh/7u10vm98","slide":2,"bbox":[564,260,142,126]}
+{"kind":"shape","id":"sh/8vuhorat","slide":2,"bbox":[564,260,142,8]}
+{"kind":"textbox","id":"sh/9w3ixwre","slide":2,"text":"Pressure","textPreview":"Pressure","textChars":8,"textLines":1,"bbox":[577,286,116,32]}
+{"kind":"textbox","id":"sh/ypszixsr","slide":2,"text":"Pa/m and head","textPreview":"Pa/m and head","textChars":13,"textLines":1,"bbox":[577,326,116,36]}
+{"kind":"textbox","id":"sh/zq1gr29c","slide":2,"text":">","textPreview":">","textChars":1,"textLines":1,"bbox":[712,300,28,46]}
+{"kind":"shape","id":"sh/0rahk7ax","slide":2,"bbox":[734,260,142,126]}
+{"kind":"shape","id":"sh/lsjitcr2","slide":2,"bbox":[734,260,142,8]}
+{"kind":"textbox","id":"sh/ilczu1sv","slide":2,"text":"Pumping","textPreview":"Pumping","textChars":7,"textLines":1,"bbox":[747,286,116,32]}
+{"kind":"textbox","id":"sh/jm50369g","slide":2,"text":"kW and CAD","textPreview":"kW and CAD","textChars":10,"textLines":1,"bbox":[747,326,116,36]}
+{"kind":"textbox","id":"sh/dsru94fu","slide":2,"text":">","textPreview":">","textChars":1,"textLines":1,"bbox":[882,300,28,46]}
+{"kind":"shape","id":"sh/sritgzy9","slide":2,"bbox":[904,260,142,126]}
+{"kind":"shape","id":"sh/rqpc7uxo","slide":2,"bbox":[904,260,142,8]}
+{"kind":"textbox","id":"sh/qpgbepg3","slide":2,"text":"Heat loss","textPreview":"Heat loss","textChars":9,"textLines":1,"bbox":[917,286,116,32]}
+{"kind":"textbox","id":"sh/547a5kfy","slide":2,"text":"kW and CAD","textPreview":"kW and CAD","textChars":10,"textLines":1,"bbox":[917,326,116,36]}
+{"kind":"textbox","id":"sh/43ytcfyd","slide":2,"text":">","textPreview":">","textChars":1,"textLines":1,"bbox":[1052,300,28,46]}
+{"kind":"shape","id":"sh/32ps3axs","slide":2,"bbox":[1074,260,142,126]}
+{"kind":"shape","id":"sh/i1gba5g7","slide":2,"bbox":[1074,260,142,8]}
+{"kind":"textbox","id":"sh/p0buhof2","slide":2,"text":"Lifecycle","textPreview":"Lifecycle","textChars":9,"textLines":1,"bbox":[1087,286,116,32]}
+{"kind":"textbox","id":"sh/oz2tojyh","slide":2,"text":"CAPEX + OPEX","textPreview":"CAPEX + OPEX","textChars":12,"textLines":1,"bbox":[1087,326,116,36]}
+{"kind":"textbox","id":"sh/wr6tsfu1","slide":2,"text":"Insight","textPreview":"Insight","textChars":7,"textLines":1,"bbox":[56,500,160,32]}
+{"kind":"textbox","id":"sh/xsfalkbm","slide":2,"text":"A design looks good only when it balances the full chain. A small pipe can lower construction cost, but it may create high velocity, high head loss, and expensive pumping. A larger pipe can reduce pumping but may not pay back if the section is short or lightly loaded.","textPreview":"A design looks good only when it balances the full chain. A small pipe can lower construction cost, but it may create high velocity, high...","textChars":268,"textLines":1,"bbox":[56,540,1130,78]}
+{"kind":"notes","id":"nt/s5tlwp","slide":2,"text":""}
+{"kind":"slide","id":"sl/3me4nd","slide":3,"title":"Design load multiplier stress-tests future heat demand","textShapes":12}
+{"kind":"textbox","id":"sh/vytkrylk","slide":3,"text":"Design load multiplier stress-tests future heat demand","textPreview":"Design load multiplier stress-tests future heat demand","textChars":54,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/gz2lk3mp","slide":3,"text":"The multiplier scales peak heat load before hydraulic calculations are run.","textPreview":"The multiplier scales peak heat load before hydraulic calculations are run.","textChars":75,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/h0b2t83a","slide":3,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/i1k3md4v","slide":3,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/3mtkvilg","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"textbox","id":"sh/4n2lonm1","slide":3,"text":"Design heat load","textPreview":"Design heat load","textChars":16,"textLines":1,"bbox":[58,230,520,30]}
+{"kind":"shape","id":"sh/5ov2xs3m","slide":3,"bbox":[58,268,520,76]}
+{"kind":"textbox","id":"sh/qp43qx47","slide":3,"text":"Q_design = Q_peak x load multiplier","textPreview":"Q_design = Q_peak x load multiplier","textChars":35,"textLines":1,"bbox":[76,285,484,42]}
+{"kind":"textbox","id":"sh/rqd4z2ls","slide":3,"text":"Use this to test future development, conservative safety margin, or lower utilization cases.","textPreview":"Use this to test future development, conservative safety margin, or lower utilization cases.","textChars":92,"textLines":1,"bbox":[58,356,520,78]}
+{"kind":"textbox","id":"sh/f6d07ydk","slide":3,"text":"Delta T","textPreview":"Delta T","textChars":7,"textLines":1,"bbox":[678,230,520,30]}
+{"kind":"shape","id":"sh/u54jytwz","slide":3,"bbox":[678,268,520,76]}
+{"kind":"textbox","id":"sh/h8fitovq","slide":3,"text":"Delta T = supply temperature - return temperature","textPreview":"Delta T = supply temperature - return temperature","textChars":49,"textLines":1,"bbox":[696,285,484,42]}
+{"kind":"textbox","id":"sh/g7m10ju5","slide":3,"text":"Higher Delta T moves the same heat with less mass flow. Lower Delta T requires more water flow.","textPreview":"Higher Delta T moves the same heat with less mass flow. Lower Delta T requires more water flow.","textChars":95,"textLines":1,"bbox":[678,356,520,78]}
+{"kind":"textbox","id":"sh/7id03edo","slide":3,"text":"What to watch","textPreview":"What to watch","textChars":13,"textLines":1,"bbox":[58,535,230,32]}
+{"kind":"textbox","id":"sh/6h4ju9w3","slide":3,"text":"Increasing load multiplier or lowering Delta T pushes the model toward larger pipes and higher pumping. It is a clean way to ask: will this route still work when demand grows?","textPreview":"Increasing load multiplier or lowering Delta T pushes the model toward larger pipes and higher pumping. It is a clean way to ask: will th...","textChars":175,"textLines":1,"bbox":[58,576,1080,50]}
+{"kind":"notes","id":"nt/3me4nd","slide":3,"text":""}
+{"kind":"slide","id":"sl/q14u0y","slide":4,"title":"Flow and diameter show whether the pipe is hydraulically plausible","textShapes":15}
+{"kind":"textbox","id":"sh/0zqd8nad","slide":4,"text":"Flow and diameter show whether the pipe is hydraulically plausible","textPreview":"Flow and diameter show whether the pipe is hydraulically plausible","textChars":66,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/fyhwfit8","slide":4,"text":"The model converts heat demand into water flow, then checks whether a catalog pipe can carry it.","textPreview":"The model converts heat demand into water flow, then checks whether a catalog pipe can carry it.","textChars":96,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/ex8v6xsn","slide":4,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/pojelcra","slide":4,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/onadc7ap","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/nm1wj2t4","slide":4,"bbox":[58,220,360,188]}
+{"kind":"shape","id":"sh/218vaxsj","slide":4,"bbox":[58,220,8,188]}
+{"kind":"textbox","id":"sh/5sfu98bq","slide":4,"text":"Mass flow","textPreview":"Mass flow","textChars":9,"textLines":1,"bbox":[82,238,320,34]}
+{"kind":"textbox","id":"sh/4r6d03al","slide":4,"text":"m_dot = Q / (cp x Delta T)","textPreview":"m_dot = Q / (cp x Delta T)","textChars":26,"textLines":1,"bbox":[82,282,318,50]}
+{"kind":"textbox","id":"sh/ulgfalcj","slide":4,"text":"More heat or lower Delta T means more kg/s. This is the first hydraulic consequence of demand.","textPreview":"More heat or lower Delta T means more kg/s. This is the first hydraulic consequence of demand.","textChars":94,"textLines":1,"bbox":[82,342,318,56]}
+{"kind":"shape","id":"sh/vmpwjqd4","slide":4,"bbox":[460,220,360,188]}
+{"kind":"shape","id":"sh/wnyxcbup","slide":4,"bbox":[460,220,8,188]}
+{"kind":"textbox","id":"sh/horelgva","slide":4,"text":"Velocity","textPreview":"Velocity","textChars":8,"textLines":1,"bbox":[484,238,320,34]}
+{"kind":"textbox","id":"sh/ip0felcv","slide":4,"text":"v = volume flow / pipe area","textPreview":"v = volume flow / pipe area","textChars":27,"textLines":1,"bbox":[484,282,318,50]}
+{"kind":"textbox","id":"sh/jq9wnqdg","slide":4,"text":"High velocity raises pressure loss and can exceed erosion or noise limits. Low velocity can signal oversizing.","textPreview":"High velocity raises pressure loss and can exceed erosion or noise limits. Low velocity can signal oversizing.","textChars":110,"textLines":1,"bbox":[484,342,318,56]}
+{"kind":"shape","id":"sh/4bixgvul","slide":4,"bbox":[862,220,360,188]}
+{"kind":"shape","id":"sh/5crep0v6","slide":4,"bbox":[862,220,8,188]}
+{"kind":"textbox","id":"sh/6d0fi5cr","slide":4,"text":"Catalog DN","textPreview":"Catalog DN","textChars":10,"textLines":1,"bbox":[886,238,320,34]}
+{"kind":"textbox","id":"sh/re9gradc","slide":4,"text":"Select smallest pipe meeting limits","textPreview":"Select smallest pipe meeting limits","textChars":35,"textLines":1,"bbox":[886,282,318,50]}
+{"kind":"textbox","id":"sh/nitwza9k","slide":4,"text":"DN is a standard pipe class. The app tests catalog diameters rather than inventing arbitrary sizes.","textPreview":"DN is a standard pipe class. The app tests catalog diameters rather than inventing arbitrary sizes.","textChars":99,"textLines":1,"bbox":[886,342,318,56]}
+{"kind":"textbox","id":"sh/2hkv65sz","slide":4,"text":"Design reading","textPreview":"Design reading","textChars":14,"textLines":1,"bbox":[58,510,220,32]}
+{"kind":"textbox","id":"sh/pkbe1kra","slide":4,"text":"If velocity is high, the pipe is doing too much work. If DN jumps sharply after a small demand change, that section is near a catalog threshold and deserves engineering review.","textPreview":"If velocity is high, the pipe is doing too much work. If DN jumps sharply after a small demand change, that section is near a catalog thr...","textChars":176,"textLines":1,"bbox":[58,552,1120,54]}
+{"kind":"notes","id":"nt/q14u0y","slide":4,"text":""}
+{"kind":"slide","id":"sl/ttcu82","slide":5,"title":"Pressure drop is the bridge between pipe size and pumping cost","textShapes":10}
+{"kind":"textbox","id":"sh/wr2honi1","slide":5,"text":"Pressure drop is the bridge between pipe size and pumping cost","textPreview":"Pressure drop is the bridge between pipe size and pumping cost","textChars":62,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/vqt0fihg","slide":5,"text":"Smaller pipes increase friction loss, which turns into head loss and pump energy.","textPreview":"Smaller pipes increase friction loss, which turns into head loss and pump energy.","textChars":81,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/apkzmx0v","slide":5,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/9obidsza","slide":5,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/8nihknip","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"textbox","id":"sh/nm90bih4","slide":5,"text":"Pressure drop","textPreview":"Pressure drop","textChars":13,"textLines":1,"bbox":[58,224,520,30]}
+{"kind":"shape","id":"sh/ml0zid0j","slide":5,"bbox":[58,262,520,76]}
+{"kind":"textbox","id":"sh/lkri98je","slide":5,"text":"Delta P = f x (L / D) x rho x v^2 / 2","textPreview":"Delta P = f x (L / D) x rho x v^2 / 2","textChars":37,"textLines":1,"bbox":[76,279,484,42]}
+{"kind":"textbox","id":"sh/0jihg3it","slide":5,"text":"The app uses pipe length, diameter, roughness, density, velocity, and friction factor.","textPreview":"The app uses pipe length, diameter, roughness, density, velocity, and friction factor.","textChars":86,"textLines":1,"bbox":[58,350,520,78]}
+{"kind":"textbox","id":"sh/utkfit8r","slide":5,"text":"Pumping power","textPreview":"Pumping power","textChars":13,"textLines":1,"bbox":[678,224,520,30]}
+{"kind":"shape","id":"sh/vutwry9c","slide":5,"bbox":[678,262,520,76]}
+{"kind":"textbox","id":"sh/gvmxk3qx","slide":5,"text":"P_pump = flow x Delta P / pump efficiency","textPreview":"P_pump = flow x Delta P / pump efficiency","textChars":41,"textLines":1,"bbox":[696,279,484,42]}
+{"kind":"textbox","id":"sh/hwvet8ri","slide":5,"text":"A high-pressure route can become expensive even when pipe CAPEX looks attractive.","textPreview":"A high-pressure route can become expensive even when pipe CAPEX looks attractive.","textChars":81,"textLines":1,"bbox":[678,350,520,78]}
+{"kind":"chart","id":"ch/mh4rq10v","slide":5,"name":"","chartType":"line","bbox":[86,488,1090,132]}
+{"kind":"notes","id":"nt/ttcu82","slide":5,"text":""}
+{"kind":"slide","id":"sl/rn0oeo","slide":6,"title":"Lifecycle cost now includes pipe CAPEX, pumping, and heat loss","textShapes":16}
+{"kind":"textbox","id":"sh/98fip0fy","slide":6,"text":"Lifecycle cost now includes pipe CAPEX, pumping, and heat loss","textPreview":"Lifecycle cost now includes pipe CAPEX, pumping, and heat loss","textChars":62,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/mlozulw7","slide":6,"text":"This is the full cost stack shown in the pipe sensitivity and network tradeoff views.","textPreview":"This is the full cost stack shown in the pipe sensitivity and network tradeoff views.","textChars":85,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/nmx0nqxs","slide":6,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/wbqh0vep","slide":6,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/hczit0fu","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/a98zy5wj","slide":6,"bbox":[58,214,360,188]}
+{"kind":"shape","id":"sh/vah0rax4","slide":6,"bbox":[58,214,8,188]}
+{"kind":"textbox","id":"sh/cfmhobe5","slide":6,"text":"Pipe CAPEX","textPreview":"Pipe CAPEX","textChars":10,"textLines":1,"bbox":[82,232,320,34]}
+{"kind":"textbox","id":"sh/dgvixgfq","slide":6,"text":"length x catalog CAD/m","textPreview":"length x catalog CAD/m","textChars":22,"textLines":1,"bbox":[82,276,318,50]}
+{"kind":"textbox","id":"sh/9ozqh4jy","slide":6,"text":"Construction cost grows with length and selected DN cost. It is paid once.","textPreview":"Construction cost grows with length and selected DN cost. It is paid once.","textChars":74,"textLines":1,"bbox":[82,336,318,56]}
+{"kind":"shape","id":"sh/8nqp8z2d","slide":6,"bbox":[460,214,360,188]}
+{"kind":"shape","id":"sh/7mx8fu1s","slide":6,"bbox":[460,214,8,188]}
+{"kind":"textbox","id":"sh/mlo769kn","slide":6,"text":"Lifetime pumping","textPreview":"Lifetime pumping","textChars":16,"textLines":1,"bbox":[484,232,320,34]}
+{"kind":"textbox","id":"sh/hczq5oja","slide":6,"text":"pump kW x hours/year x CAD/kWh x years","textPreview":"pump kW x hours/year x CAD/kWh x years","textChars":38,"textLines":1,"bbox":[484,276,318,50]}
+{"kind":"textbox","id":"sh/wbqpcj2p","slide":6,"text":"Operating cost grows with pressure drop, electricity price, operating hours, and project life.","textPreview":"Operating cost grows with pressure drop, electricity price, operating hours, and project life.","textChars":94,"textLines":1,"bbox":[484,336,318,56]}
+{"kind":"shape","id":"sh/vah8je14","slide":6,"bbox":[862,214,360,188]}
+{"kind":"shape","id":"sh/up87a9kj","slide":6,"bbox":[862,214,8,188]}
+{"kind":"textbox","id":"sh/5gjq9oj6","slide":6,"text":"Lifetime heat loss","textPreview":"Lifetime heat loss","textChars":18,"textLines":1,"bbox":[886,232,320,34]}
+{"kind":"textbox","id":"sh/4fapgj2l","slide":6,"text":"loss kW x hours/year x CAD/kWh x years","textPreview":"loss kW x hours/year x CAD/kWh x years","textChars":38,"textLines":1,"bbox":[886,276,318,50]}
+{"kind":"textbox","id":"sh/ovi1sru9","slide":6,"text":"Heat lost from the pipe is valued as replacement energy. Perfect insulation is no longer assumed.","textPreview":"Heat lost from the pipe is valued as replacement energy. Perfect insulation is no longer assumed.","textChars":97,"textLines":1,"bbox":[886,336,318,56]}
+{"kind":"textbox","id":"sh/pwbi1wve","slide":6,"text":"Heat loss formula","textPreview":"Heat loss formula","textChars":17,"textLines":1,"bbox":[58,492,280,32]}
+{"kind":"textbox","id":"sh/2t0jqhw3","slide":6,"text":"loss kW = U_loss x length x (mean water temperature - ambient temperature) / 1000","textPreview":"loss kW = U_loss x length x (mean water temperature - ambient temperature) / 1000","textChars":81,"textLines":1,"bbox":[58,536,1130,40]}
+{"kind":"textbox","id":"sh/nu90zmdo","slide":6,"text":"The current implementation uses the network heat-loss coefficient in W/m-K. It is deliberately simple and transparent until insulation geometry is explicitly modeled.","textPreview":"The current implementation uses the network heat-loss coefficient in W/m-K. It is deliberately simple and transparent until insulation ge...","textChars":166,"textLines":1,"bbox":[58,592,1100,36]}
+{"kind":"notes","id":"nt/rn0oeo","slide":6,"text":""}
+{"kind":"slide","id":"sl/k7qu4s","slide":7,"title":"The economic pipe size is where extra CAPEX stops buying useful savings","textShapes":6}
+{"kind":"textbox","id":"sh/xsr2d0vy","slide":7,"text":"The economic pipe size is where extra CAPEX stops buying useful savings","textPreview":"The economic pipe size is where extra CAPEX stops buying useful savings","textChars":71,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/apg3ilw7","slide":7,"text":"The best policy is not always the smallest pipe or the lowest pressure drop.","textPreview":"The best policy is not always the smallest pipe or the lowest pressure drop.","textChars":76,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/bq9kbqds","slide":7,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/o3ylgveh","slide":7,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/p4729gvm","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/n2pk7qdw","slide":7,"bbox":[850,210,330,290]}
+{"kind":"textbox","id":"sh/8z2lsfel","slide":7,"text":"How to read it","textPreview":"How to read it","textChars":14,"textLines":1,"bbox":[880,242,270,32]}
+{"kind":"textbox","id":"sh/tkbmlkv6","slide":7,"text":"Compact pipes save upfront cost but increase pumping.\n\nLow-pressure policies reduce pumping but can overbuy pipe diameter.\n\nThe balanced option wins when total lifecycle cost is lowest.","textPreview":"Compact pipes save upfront cost but increase pumping. |  | Low-pressure policies reduce pumping but can overbuy pipe diameter. |  | The b...","textChars":185,"textLines":5,"bbox":[880,290,270,160]}
+{"kind":"chart","id":"ch/idw76dcj","slide":7,"name":"","chartType":"bar","bbox":[58,190,740,420]}
+{"kind":"notes","id":"nt/k7qu4s","slide":7,"text":""}
+{"kind":"slide","id":"sl/rual1a","slide":8,"title":"Network summary metrics compress many sections into useful signals","textShapes":22}
+{"kind":"textbox","id":"sh/sjix8rq9","slide":8,"text":"Network summary metrics compress many sections into useful signals","textPreview":"Network summary metrics compress many sections into useful signals","textChars":66,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/ri9wzmpo","slide":8,"text":"These numbers are not the design by themselves. They are flags that tell you where to look.","textPreview":"These numbers are not the design by themselves. They are flags that tell you where to look.","textChars":91,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/qh0f6h83","slide":8,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/5grexw7i","slide":8,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/4fix4rqx","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/3e9wbmpc","slide":8,"bbox":[58,208,360,188]}
+{"kind":"shape","id":"sh/idgv2h8r","slide":8,"bbox":[58,208,8,188]}
+{"kind":"textbox","id":"sh/hc7e9c7m","slide":8,"text":"Length-weighted average DN","textPreview":"Length-weighted average DN","textChars":26,"textLines":1,"bbox":[82,226,320,34]}
+{"kind":"textbox","id":"sh/gbyd07q1","slide":8,"text":"sum(DN x length) / total length","textPreview":"sum(DN x length) / total length","textChars":31,"textLines":1,"bbox":[82,270,318,50]}
+{"kind":"textbox","id":"sh/al0r6hk7","slide":8,"text":"Represents the pipe composition without letting a short large pipe dominate the average.","textPreview":"Represents the pipe composition without letting a short large pipe dominate the average.","textChars":88,"textLines":1,"bbox":[82,330,318,56]}
+{"kind":"shape","id":"sh/vm9szm1s","slide":8,"bbox":[460,208,360,188]}
+{"kind":"shape","id":"sh/wni98r2d","slide":8,"bbox":[460,208,8,188]}
+{"kind":"textbox","id":"sh/xora1wjy","slide":8,"text":"Average Pa/m","textPreview":"Average Pa/m","textChars":12,"textLines":1,"bbox":[484,226,320,34]}
+{"kind":"textbox","id":"sh/mx0r2hkb","slide":8,"text":"sum(Pa/m x length) / total length","textPreview":"sum(Pa/m x length) / total length","textChars":33,"textLines":1,"bbox":[484,270,318,50]}
+{"kind":"textbox","id":"sh/ny9svm1w","slide":8,"text":"Shows the typical pressure gradient across the network. High values suggest pumping-heavy design.","textPreview":"Shows the typical pressure gradient across the network. High values suggest pumping-heavy design.","textChars":97,"textLines":1,"bbox":[484,330,318,56]}
+{"kind":"shape","id":"sh/8zi94r2h","slide":8,"bbox":[862,208,360,188]}
+{"kind":"shape","id":"sh/90raxwj2","slide":8,"bbox":[862,208,8,188]}
+{"kind":"textbox","id":"sh/ytgryxkf","slide":8,"text":"Max velocity","textPreview":"Max velocity","textChars":12,"textLines":1,"bbox":[886,226,320,34]}
+{"kind":"textbox","id":"sh/zupsr21k","slide":8,"text":"highest section velocity","textPreview":"highest section velocity","textChars":24,"textLines":1,"bbox":[886,270,318,50]}
+{"kind":"textbox","id":"sh/3y5ozyhc","slide":8,"text":"A constraint check. One bad section can matter even when averages look acceptable.","textPreview":"A constraint check. One bad section can matter even when averages look acceptable.","textChars":82,"textLines":1,"bbox":[886,330,318,56]}
+{"kind":"shape","id":"sh/2xc7qd07","slide":8,"bbox":[58,430,360,188]}
+{"kind":"shape","id":"sh/p0n618zi","slide":8,"bbox":[58,430,8,188]}
+{"kind":"textbox","id":"sh/4zeps3ix","slide":8,"text":"Pump kW","textPreview":"Pump kW","textChars":7,"textLines":1,"bbox":[82,448,320,34]}
+{"kind":"textbox","id":"sh/r2583iho","slide":8,"text":"sum section pump power","textPreview":"sum section pump power","textChars":22,"textLines":1,"bbox":[82,492,318,50]}
+{"kind":"textbox","id":"sh/q1w7ud03","slide":8,"text":"Instantaneous electrical power needed at design load.","textPreview":"Instantaneous electrical power needed at design load.","textChars":53,"textLines":1,"bbox":[82,552,318,56]}
+{"kind":"shape","id":"sh/d4nq5szu","slide":8,"bbox":[460,430,360,188]}
+{"kind":"shape","id":"sh/c3epwni9","slide":8,"bbox":[460,430,8,188]}
+{"kind":"textbox","id":"sh/76lorehk","slide":8,"text":"Heat loss kW","textPreview":"Heat loss kW","textChars":12,"textLines":1,"bbox":[484,448,320,34]}
+{"kind":"textbox","id":"sh/65s7it0z","slide":8,"text":"sum pipe thermal losses","textPreview":"sum pipe thermal losses","textChars":23,"textLines":1,"bbox":[484,492,318,50]}
+{"kind":"textbox","id":"sh/wbqlsfyh","slide":8,"text":"Continuous replacement heat required because pipe temperature is above ambient.","textPreview":"Continuous replacement heat required because pipe temperature is above ambient.","textChars":79,"textLines":1,"bbox":[484,552,318,56]}
+{"kind":"shape","id":"sh/xczm1kf2","slide":8,"bbox":[862,430,360,188]}
+{"kind":"shape","id":"sh/a983qpgr","slide":8,"bbox":[862,430,8,188]}
+{"kind":"textbox","id":"sh/vah4zaxc","slide":8,"text":"Total lifecycle cost","textPreview":"Total lifecycle cost","textChars":20,"textLines":1,"bbox":[886,448,320,34]}
+{"kind":"textbox","id":"sh/87qlofyl","slide":8,"text":"CAPEX + pumping + heat loss","textPreview":"CAPEX + pumping + heat loss","textChars":27,"textLines":1,"bbox":[886,492,318,50]}
+{"kind":"textbox","id":"sh/98zmxkf6","slide":8,"text":"A common scorecard for comparing pipe policies and routed networks.","textPreview":"A common scorecard for comparing pipe policies and routed networks.","textChars":67,"textLines":1,"bbox":[886,552,318,56]}
+{"kind":"notes","id":"nt/rual1a","slide":8,"text":""}
+{"kind":"slide","id":"sl/5b1fc6","slide":9,"title":"Network composition reveals whether the design is really changing","textShapes":6}
+{"kind":"textbox","id":"sh/1gnm5wnq","slide":9,"text":"Network composition reveals whether the design is really changing","textPreview":"Network composition reveals whether the design is really changing","textChars":65,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/edc3ah4z","slide":9,"text":"A single average can hide which diameters are driving cost and constructability.","textPreview":"A single average can hide which diameters are driving cost and constructability.","textChars":80,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/fel43m5k","slide":9,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/srul87mt","slide":9,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/ds3m1cne","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/rql4zm5o","slide":9,"bbox":[856,230,330,230]}
+{"kind":"textbox","id":"sh/4nal47mx","slide":9,"text":"Design insight","textPreview":"Design insight","textChars":14,"textLines":1,"bbox":[886,260,270,32]}
+{"kind":"textbox","id":"sh/5o32xcni","slide":9,"text":"Look for large shifts between small and mid-size pipes. That is where construction cost changes, hydraulic risk changes, and catalog thresholds become visible.","textPreview":"Look for large shifts between small and mid-size pipes. That is where construction cost changes, hydraulic risk changes, and catalog thre...","textChars":159,"textLines":1,"bbox":[886,314,260,96]}
+{"kind":"chart","id":"ch/qhozulw3","slide":9,"name":"","chartType":"bar","bbox":[54,190,760,420]}
+{"kind":"notes","id":"nt/5b1fc6","slide":9,"text":""}
+{"kind":"slide","id":"sl/upy9ql","slide":10,"title":"Section economics identifies where upsizing actually pays back","textShapes":21}
+{"kind":"textbox","id":"sh/w3qxsv29","slide":10,"text":"Section economics identifies where upsizing actually pays back","textPreview":"Section economics identifies where upsizing actually pays back","textChars":62,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/v2hwzq1o","slide":10,"text":"The app compares current diameter against the lowest lifecycle option section by section.","textPreview":"The app compares current diameter against the lowest lifecycle option section by section.","textChars":89,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/a18fqlkj","slide":10,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/90zexgjy","slide":10,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/8zqd4b2d","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/nyhwv61s","slide":10,"bbox":[58,200,260,54]}
+{"kind":"textbox","id":"sh/mxov21k7","slide":10,"text":"Metric","textPreview":"Metric","textChars":6,"textLines":1,"bbox":[74,213,232,36]}
+{"kind":"shape","id":"sh/1wfetwjm","slide":10,"bbox":[318,200,430,54]}
+{"kind":"textbox","id":"sh/0v6d0b21","slide":10,"text":"Calculation","textPreview":"Calculation","textChars":11,"textLines":1,"bbox":[334,213,402,36]}
+{"kind":"shape","id":"sh/ipsj6pg7","slide":10,"bbox":[748,200,430,54]}
+{"kind":"textbox","id":"sh/jq10fuhs","slide":10,"text":"Insight","textPreview":"Insight","textChars":7,"textLines":1,"bbox":[764,213,402,36]}
+{"kind":"shape","id":"sh/4ba18fyd","slide":10,"bbox":[58,254,260,76]}
+{"kind":"textbox","id":"sh/5cjihkzy","slide":10,"text":"Extra pipe CAPEX","textPreview":"Extra pipe CAPEX","textChars":16,"textLines":1,"bbox":[74,268,232,58]}
+{"kind":"shape","id":"sh/ul8j25gb","slide":10,"bbox":[318,254,430,76]}
+{"kind":"textbox","id":"sh/vmh0bahw","slide":10,"text":"economic CAPEX - current CAPEX","textPreview":"economic CAPEX - current CAPEX","textChars":30,"textLines":1,"bbox":[334,268,402,58]}
+{"kind":"shape","id":"sh/wnq14fyh","slide":10,"bbox":[748,254,430,76]}
+{"kind":"textbox","id":"sh/hojidkz2","slide":10,"text":"How much more construction cost the larger pipe needs","textPreview":"How much more construction cost the larger pipe needs","textChars":53,"textLines":1,"bbox":[764,268,402,58]}
+{"kind":"shape","id":"sh/mh8jy50f","slide":10,"bbox":[58,330,260,76]}
+{"kind":"textbox","id":"sh/7ih07ahk","slide":10,"text":"Pump saving","textPreview":"Pump saving","textChars":11,"textLines":1,"bbox":[74,344,232,58]}
+{"kind":"shape","id":"sh/bmdgf6xc","slide":10,"bbox":[318,330,430,76]}
+{"kind":"textbox","id":"sh/al4f61w7","slide":10,"text":"current pump cost - economic pump cost","textPreview":"current pump cost - economic pump cost","textChars":38,"textLines":1,"bbox":[334,344,402,58]}
+{"kind":"shape","id":"sh/xovyhwfi","slide":10,"bbox":[748,330,430,76]}
+{"kind":"textbox","id":"sh/cnmx8bex","slide":10,"text":"Energy cost avoided by reducing pressure loss","textPreview":"Energy cost avoided by reducing pressure loss","textChars":45,"textLines":1,"bbox":[764,344,402,58]}
+{"kind":"shape","id":"sh/zqxgj6xo","slide":10,"bbox":[58,406,260,76]}
+{"kind":"textbox","id":"sh/ypofa1w3","slide":10,"text":"Net saving","textPreview":"Net saving","textChars":10,"textLines":1,"bbox":[74,420,232,58]}
+{"kind":"shape","id":"sh/lsfylgfu","slide":10,"bbox":[318,406,430,76]}
+{"kind":"textbox","id":"sh/kr6hcbe9","slide":10,"text":"current lifecycle - economic lifecycle","textPreview":"current lifecycle - economic lifecycle","textChars":38,"textLines":1,"bbox":[334,420,402,58]}
+{"kind":"shape","id":"sh/futg7mxk","slide":10,"bbox":[748,406,430,76]}
+{"kind":"textbox","id":"sh/etkfyhgz","slide":10,"text":"Positive value means the alternate diameter is better","textPreview":"Positive value means the alternate diameter is better","textChars":53,"textLines":1,"bbox":[764,420,402,58]}
+{"kind":"shape","id":"sh/4zid8neh","slide":10,"bbox":[58,482,260,76]}
+{"kind":"textbox","id":"sh/50ruhsv2","slide":10,"text":"Decision","textPreview":"Decision","textChars":8,"textLines":1,"bbox":[74,496,232,58]}
+{"kind":"shape","id":"sh/ixgv6dwr","slide":10,"bbox":[318,482,430,76]}
+{"kind":"textbox","id":"sh/3y9cfidc","slide":10,"text":"DN and lifecycle comparison","textPreview":"DN and lifecycle comparison","textChars":27,"textLines":1,"bbox":[334,496,402,58]}
+{"kind":"shape","id":"sh/gbyd43el","slide":10,"bbox":[748,482,430,76]}
+{"kind":"textbox","id":"sh/hw7ud8v6","slide":10,"text":"Upsize, downsize, or keep current section","textPreview":"Upsize, downsize, or keep current section","textChars":41,"textLines":1,"bbox":[764,496,402,58]}
+{"kind":"textbox","id":"sh/u9gv2twf","slide":10,"text":"Useful rule","textPreview":"Useful rule","textChars":11,"textLines":1,"bbox":[58,620,180,28]}
+{"kind":"textbox","id":"sh/vapcbyd0","slide":10,"text":"Upsizing is compelling only when avoided pumping and heat-loss economics exceed the added pipe CAPEX.","textPreview":"Upsizing is compelling only when avoided pumping and heat-loss economics exceed the added pipe CAPEX.","textChars":101,"textLines":1,"bbox":[200,620,920,28]}
+{"kind":"notes","id":"nt/upy9ql","slide":10,"text":""}
+{"kind":"slide","id":"sl/j66hbu","slide":11,"title":"The two sensitivity pages answer different engineering questions","textShapes":9}
+{"kind":"textbox","id":"sh/3u1srmds","slide":11,"text":"The two sensitivity pages answer different engineering questions","textPreview":"The two sensitivity pages answer different engineering questions","textChars":64,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/4va90rex","slide":11,"text":"They can show different figures because they sweep different variables.","textPreview":"They can show different figures because they sweep different variables.","textChars":71,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/pwjatwvi","slide":11,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/up8ruhwv","slide":11,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/fqhsn2dg","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/grq9w7e1","slide":11,"bbox":[72,215,510,330]}
+{"kind":"textbox","id":"sh/hsjapcvm","slide":11,"text":"Network Tradeoffs","textPreview":"Network Tradeoffs","textChars":17,"textLines":1,"bbox":[104,250,430,38]}
+{"kind":"textbox","id":"sh/618rqxwz","slide":11,"text":"Sweeps Delta T.\n\nRecalculates flow.\n\nCan reselect pipe sizes under hydraulic limits.\n\nUses mean temperature = return temperature + Delta T / 2 for heat loss.","textPreview":"Sweeps Delta T. |  | Recalculates flow. |  | Can reselect pipe sizes under hydraulic limits. |  | Uses mean temperature = return temperat...","textChars":157,"textLines":7,"bbox":[104,315,420,160]}
+{"kind":"shape","id":"sh/72hsj2dk","slide":11,"bbox":[700,215,510,330]}
+{"kind":"textbox","id":"sh/nixwf2lc","slide":11,"text":"Pipe Sensitivity","textPreview":"Pipe Sensitivity","textChars":16,"textLines":1,"bbox":[732,250,430,38]}
+{"kind":"textbox","id":"sh/2hofmxkr","slide":11,"text":"Sweeps pressure-gradient policies.\n\nCompares catalog diameter choices.\n\nUses selected pipe sizing run sections.\n\nUses configured supply and return temperatures for mean water temperature.","textPreview":"Sweeps pressure-gradient policies. |  | Compares catalog diameter choices. |  | Uses selected pipe sizing run sections. |  | Uses configu...","textChars":187,"textLines":7,"bbox":[732,315,420,180]}
+{"kind":"textbox","id":"sh/pkfehc3i","slide":11,"text":"Both now use the same lifecycle stack: pipe CAPEX + lifetime pumping + lifetime heat loss.","textPreview":"Both now use the same lifecycle stack: pipe CAPEX + lifetime pumping + lifetime heat loss.","textChars":90,"textLines":1,"bbox":[72,604,1070,32]}
+{"kind":"notes","id":"nt/j66hbu","slide":11,"text":""}
+{"kind":"slide","id":"sl/c3ydf0","slide":12,"title":"Use the metrics as a design conversation, not a single score","textShapes":15}
+{"kind":"textbox","id":"sh/lknmtk32","slide":12,"text":"Use the metrics as a design conversation, not a single score","textPreview":"Use the metrics as a design conversation, not a single score","textChars":60,"textLines":1,"bbox":[42,34,1090,104]}
+{"kind":"textbox","id":"sh/yhw3ypkb","slide":12,"text":"The most useful result is knowing which constraint is making the design expensive.","textPreview":"The most useful result is knowing which constraint is making the design expensive.","textChars":82,"textLines":1,"bbox":[42,126,980,44]}
+{"kind":"shape","id":"sh/ji54rulw","slide":12,"bbox":[42,176,1196,1.5]}
+{"kind":"textbox","id":"sh/8nyl4z2d","slide":12,"text":"District Heat Network","textPreview":"District Heat Network","textChars":21,"textLines":1,"bbox":[42,664,420,24]}
+{"kind":"textbox","id":"sh/to7mx43y","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1190,664,48,24]}
+{"kind":"shape","id":"sh/6lw32pkn","slide":12,"bbox":[58,220,360,188]}
+{"kind":"shape","id":"sh/7mp4vul8","slide":12,"bbox":[58,220,8,188]}
+{"kind":"textbox","id":"sh/orulsfm9","slide":12,"text":"If lifecycle cost is high","textPreview":"If lifecycle cost is high","textChars":25,"textLines":1,"bbox":[82,238,320,34]}
+{"kind":"textbox","id":"sh/9s32l03u","slide":12,"text":"Check pump cost vs pipe CAPEX","textPreview":"Check pump cost vs pipe CAPEX","textChars":29,"textLines":1,"bbox":[82,282,318,50]}
+{"kind":"textbox","id":"sh/pgv6xgbq","slide":12,"text":"High pumping points to friction and undersizing. High CAPEX points to length, DN, or catalog cost.","textPreview":"High pumping points to friction and undersizing. High CAPEX points to length, DN, or catalog cost.","textChars":98,"textLines":1,"bbox":[82,342,318,56]}
+{"kind":"shape","id":"sh/ofmp4bul","slide":12,"bbox":[460,220,360,188]}
+{"kind":"shape","id":"sh/nedov6t0","slide":12,"bbox":[460,220,8,188]}
+{"kind":"textbox","id":"sh/2t4721cf","slide":12,"text":"If velocity is high","textPreview":"If velocity is high","textChars":19,"textLines":1,"bbox":[484,238,320,34]}
+{"kind":"textbox","id":"sh/xkfq1gb2","slide":12,"text":"Review peak load and DN","textPreview":"Review peak load and DN","textChars":23,"textLines":1,"bbox":[484,282,318,50]}
+{"kind":"textbox","id":"sh/cj6p8vuh","slide":12,"text":"A local constraint may require upsizing even when the network average looks acceptable.","textPreview":"A local constraint may require upsizing even when the network average looks acceptable.","textChars":87,"textLines":1,"bbox":[484,342,318,56]}
+{"kind":"shape","id":"sh/bixozqtw","slide":12,"bbox":[862,220,360,188]}
+{"kind":"shape","id":"sh/ah476lcb","slide":12,"bbox":[862,220,8,188]}
+{"kind":"textbox","id":"sh/lofq50by","slide":12,"text":"If heat loss is high","textPreview":"If heat loss is high","textChars":20,"textLines":1,"bbox":[886,238,320,34]}
+{"kind":"textbox","id":"sh/kn6pcvud","slide":12,"text":"Review length and temperature lift","textPreview":"Review length and temperature lift","textChars":34,"textLines":1,"bbox":[886,282,318,50]}
+{"kind":"textbox","id":"sh/4re98z2p","slide":12,"text":"Long hot pipes lose more heat. Reducing operating temperature or improving insulation can matter.","textPreview":"Long hot pipes lose more heat. Reducing operating temperature or improving insulation can matter.","textChars":97,"textLines":1,"bbox":[886,342,318,56]}
+{"kind":"textbox","id":"sh/5sna14ja","slide":12,"text":"Presentation takeaway","textPreview":"Presentation takeaway","textChars":21,"textLines":1,"bbox":[58,520,320,34]}
+{"kind":"textbox","id":"sh/ipwr69kj","slide":12,"text":"A robust thermal network is not the cheapest pipe network. It is the network where construction cost, hydraulic performance, operating energy, and thermal losses are visibly balanced.","textPreview":"A robust thermal network is not the cheapest pipe network. It is the network where construction cost, hydraulic performance, operating en...","textChars":183,"textLines":1,"bbox":[58,566,1080,56]}
+{"kind":"notes","id":"nt/c3ydf0","slide":12,"text":""}

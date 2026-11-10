@@ -1,16 +1,21 @@
+<nb-alert *ngIf="importedInventory" status="info">
+  Imported Burlington HDD18 profiles · 2021–2023 · synthetic annual energy, source peaks assumed W.
+  Browse buildings without a network. These are demand estimates, not measured loads.
+</nb-alert>
 <div class="row h-100 m-0">
   
   <div class="col-md-4 col-lg-3 d-flex flex-column h-100 p-0 pr-md-2">
     <nb-card class="flex-grow-1 h-100" [nbSpinner]="isListLoading" nbSpinnerStatus="primary">
       <nb-card-header class="d-flex justify-content-between align-items-center">
         <div class="subtitle-2">System Analytics</div>
+        <a href="/pages/load-profile-comparison" nbButton size="tiny" status="primary">Compare models</a>
       </nb-card-header>
       
       <nb-card-body class="p-3 d-flex flex-column">
         
         <div class="mb-2">
           <label class="label">Project Filter (Optional)</label>
-          <nb-select fullWidth [(selected)]="filterState$.value.project" (selectedChange)="onProjectChange($event)" size="small">
+          <nb-select fullWidth [selected]="filterState$.value.project" (selectedChange)="onProjectChange($event)" size="small">
             <nb-option [value]="null">Search All Projects</nb-option>
             <nb-option *ngFor="let proj of projects" [value]="proj.id">{{ proj.name }}</nb-option>
           </nb-select>
@@ -19,7 +24,7 @@
         <div class="row mb-2" *ngIf="filterState$.value.project">
           <div class="col-12">
             <label class="label">Network Filter</label>
-            <nb-select fullWidth [(selected)]="filterState$.value.network" (selectedChange)="onNetworkChange($event)" size="small" [disabled]="networks.length === 0">
+            <nb-select fullWidth [selected]="filterState$.value.network" (selectedChange)="onNetworkChange($event)" size="small" [disabled]="networks.length === 0">
               <nb-option value="all">All Networks</nb-option>
               <nb-option *ngFor="let net of networks" [value]="net.id">{{ net.name }}</nb-option>
             </nb-select>
@@ -40,7 +45,7 @@
 
         <div class="row mb-2 mt-2">
           <div class="col-4 pr-1">
-            <nb-select fullWidth [(selected)]="filterState$.value.type" (selectedChange)="onTypeChange($event)" size="small">
+            <nb-select fullWidth [selected]="filterState$.value.type" (selectedChange)="onTypeChange($event)" size="small">
               <nb-option value="building">Buildings</nb-option>
               <nb-option value="boiler">Boilers</nb-option>
             </nb-select>
@@ -55,7 +60,7 @@
 
         <nb-list class="entity-list flex-grow-1">
           <nb-list-item *ngIf="directoryNodes.length === 0 && !isListLoading" class="text-center">
-            <span class="text-hint">No nodes found.</span>
+            <span class="text-hint">No matching buildings or nodes found.</span>
           </nb-list-item>
 
           <nb-list-item *ngFor="let item of directoryNodes" 
@@ -109,10 +114,10 @@
             <button nbButtonToggle [pressed]="selectedChartView === 'sankey'" (click)="setChartView('sankey')">
               <nb-icon icon="shuffle-2-outline"></nb-icon> Flow
             </button>
-            <button nbButtonToggle [pressed]="selectedChartView === 'utilization'" (click)="setChartView('utilization')">
+            <button nbButtonToggle [pressed]="selectedChartView === 'utilization'" (click)="setChartView('utilization')" [disabled]="importedInventory">
               <nb-icon icon="percent-outline"></nb-icon> Utilization
             </button>
-            <button nbButtonToggle [pressed]="selectedChartView === 'summary'" (click)="setChartView('summary')">
+            <button nbButtonToggle [pressed]="selectedChartView === 'summary'" (click)="setChartView('summary')" [disabled]="importedInventory">
               <nb-icon icon="bar-chart-2-outline"></nb-icon> Summary
             </button>
           </nb-button-group>
@@ -176,3 +181,4 @@
     </nb-card>
   </div>
 </div>
+

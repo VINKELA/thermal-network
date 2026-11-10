@@ -44,16 +44,16 @@ settings = {
       }
       },
       translation: {
-        title: 'Travel Mode',
+        title: 'Routing Strategy',
         type: 'string',
         editor: {
           type: 'list',
           config: {
             list: [
-              { value: 'driving', title: 'Driving' },
-              { value: 'walking', title: 'Walking' },
-              { value: 'bicycling', title: 'Bicycling' },
-              { value: 'transit', title: 'Transit' },
+              { value: 'driving', title: 'Road shortest path' },
+              { value: 'walking', title: 'Pedestrian corridor' },
+              { value: 'bicycling', title: 'Cycling corridor' },
+              { value: 'direct', title: 'Direct geodesic baseline' },
             ],
           },
         },

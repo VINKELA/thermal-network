@@ -1,3 +1,4 @@
+import { PipeSensitivityComponent } from './pipe-sensitivity/pipe-sensitivity.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NetworksComponent } from './networks/networks.component';
@@ -39,6 +40,7 @@ import { EdgeConnectionAlgorithmsComponent } from './edge-connection-algorithms/
 import { EdgeConnectionAlgorithmComponent } from './edge-connection-algorithm/edge-connection-algorithm.component';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { LoadProfileComponent } from './load-profile/load-profile.component';
+import { LoadProfileComparisonComponent } from './load-profile-comparison/load-profile-comparison.component';
 import { NetworkComparisonComponent } from './network-comparison/network-comparison.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { ClusterComparisonComponent } from './cluster-comparison/cluster-comparison.component';
@@ -57,10 +59,14 @@ import { NetworkEmissionsComponent } from './network-emissions/network-emissions
 import { NetworkEmissionsCompareComponent } from './network-emissions-compare/network-emissions-compare.component';
 import { NetworkDemandMapComponent } from './network-demand-map/network-demand-map.component';
 import { NetworkEvolutionComponent } from './network-evolution/network-evolution.component';
+import { NetworkPhasingComponent } from './network-phasing/network-phasing.component';
+import { NetworkTradeoffsComponent } from './network-tradeoffs/network-tradeoffs.component';
 import { PipeSectionAnalysisComponent } from './pipe-section-analysis/pipe-section-analysis.component';
+import { PipeSectionSensitivityComponent } from './pipe-section-sensitivity/pipe-section-sensitivity.component';
 
 @NgModule({
   declarations: [
+    PipeSensitivityComponent,
     NetworksComponent,
     NetworkComponent,
     NetworkAlgorithmComponent,
@@ -93,6 +99,7 @@ import { PipeSectionAnalysisComponent } from './pipe-section-analysis/pipe-secti
     EdgeConnectionAlgorithmsComponent,
     EdgeConnectionAlgorithmComponent,
     LoadProfileComponent,
+    LoadProfileComparisonComponent,
     NetworkComparisonComponent,
     ClusterComparisonComponent,
     NodeComparisonComponent,
@@ -110,7 +117,10 @@ import { PipeSectionAnalysisComponent } from './pipe-section-analysis/pipe-secti
     NetworkEmissionsCompareComponent,
     NetworkDemandMapComponent,
     NetworkEvolutionComponent,
-    PipeSectionAnalysisComponent
+    NetworkPhasingComponent,
+    NetworkTradeoffsComponent,
+    PipeSectionAnalysisComponent,
+    PipeSectionSensitivityComponent
   ],
   imports: [
     CommonModule,
