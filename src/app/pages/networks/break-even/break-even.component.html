@@ -1,0 +1,153 @@
+<div class="study-header">
+  <div><h1>Trunk pipe break-even analysis</h1><p>Find when a larger pipe, a node heat pump or thermal storage provides the lowest feasible lifecycle cost.</p></div>
+  <button nbButton size="small" (click)="resume()" [disabled]="busy || !projectId">Load previous study</button>
+</div>
+
+<nb-alert status="danger" *ngIf="error" role="alert">{{ error }}</nb-alert>
+<nb-alert status="info" *ngIf="busy" aria-live="polite">{{ progress }}</nb-alert>
+<nb-alert status="warning" *ngIf="stale">Inputs have changed. Results below still show the saved study; run again to update them.</nb-alert>
+
+<nb-card>
+  <nb-card-header>1. Heating demand</nb-card-header>
+  <nb-card-body>
+    <div class="input-grid">
+      <label>Project<select [ngModel]="projectId" (ngModelChange)="selectProject($event)" [disabled]="busy"><option [ngValue]="null">Select a project</option><option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option></select></label>
+      <label>Profile source<select [(ngModel)]="mode" (ngModelChange)="changed()" [disabled]="busy"><option value="demo">Illustrative annual profile</option><option value="network">Saved network heating demand</option><option value="custom">Upload hourly CSV</option></select></label>
+      <ng-container *ngIf="mode === 'network'">
+        <label>Network<select [(ngModel)]="networkId" (ngModelChange)="changed()" [disabled]="busy"><option [ngValue]="null">Select a network</option><option *ngFor="let n of networks" [ngValue]="n.id">{{ n.name }}</option></select></label>
+        <label>Calendar year<input nbInput fullWidth type="number" [(ngModel)]="year" (ngModelChange)="changed()" [disabled]="busy" min="1950" max="2200"></label>
+        <label>Saved dataset<select [(ngModel)]="networkProfile" (ngModelChange)="changed()" [disabled]="busy"><option value="active">Active hourly load profiles</option><option value="imported">Imported annual heating dataset</option></select></label>
+        <label *ngIf="networkProfile === 'active'">Source model (optional)<input nbInput fullWidth [(ngModel)]="sourceModel" (ngModelChange)="changed()" [disabled]="busy" placeholder="Leave blank if unambiguous"></label>
+      </ng-container>
+      <label *ngIf="mode === 'custom'">Hourly heating CSV<input type="file" accept=".csv,text/csv" (change)="upload($event)" [disabled]="busy"><span>{{ profileLabel }} {{ hourlyKw.length ? '· ' + hourlyKw.length + ' hourly values' : '' }}</span></label>
+    </div>
+    <p class="note" *ngIf="mode === 'demo'">The synthetic seasonal / daily profile is illustrative. Its peak is editable below; it is not measured network demand.</p>
+    <p class="note" *ngIf="mode === 'network'">Consumer demands are aggregated into one equivalent trunk. This does not assume every existing network segment carries the full demand. Distance is your independent study input. Only complete, unique hourly profiles are accepted.</p>
+    <p class="note" *ngIf="mode === 'custom'">Use a <strong>heating_kw</strong> column with 8760 or 8784 consecutive one-hour values in chronological order, starting at the beginning of a year. No missing hours or annual rescaling. Other CSV columns are ignored.</p>
+  </nb-card-body>
+</nb-card>
+
+<nb-card>
+  <nb-card-header>2. Editable design and cost assumptions</nb-card-header>
+  <nb-card-body>
+    <p class="formula">Installed CAD / route m = reference cost × [(1 − α) + α × (cost diameter / reference diameter)<sup>n</sup>]</p>
+    <p class="note" *ngIf="options.diameter_band_width_mm > 0">Banded costs: cost diameter = band width × ceiling(actual diameter / band width). Each band includes its upper boundary. For example, 100 mm bands cover (0, 100], (100, 200], and so on. All diameters in a band have the same complete installed rate. Actual diameters still determine flow, pressure and pumping. The reference diameter is not rounded.</p>
+    <p class="note" *ngIf="!options.diameter_band_width_mm">Continuous cost scaling is active. Set a positive diameter cost band width below to give all diameters within a band the same installed rate.</p>
+    <p class="note" *ngIf="options.reference_diameter_mm">Small pipe {{ options.small_diameter_mm }} mm → cost diameter {{ costDiameter(options.small_diameter_mm) | number:'1.0-3' }} mm → <strong>{{ installedRate(options.small_diameter_mm) | number:'1.2-2' }} CAD/route m</strong>. Larger pipe {{ options.large_diameter_mm }} mm → cost diameter {{ costDiameter(options.large_diameter_mm) | number:'1.0-3' }} mm → <strong>{{ installedRate(options.large_diameter_mm) | number:'1.2-2' }} CAD/route m</strong>.</p>
+    <p class="note">The rate covers both supply and return pipes, trenching, ordinary fittings and installation. All default costs and equipment coefficients are illustrative assumptions. Use actual internal diameters for your selected commercial pipes.</p>
+    <details *ngFor="let group of groups; let i = index" [open]="i === 0">
+      <summary>{{ group.title }}</summary>
+      <div class="input-grid">
+        <label *ngFor="let field of group.fields">{{ field.label }}
+          <input nbInput fullWidth type="number" [(ngModel)]="options[field.key]" (ngModelChange)="changed()" [min]="field.min" [max]="field.max" [step]="field.step" [disabled]="busy">
+        </label>
+      </div>
+    </details>
+    <nb-checkbox [(ngModel)]="residualCredit" (ngModelChange)="changed()" [disabled]="busy">Credit remaining asset life at the study horizon (straight-line residual value)</nb-checkbox>
+    <p class="note">The source heat price is CAD per thermal kWh entering the trunk, including source conversion. Node HP electricity is calculated separately. Baseline supply is the common heating delivery temperature; the HP trunk temperatures are independent inputs.</p>
+    <div class="actions"><button nbButton status="primary" (click)="run()" [disabled]="busy || !groups.length || !projectId">{{ busy ? 'Running study…' : 'Run break-even analysis' }}</button></div>
+  </nb-card-body>
+</nb-card>
+
+<ng-container *ngIf="result">
+  <nb-card>
+    <nb-card-header>3. Saved study results</nb-card-header>
+    <nb-card-body>
+      <div class="metrics">
+        <div><span>Compared distance</span><strong>{{ result.summary.selected_length_m | number:'1.0-0' }} m</strong></div>
+        <div><span>Peak heating demand</span><strong>{{ result.summary.peak_kw | number:'1.1-1' }} kW</strong></div>
+        <div><span>Annual heating</span><strong>{{ result.summary.annual_heat_kwh / 1000 | number:'1.1-1' }} MWh</strong></div>
+        <div><span>Load factor</span><strong>{{ result.summary.load_factor | percent:'1.1-1' }}</strong></div>
+      </div>
+      <nb-alert [status]="result.summary.winner ? 'success' : 'warning'">{{ result.summary.winner ? 'Lowest feasible lifecycle cost at this distance: ' + name(result.summary.winner) : 'No strategy meets all operating limits at this distance. Review diameters, available pressure or equipment capacity.' }}</nb-alert>
+      <p class="note">{{ result.profile.name }}<span *ngIf="result.profile.year"> · {{ result.profile.year }} heating profile</span> · {{ result.summary.hours }} hourly values · {{ result.inputs.options.years }} years · {{ result.inputs.options.discount_rate | percent:'1.1-1' }} real discount rate. Costs are real base-year CAD.</p>
+      <p class="note" *ngIf="result.profile.source?.energy">Profile provenance: {{ result.profile.source.energy }}.</p>
+      <div class="actions"><button nbButton size="small" (click)="exportJson()">Download complete study</button><button nbButton size="small" (click)="exportCurves()">Cost curves CSV</button><button nbButton size="small" (click)="exportHourly()">Hourly operation CSV</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Strategy</th><th>Installed CAD/m</th><th>Lifecycle CAD</th><th>Pump kWh/year</th><th>Peak velocity</th><th>Peak differential</th><th>Operating limits</th></tr></thead><tbody>
+        <tr *ngFor="let s of result.selected" [class.winner]="s.key === result.summary.winner"><td>{{ name(s.key) }}</td><td>{{ s.installed_cad_per_m | number:'1.0-0' }}</td><td>{{ s.npc | number:'1.0-0' }}</td><td>{{ s.annual_pump_kwh | number:'1.0-0' }}</td><td>{{ s.max_velocity | number:'1.2-2' }} m/s</td><td>{{ s.max_pressure_pa / 1000 | number:'1.1-1' }} kPa</td><td><strong>{{ s.feasible ? 'Passes modeled limits' : 'Infeasible' }}</strong><div *ngFor="let reason of s.reasons">{{ reason }}</div></td></tr>
+      </tbody></table></div>
+    </nb-card-body>
+  </nb-card>
+
+  <nb-card *ngIf="activeStrategyMap"><nb-card-header>Overall least-cost strategy zones</nb-card-header><nb-card-body>
+    <p class="note">The bold lower curve identifies the cheapest strategy for the selected viewing mode. Shaded zones show where each strategy wins. <strong>Lcrit</strong> marks an economic crossing that changes the overall winner; orange <strong>Limit</strong> markers identify changes caused by an operating constraint.</p>
+    <label class="zone-basis">Viewing mode<select [(ngModel)]="zoneBasis" (ngModelChange)="focusZoneBoundary(null)"><option value="economic">Economic zones: compare cost curves</option><option value="feasible">Feasible zones: enforce operating limits</option></select></label>
+    <label class="zone-basis">Plot scale<select [(ngModel)]="plotScale" (ngModelChange)="changePlotScale()"><option value="relative">Extra cost versus upsized pipe — enlarged differences</option><option value="total">Total lifecycle cost</option></select></label>
+    <p class="note" *ngIf="plotScale === 'relative'"><strong>Rescaled view:</strong> the upsized-pipe cost at each distance is subtracted from every scenario. The blue reference is zero; negative values are cheaper and positive values are more expensive. Intersections, rankings and critical lengths are unchanged. Colored names at the right identify each scenario.</p>
+    <nb-alert *ngIf="zoneBasis === 'economic'" status="info">Economic zones follow the lowest cost curve, as in the reference plot. Hydraulic limits are not used to choose the winner in this view; dashed sections flag those violations. Strategies that cannot supply the full heating demand remain excluded. Select feasible zones for a design-screened recommendation.</nb-alert>
+    <div class="zone-controls">
+      <nb-checkbox *ngFor="let key of zoneStrategyOrder" [checked]="zoneStrategies.includes(key)" [disabled]="zoneStrategies.length === 1 && zoneStrategies.includes(key)" (checkedChange)="toggleZoneStrategy(key, $event)">{{ name(key) }}</nb-checkbox>
+    </div>
+    <div class="intersection-controls">
+      <nb-checkbox [(ngModel)]="showOtherCrossings" (ngModelChange)="renderStrategyZones()">Mark other pairwise crossings</nb-checkbox>
+      <button nbButton size="small" (click)="focusZoneBoundary(null)" [disabled]="zoneFocusM === null">Show full distance range</button>
+    </div>
+    <div class="actions"><button nbButton size="small" status="primary" (click)="exportPresentation('zones', 'copy')" [disabled]="exportingImage">Copy slide image</button><button nbButton size="small" (click)="exportPresentation('zones')" [disabled]="exportingImage">Presentation PNG</button><button nbButton size="small" (click)="exportPresentation('zones', 'svg')" [disabled]="exportingImage">Vector SVG</button></div>
+    <p class="note">Slide exports use a clean 16:9 layout, larger labels and no chart controls. PNGs are 3840 × 2160 pixels.</p>
+    <p class="note" aria-live="polite">{{ imageExportMessage }}</p>
+    <p class="note">Solid lines meet the modeled operating limits; faint dashed lines do not. Colored dotted vertical markers label where each strategy reaches an operating limit. Hollow markers are pairwise intersections that do not change the overall winner. Deselect the small-pipe baseline to compare only upsizing, HP and TES.</p>
+    <div echarts [options]="strategyZoneChart" class="chart zone-chart"></div>
+    <div class="table-wrap"><table><thead><tr><th>Zone</th><th>Trunk length range</th><th>{{ zoneBasis === 'economic' ? 'Cheapest strategy by cost' : 'Cheapest feasible strategy' }}</th></tr></thead><tbody>
+      <tr *ngFor="let zone of activeStrategyMap.zones; let i = index"><td>Zone {{ i + 1 }}</td><td>{{ formatLength(zone.start_m) }} – {{ formatLength(zone.end_m) }}</td><td>{{ zone.winner ? name(zone.winner) : 'No feasible strategy' }}<span *ngIf="zone.tied_keys.length > 1"> · Equal cost: <span *ngFor="let key of zone.tied_keys; let last = last">{{ name(key) }}{{ last ? '' : ', ' }}</span></span></td></tr>
+    </tbody></table></div>
+    <h3>Boundaries that change the overall choice</h3>
+    <p class="note" *ngIf="!activeStrategyMap.transitions.length">The same strategy remains cheapest and feasible throughout the tested range, or no strategy is feasible. There is no internal zone boundary.</p>
+    <div class="table-wrap" *ngIf="activeStrategyMap.transitions.length"><table><thead><tr><th>Boundary</th><th>Length</th><th>Before → after</th><th>Why the choice changes</th><th></th></tr></thead><tbody>
+      <tr *ngFor="let transition of activeStrategyMap.transitions"><td>{{ transition.label }}</td><td>{{ formatLength(transition.length_m) }}</td><td>{{ transition.from_key ? name(transition.from_key) : 'No eligible strategy' }} → {{ transition.to_key ? name(transition.to_key) : 'No eligible strategy' }}</td><td>{{ transition.kind === 'cost_crossing' ? 'The two lowest eligible cost curves intersect.' : 'An operating limit changes which strategies are eligible.' }}<div *ngFor="let reason of transition.reasons">{{ reason }}</div></td><td><button nbButton size="tiny" (click)="focusZoneBoundary(transition.length_m)">Zoom here</button></td></tr>
+    </tbody></table></div>
+    <h3>Other pairwise crossings</h3>
+    <p class="note">These intersections answer a two-strategy comparison. They do not establish an overall winning-zone boundary.</p>
+    <div class="table-wrap" *ngIf="otherZoneCrossings.length"><table><thead><tr><th>Pair</th><th>Intersection</th><th>Why it does not change the winner</th></tr></thead><tbody>
+      <tr *ngFor="let crossing of otherZoneCrossings"><td>{{ name(crossing.a) }} / {{ name(crossing.b) }}</td><td>{{ formatLength(crossing.length_m) }}</td><td>{{ crossingDescription(crossing) }}</td></tr>
+    </tbody></table></div>
+    <p class="note">Results apply to 0–{{ formatLength(result.inputs.options.maximum_length_m) }}. The number and order of zones are calculated from your inputs; the illustrative 655 m / 3,000 m boundaries are not assumed.</p>
+  </nb-card-body></nb-card>
+  <nb-card *ngIf="criticalViews.length"><nb-card-header>Pairwise critical lengths and component diagnostics</nb-card-header><nb-card-body>
+    <p class="note">Select a comparison. Each plot shows only its two curves, with a marked crossing and a second view of their difference. Pumping and thermal-loss diagnostics are separate from the complete HP and TES lifecycle comparisons.</p>
+    <div class="critical-cards">
+      <button type="button" *ngFor="let view of criticalViews" class="critical-card" [class.selected]="view.key === activeCritical.key" (click)="selectCritical(view.key)" [attr.aria-pressed]="view.key === activeCritical.key">
+        <span class="critical-symbol">{{ view.symbol }}</span>
+        <strong>{{ view.crossings.length ? formatLength(view.crossings[0].length_m) : view.status === 'coincident' ? 'Coincident curves' : 'No crossing in range' }}</strong>
+        <span>{{ view.title }}</span><span *ngIf="view.crossings.length > 1">{{ view.crossings.length }} crossings</span>
+      </button>
+    </div>
+    <h3>{{ activeCritical.title }}</h3><p class="note">{{ activeCritical.definition }}</p>
+    <div class="actions"><button nbButton size="small" status="primary" (click)="exportPresentation('critical', 'copy')" [disabled]="exportingImage">Copy comparison image</button><button nbButton size="small" (click)="exportPresentation('critical')" [disabled]="exportingImage">Presentation PNG</button></div>
+    <label class="zone-basis" *ngIf="!activeCritical.diagnostic">Plot scale<select [(ngModel)]="plotScale" (ngModelChange)="changePlotScale()"><option value="relative">Enlarge differences: subtract the blue reference</option><option value="total">Total lifecycle cost</option></select></label>
+    <p class="note" *ngIf="plotScale === 'relative' && !activeCritical.diagnostic">The same blue-reference cost is removed from both curves. Their intersection stays at the same distance and appears at zero.</p>
+    <div class="intersection-controls">
+      <button nbButton size="small" [status]="criticalZoom ? 'primary' : 'basic'" (click)="criticalZoom = true; renderCritical()" [disabled]="!activeCrossing">Zoom to intersection</button>
+      <button nbButton size="small" [status]="!criticalZoom ? 'primary' : 'basic'" (click)="criticalZoom = false; renderCritical()">Show full distance range</button>
+      <label *ngIf="activeCritical.crossings.length > 1">Crossing<select [(ngModel)]="criticalRootIndex" (ngModelChange)="renderCritical()"><option *ngFor="let crossing of activeCritical.crossings; let i = index" [ngValue]="i">{{ formatLength(crossing.length_m) }}</option></select></label>
+    </div>
+    <nb-alert *ngIf="activeCrossing" [status]="activeCrossing.feasible ? 'success' : 'warning'">
+      <strong>{{ activeCritical.symbol }} = {{ formatLength(activeCrossing.length_m) }}</strong> · {{ activeCrossing.feasible ? 'Both strategies pass the modeled limits at this distance.' : 'At least one strategy fails the modeled limits at this distance.' }}
+    </nb-alert>
+    <nb-alert *ngIf="!activeCrossing" status="info">{{ activeCritical.status === 'coincident' ? 'The two curves coincide throughout the sampled range; there is no unique critical length.' : 'No intersection found within the tested distance range. Increase the maximum distance and rerun to investigate farther crossings.' }}</nb-alert>
+    <div echarts [options]="criticalChart" class="chart intersection-chart"></div>
+    <h4>Cost difference: the intersection is where this curve crosses zero</h4>
+    <p class="note">Difference = solid blue curve minus dashed pink curve. Zero means the two plotted quantities are equal.</p>
+    <div echarts [options]="criticalDifferenceChart" class="chart difference-chart"></div>
+  </nb-card-body></nb-card>
+  <nb-card><nb-card-header>All-strategy lifecycle cost overview</nb-card-header><nb-card-body><label class="zone-basis">Plot scale<select [(ngModel)]="plotScale" (ngModelChange)="changePlotScale()"><option value="relative">Extra cost versus upsized pipe — enlarged differences</option><option value="total">Total lifecycle cost</option></select></label><p class="note">Use the focused intersection plots above to inspect critical lengths. Cross symbols mark sampled infeasible designs. Drag the slider or zoom the chart to inspect a smaller range.</p><div echarts [options]="costChart" class="chart"></div></nb-card-body></nb-card>
+  <nb-card><nb-card-header>Break-even distances</nb-card-header><nb-card-body>
+    <p class="note">Analytical crossings freeze flow against pipe losses. Numerical crossings include the extra flow and pumping needed to cover those losses. Numerical results cover only 0–{{ result.inputs.options.maximum_length_m | number:'1.0-0' }} m.</p>
+    <div class="table-wrap"><table><thead><tr><th>Comparison</th><th>Simplified analytical crossing</th><th>Full hourly-model crossings</th></tr></thead><tbody>
+      <tr *ngFor="let pair of result.comparisons"><td>{{ name(pair.a) }} / {{ name(pair.b) }}</td>
+        <td><ng-container *ngIf="pair.analytical.length_m !== null; else noAnalytical">{{ pair.analytical.length_m | number:'1.1-1' }} m</ng-container><ng-template #noAnalytical>{{ pair.analytical.status === 'coincident' ? 'Identical simplified cost lines' : pair.analytical.status === 'parallel' ? 'Parallel simplified cost lines' : 'No positive crossing' }}</ng-template></td>
+        <td><div *ngFor="let crossing of pair.numerical">{{ crossing.length_m | number:'1.1-1' }} m · {{ crossing.feasible ? 'Both pass modeled limits' : 'At least one infeasible' }}</div><span *ngIf="!pair.numerical.length">No crossing found in tested range</span></td>
+      </tr>
+    </tbody></table></div>
+  </nb-card-body></nb-card>
+  <nb-card><nb-card-header>What makes up lifecycle cost?</nb-card-header><nb-card-body><div echarts [options]="componentChart" class="chart"></div></nb-card-body></nb-card>
+  <nb-card><nb-card-header>Decision sensitivity at the compared distance</nb-card-header><nb-card-body><p class="note">Winner under changes to the diameter-dependent cost fraction and electricity price. A = small pipe; B = larger pipe; HP = heat pump; TES = storage. Source heat price stays fixed.</p><div echarts [options]="sensitivityChart" class="chart compact"></div></nb-card-body></nb-card>
+  <nb-card><nb-card-header>Heating demand and storage operation</nb-card-header><nb-card-body>
+    <nb-alert [status]="result.storage.feasible ? 'success' : 'warning'">{{ result.storage.feasible ? 'Storage meets hourly demand and its annual recharge condition.' : 'Storage cannot meet the required demand with these settings.' }} Unmet demand: {{ result.storage.unmet_kwh | number:'1.3-3' }} kWh.</nb-alert>
+    <p class="note">Tank volume: {{ result.storage.volume_m3 | number:'1.1-1' }} m³. Initial / final charge: {{ result.storage.initial_kwh | number:'1.3-3' }} / {{ result.storage.final_kwh | number:'1.3-3' }} kWh. Dispatch uses maximum available recharge under the node delivery limit, not electricity-price optimization.</p>
+    <div echarts [options]="loadChart" class="chart"></div><div echarts [options]="storageChart" class="chart"></div>
+  </nb-card-body></nb-card>
+  <nb-card><nb-card-header>Model assumptions and reproducibility</nb-card-header><nb-card-body>
+    <ul><li *ngFor="let assumption of result.assumptions">{{ assumption }}</li></ul>
+    <p class="note">Study {{ result.run_id }} · {{ result.model_version }} · {{ result.created_at | date:'medium' }}</p><p class="hash">Input SHA-256: {{ result.input_sha256 }}</p>
+  </nb-card-body></nb-card>
+</ng-container>

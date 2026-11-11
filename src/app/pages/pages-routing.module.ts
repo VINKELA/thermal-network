@@ -1,4 +1,5 @@
 import { PipeSensitivityComponent } from './networks/pipe-sensitivity/pipe-sensitivity.component';
+import { BreakEvenComponent } from './networks/break-even/break-even.component';
 import { RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
 
@@ -72,6 +73,10 @@ const routes: Routes = [{
   path: '',
   component: PagesComponent,
   children: [ 
+    {
+      path: 'networks/break-even',
+      component: BreakEvenComponent,
+    },
     {
       path: 'networks/compare',
       component: NetworkComparisonComponent,

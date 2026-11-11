@@ -1,4 +1,5 @@
 import { PipeSensitivityComponent } from './pipe-sensitivity/pipe-sensitivity.component';
+import { BreakEvenComponent } from './break-even/break-even.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NetworksComponent } from './networks/networks.component';
@@ -66,6 +67,7 @@ import { PipeSectionSensitivityComponent } from './pipe-section-sensitivity/pipe
 
 @NgModule({
   declarations: [
+    BreakEvenComponent,
     PipeSensitivityComponent,
     NetworksComponent,
     NetworkComponent,

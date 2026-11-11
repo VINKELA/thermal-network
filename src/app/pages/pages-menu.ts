@@ -139,6 +139,11 @@ export const MENU_ITEMS: NbMenuItem[] = [
     link: '/pages/network-costs',
   },
   {
+    title: 'Trunk Break-Even Analysis',
+    icon: 'trending-up-outline',
+    link: '/pages/networks/break-even',
+  },
+  {
     title: 'Network Emissions',
     icon: 'activity-outline',
     link: '/pages/network-emissions',
